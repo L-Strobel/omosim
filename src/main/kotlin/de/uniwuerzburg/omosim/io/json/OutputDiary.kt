@@ -1,0 +1,14 @@
+package de.uniwuerzburg.omosim.io.json
+
+import de.uniwuerzburg.omosim.core.models.Weekday
+import kotlinx.serialization.Serializable
+
+/**
+ * omosim result format of o day
+ */
+@Serializable
+data class OutputDiary (
+    val day: Int,
+    val dayType: Weekday,
+    val plan: List<OutputLeg>
+)

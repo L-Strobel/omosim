@@ -1,6 +1,6 @@
-# OMOD (OpenStreetMap Mobility Demand Generator)
+# OMoSim: An Open Mobility Demand Simulator
 
-OMOD is a tool that creates synthetic mobility demand based on OpenStreetMap data
+Omosim (formerly known as OMOD) is a tool that creates synthetic mobility demand based on OpenStreetMap data
 for a user-defined location.
 The generated demand describes what an agent *plans* to do on a given day
 in the form of daily activity diaries.
@@ -73,7 +73,7 @@ Other possible output formats are [MATSim population .xml files](doc/outputForma
 [SQLite](doc/outputFormats/SQLiteStructure.md).
 The output format is inferred from the given output file extension.
 
-Technically, OMOD will run for any location on Earth.
+Technically, Omosim will run for any location on Earth.
 However, we calibrated the model using data from the German national household travel survey
 (https://www.mobilitaet-in-deutschland.de/publikationen2017.html).
 Therefore, the model's performance outside of Germany,
@@ -82,9 +82,9 @@ is uncertain.
 Additionally, the region must be mapped reasonably well in OpenStreetMap.
 Good mapping information about the location and size of buildings, land use zones, and the road network is especially important.
 Census information of the region is not required but helpful;
-see python_tools/format_zensus2011.py for an example of how to correctly format census data for OMOD.
+see python_tools/format_zensus2011.py for an example of how to correctly format census data for Omosim.
 
-With Version 2.2 you can know also use [Overture Maps](https://overturemaps.org) instead of OSM for building and POI data,
+With Version 2.2 you can now also use [Overture Maps](https://overturemaps.org) instead of OSM for building and POI data,
 which is more complete in certain parts of the world (e.g., South Korea).
 
 Publications:
@@ -95,13 +95,13 @@ Publications:
 
 You need Java 17 or a later version.
 
-1. Download the latest release of OMOD (see *Releases* on the right)
+1. Download the latest release of Omosim (see *Releases* on the right)
 2. Download OSM data of the region you are interested in as an osm.pbf.The file can cover a larger area than the area of interest, but too large files slow down initialization. Recommended download site: https://download.geofabrik.de/
 3. Get a GeoJson of the region you want to simulate. This region must be covered by the osm.pbf file. With https://geojson.io, you can easily create a geojson of an arbitrary region. Geojsons for administrative areas can be obtained quickly with https://polygons.openstreetmap.fr/.
-4. Run OMOD:
+4. Run Omosim:
 
    ```
-   java -jar omod-2.0.18-all.jar Path/to/GeoJson Path/to/osm.pbf 
+   java -jar omosim-2.2.0-all.jar Path/to/GeoJson Path/to/osm.pbf 
    ```
 
 There are multiple optional cli arguments, such as the number of agents, the number of days, or the population definition.
@@ -109,15 +109,15 @@ See all [cli options here](#CLI-Options) or run --help.
 
 ## Visualization
 
-A visualization tool for OMOD is available at: https://github.com/L-Strobel/omod-visualizer
+A visualization tool for Omosim is available at: https://github.com/L-Strobel/omosim-visualizer
 
 <p align="center">
-   <img src="doc/images/omod_vis_far.png" width="1000" alt="Omod Visualization Würzburg Far"/>
+   <img src="doc/images/omosim_vis_far.png" width="1000" alt="omosim Visualization Würzburg Far"/>
 </p>
 
 ## Routing Mode
 
-OMOD determines the destination choice of agents based on a gravity model.
+Omosim determines the destination choice of agents based on a gravity model.
 The necessary distances from A to B can be calculated with the
 routing mode GraphHopper and Beeline.
 The first calculates the distance by car using the open-source router GraphHopper
@@ -204,12 +204,12 @@ First, add the jar to your classpath.
 Basic example:
 
 ```java
-import de.uniwuerzburg.omod.core.Omod;
-import de.uniwuerzburg.omod.core.models.MobiAgent;
-import de.uniwuerzburg.omod.core.models.Diary;
-import de.uniwuerzburg.omod.core.models.Weekday;
-import de.uniwuerzburg.omod.core.models.Activity;
-import de.uniwuerzburg.omod.core.models.ActivityType;
+import de.uniwuerzburg.omosim.core.Omosim;
+import de.uniwuerzburg.omosim.core.models.MobiAgent;
+import de.uniwuerzburg.omosim.core.models.Diary;
+import de.uniwuerzburg.omosim.core.models.Weekday;
+import de.uniwuerzburg.omosim.core.models.Activity;
+import de.uniwuerzburg.omosim.core.models.ActivityType;
 
 import java.util.LinkedList;
 import java.io.File;
@@ -221,10 +221,10 @@ class App {
       File osmFile = new File("Path/to/osm.pbf");
    
       // Create a simulator
-      Omod omod = Omod.Companion.defaultFactory(areaFile, osmFile);
+      Omosim omosim = Omosim.Companion.defaultFactory(areaFile, osmFile);
    
       // Run for 1000 agents, an undefined start day, and 1 day
-      List<MobiAgent> agents = omod.run(1000, Weekday.UNDEFINED, 1);
+      List<MobiAgent> agents = omosim.run(1000, Weekday.UNDEFINED, 1);
    
       // Do something with the result. E.g. get conducted activities 
       List<ActivityType> activities = new LinkedList<ActivityType>();
@@ -310,12 +310,12 @@ Options:
   --population_file=<path>      Path to file that describes the
                                 socio-demographic makeup of the population.
                                 Must be formatted like
-                                omod/src/main/resources/Population.json.
+                                omosim/src/main/resources/Population.json.
   --activity_group_file=<path>  Path to file that describes the activity chains
                                 for each population group and the dwell-time
                                 distribution for the each chain. Must be
                                 formatted like
-                                omod/src/main/resources/ActivityGroup.json
+                                omosim/src/main/resources/ActivityGroup.json
   --n_worker=<int>              Number of parallel coroutines that can be
                                 executed at the same time. Default: Number of
                                 CPU-Cores available.
@@ -342,7 +342,7 @@ Options:
 
 ## Documentation
 
-An API reference is available at: https://L-Strobel.github.io/omod
+An API reference is available at: https://L-Strobel.github.io/omosim
 
 ## Acknowledgment
 

@@ -8,7 +8,7 @@ from shapely.ops import unary_union
 
 def format_pendleratlas(commutingDirPath: str, internalCommutingPath: str, admin_shape_path: str):
     """
-    German example for formatting commuting data to an OD-Matrix for compatibility with omod.
+    German example for formatting commuting data to an OD-Matrix for compatibility with omosim.
     Warning! This is very dependent on the formating of the government data in question and bound to break then the formating is changed.
 
     :param commutingDirPath:        Path the folder that contains the commuting data for every state.

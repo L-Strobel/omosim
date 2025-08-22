@@ -7,13 +7,13 @@
     <logger name="com.graphhopper.GraphHopper" level="WARN">
         <appender-ref ref="STDOUT" />
     </logger>
-    <logger name="de.uniwuerzburg.omod.core" level="INFO">
+    <logger name="de.uniwuerzburg.omosim.core" level="INFO">
         <appender-ref ref="STDOUT" />
     </logger>
-    <logger name="de.uniwuerzburg.omod.io" level="INFO">
+    <logger name="de.uniwuerzburg.omosim.io" level="INFO">
         <appender-ref ref="STDOUT" />
     </logger>
-    <logger name="de.uniwuerzburg.omod.routing" level="INFO">
+    <logger name="de.uniwuerzburg.omosim.routing" level="INFO">
         <appender-ref ref="STDOUT" />
     </logger>
     <root level="off" />

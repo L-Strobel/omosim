@@ -13,7 +13,7 @@
         "--grid_precision": "150.0",
         "--buffer": "0.0",
         "--seed": "null",
-        "--cache_dir": "omod_cache",
+        "--cache_dir": "omosim_cache",
         "--populate_buffer_area": "false",
         "--distance_matrix_cache_size": "400000000",
         "--mode_choice": "GTFS",

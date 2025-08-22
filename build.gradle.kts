@@ -8,7 +8,7 @@ plugins {
     application
 }
 
-group = "de.uniwuerzburg.omod"
+group = "de.uniwuerzburg.omosim"
 version = "2.2.0"
 
 repositories {
@@ -62,12 +62,12 @@ tasks.shadowJar {
 
 publishing {
     publications {
-        create<MavenPublication>("omod") {
+        create<MavenPublication>("omosim") {
             from(components["java"])
         }
     }
 }
 
 application {
-    mainClass.set("de.uniwuerzburg.omod.MainKt")
+    mainClass.set("de.uniwuerzburg.omosim.MainKt")
 }

@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Main-Class: de.uniwuerzburg.MainKt
+Main-Class: de.uniwuerzburg.omosim.MainKt
 Class-Path: slf4j-api-2.0.0.jar commons-math3-3.6.1.jar postgresql-42.5.
  0.jar commons-compiler-3.1.2.jar jackson-dataformat-xml-2.10.5.jar slf4
  j-simple-2.0.0.jar stax2-api-4.2.1.jar protobuf-java-3.11.4.jar kotlinx

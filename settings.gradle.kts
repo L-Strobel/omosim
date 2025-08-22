@@ -1,3 +1,3 @@
 
-rootProject.name = "omod"
+rootProject.name = "omosim"
 

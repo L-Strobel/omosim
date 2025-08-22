@@ -1,0 +1,27 @@
+package de.uniwuerzburg.omosim.core
+
+import de.uniwuerzburg.omosim.core.models.*
+import kotlinx.serialization.Serializable
+
+/**
+ * Utility formula for car ownership MNL.
+ */
+@Serializable
+class CarOwnershipUtility (
+    val homGroupCoeff: Map<HomogeneousGrp, Double>,
+    val mobGroupCoeff: Map<MobilityGrp, Double>,
+    val ageGrpCoeff: Map<AgeGrp, Double>,
+    val intercept: Double
+    ) {
+    /**
+     * Calculate utility.
+     */
+    fun calc(
+        homogenousGroup: HomogeneousGrp, mobilityGroup: MobilityGrp, age: AgeGrp
+    ) : Double {
+        return (homGroupCoeff[homogenousGroup] ?: 0.0) +
+               (mobGroupCoeff[mobilityGroup] ?: 0.0) +
+               (ageGrpCoeff[age] ?: 0.0) +
+               intercept
+    }
+}

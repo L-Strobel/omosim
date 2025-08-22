@@ -3,7 +3,7 @@ import pandas as pd
 
 def format_zensus2011(census_path: str, grid_path: str, nuts_shape_path: str, nuts: list[str]):
     """
-    German example for formatting census data for compatibility with omod.
+    German example for formatting census data for compatibility with omosim.
     Due to the size of this data only the specified NUTS area is formated.
 
     :param census_path:         Path to population file of the german census (zensus2011).
