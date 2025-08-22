@@ -101,7 +101,7 @@ You need Java 17 or a later version.
 4. Run Omosim:
 
    ```
-   java -jar omosim-2.2.0-all.jar Path/to/GeoJson Path/to/osm.pbf 
+   java -jar omosim-2.2.1-all.jar Path/to/GeoJson Path/to/osm.pbf 
    ```
 
 There are multiple optional cli arguments, such as the number of agents, the number of days, or the population definition.
