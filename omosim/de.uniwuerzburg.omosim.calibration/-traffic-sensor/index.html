@@ -108,7 +108,7 @@
   <div class="breadcrumbs"><a href="../../../index.html">omosim</a><span class="delimiter">/</span><a href="../index.html">de.uniwuerzburg.omosim.calibration</a><span class="delimiter">/</span><span class="current">TrafficSensor</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Traffic</span><wbr></wbr><span><span>Sensor</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">TrafficSensor</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>name<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>measurements<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double-array/index.html">DoubleArray</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>direction<span class="token operator">: </span><a href="-direction/index.html">TrafficSensor.Direction</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>fov<span class="token operator">: </span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span></span></span><span class="token punctuation">)</span></div><p class="paragraph">Stores traffic count data for calibration.</p><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>name</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Name of the sensor</p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>measurements</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Measured traffic for each time step</p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>direction</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Direction in which the sensor counts traffic</p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>fov</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Field of view of the sensor. Sensor counts all traffic in the fov that is facing its direction.</p></div></div></div></div></div></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">TrafficSensor</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>name<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>measuredFlow<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double-array/index.html">DoubleArray</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>flowDirection<span class="token operator">: </span><a href="-direction/index.html">TrafficSensor.Direction</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>field<span class="token operator">: </span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span></span></span><span class="token punctuation">)</span></div></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
@@ -125,7 +125,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">name<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">measurements<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double-array/index.html">DoubleArray</a><span class="token punctuation">, </span></span><span class="parameter ">direction<span class="token operator">: </span><a href="-direction/index.html">TrafficSensor.Direction</a><span class="token punctuation">, </span></span><span class="parameter ">fov<span class="token operator">: </span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">name<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">measuredFlow<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double-array/index.html">DoubleArray</a><span class="token punctuation">, </span></span><span class="parameter ">flowDirection<span class="token operator">: </span><a href="-direction/index.html">TrafficSensor.Direction</a><span class="token punctuation">, </span></span><span class="parameter ">field<span class="token operator">: </span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -159,7 +159,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-direction/index.html">Direction</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">azimuth<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a><span class="token punctuation">, </span></span><span class="parameter ">center<span class="token operator">: </span><span data-unresolved-link="org.locationtech.jts.geom/Coordinate///PointingToDeclaration/">Coordinate</span><span class="token punctuation">, </span></span><span class="parameter ">transformer<span class="token operator">: </span><a href="../../de.uniwuerzburg.omosim.utils/-c-r-s-transformer/index.html">CRSTransformer</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Direction in which a sensor records traffic.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-direction/index.html">Direction</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">azimuth<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a><span class="token punctuation">, </span></span><span class="parameter ">centroid<span class="token operator">: </span><span data-unresolved-link="org.locationtech.jts.geom/Coordinate///PointingToDeclaration/">Coordinate</span><span class="token punctuation">, </span></span><span class="parameter ">transformer<span class="token operator">: </span><a href="../../de.uniwuerzburg.omosim.utils/-c-r-s-transformer/index.html">CRSTransformer</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -168,47 +168,47 @@
       </div>
       <div data-togglable="PROPERTY">
         <h2 class="">Properties</h2>
-        <div class="table"><a data-name="-2069393335%2FProperties%2F769193423" anchor-label="direction" id="-2069393335%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table"><a data-name="2006602926%2FProperties%2F769193423" anchor-label="field" id="2006602926%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="direction.html"><span><span>direction</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2069393335%2FProperties%2F769193423"></span>
+                  <div><a href="field.html"><span><span>field</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2006602926%2FProperties%2F769193423"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="direction.html">direction</a><span class="token operator">: </span><a href="-direction/index.html">TrafficSensor.Direction</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="field.html">field</a><span class="token operator">: </span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="68975355%2FProperties%2F769193423" anchor-label="fov" id="68975355%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+<a data-name="-1406421865%2FProperties%2F769193423" anchor-label="flowDirection" id="-1406421865%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="fov.html"><span><span>fov</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="68975355%2FProperties%2F769193423"></span>
+                  <div><a href="flow-direction.html"><span>flow</span><wbr></wbr><span><span>Direction</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1406421865%2FProperties%2F769193423"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="fov.html">fov</a><span class="token operator">: </span><span data-unresolved-link="org.locationtech.jts.geom/Geometry///PointingToDeclaration/">Geometry</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="flow-direction.html">flowDirection</a><span class="token operator">: </span><a href="-direction/index.html">TrafficSensor.Direction</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="782088283%2FProperties%2F769193423" anchor-label="measurements" id="782088283%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+<a data-name="789376542%2FProperties%2F769193423" anchor-label="measuredFlow" id="789376542%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="measurements.html"><span><span>measurements</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="782088283%2FProperties%2F769193423"></span>
+                  <div><a href="measured-flow.html"><span>measured</span><wbr></wbr><span><span>Flow</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="789376542%2FProperties%2F769193423"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="measurements.html">measurements</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double-array/index.html">DoubleArray</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="measured-flow.html">measuredFlow</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double-array/index.html">DoubleArray</a></div></div></div>
                 </div>
               </div>
             </div>

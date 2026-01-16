@@ -104,28 +104,28 @@
                 </div>
             </div>
             <div id="main">
-<div class="main-content" data-page-type="classlike" id="content" pageIds="omosim::de.uniwuerzburg.omosim.core/ModeChoiceGTFS.TripMCFeatures///PointingToDeclaration//769193423">
-  <div class="breadcrumbs"><a href="../../../../index.html">omosim</a><span class="delimiter">/</span><a href="../../index.html">de.uniwuerzburg.omosim.core</a><span class="delimiter">/</span><a href="../index.html">ModeChoiceGTFS</a><span class="delimiter">/</span><span class="current">TripMCFeatures</span></div>
+<div class="main-content" data-page-type="classlike" id="content" pageIds="omosim::de.uniwuerzburg.omosim.core/ModeChoiceFast.TripMCFeatures///PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../../index.html">omosim</a><span class="delimiter">/</span><a href="../../index.html">de.uniwuerzburg.omosim.core</a><span class="delimiter">/</span><a href="../index.html">ModeChoiceFast</a><span class="delimiter">/</span><span class="current">TripMCFeatures</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Trip</span><wbr></wbr><span><span>MCFeatures</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">TripMCFeatures</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>carDistance<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>fromActivity<span class="token operator">: </span><a href="../../../de.uniwuerzburg.omosim.core.models/-activity/index.html">Activity</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>toActivity<span class="token operator">: </span><a href="../../../de.uniwuerzburg.omosim.core.models/-activity/index.html">Activity</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>weekday<span class="token operator">: </span><a href="../../../de.uniwuerzburg.omosim.core.models/-weekday/index.html">Weekday</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>departureTime<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/LocalTime.html">LocalTime</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>routes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="../../../de.uniwuerzburg.omosim.core.models/-mode/index.html">Mode</a><span class="token punctuation">, </span><a href="../../../de.uniwuerzburg.omosim.routing/-route/index.html">Route</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div><p class="paragraph">Utility data class that stores all features of a trip required by the logit model. Also stores the result of the tour level decision for trip level decisions.</p><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>car</span><wbr></wbr><span><span>Distance</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Distance by car</p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>from</span><wbr></wbr><span><span>Activity</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Activity before the trip</p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>to</span><wbr></wbr><span><span>Activity</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Activity after the trip</p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>routes</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Best routes with each mode</p></div></div></div></div></div></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">TripMCFeatures</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>carDistance<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>fromActivity<span class="token operator">: </span><a href="../../../de.uniwuerzburg.omosim.core.models/-activity/index.html">Activity</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>toActivity<span class="token operator">: </span><a href="../../../de.uniwuerzburg.omosim.core.models/-activity/index.html">Activity</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>weekday<span class="token operator">: </span><a href="../../../de.uniwuerzburg.omosim.core.models/-weekday/index.html">Weekday</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>departureTime<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/LocalTime.html">LocalTime</a></span></span><span class="token punctuation">)</span></div><p class="paragraph">Utility data class that stores all features of a trip required by the logit model. Also stores the result of the tour level decision for trip level decisions.</p><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>car</span><wbr></wbr><span><span>Distance</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Distance by car</p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>from</span><wbr></wbr><span><span>Activity</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Activity before the trip</p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>to</span><wbr></wbr><span><span>Activity</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Activity after the trip</p></div></div></div></div></div></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
         <h2 class="">Constructors</h2>
-        <div class="table"><a data-name="-1790945133%2FConstructors%2F769193423" anchor-label="TripMCFeatures" id="-1790945133%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table"><a data-name="1061314990%2FConstructors%2F769193423" anchor-label="TripMCFeatures" id="1061314990%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-trip-m-c-features.html"><span>Trip</span><wbr></wbr><span><span>MCFeatures</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1790945133%2FConstructors%2F769193423"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1061314990%2FConstructors%2F769193423"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">carDistance<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a><span class="token punctuation">, </span></span><span class="parameter ">fromActivity<span class="token operator">: </span><a href="../../../de.uniwuerzburg.omosim.core.models/-activity/index.html">Activity</a><span class="token punctuation">, </span></span><span class="parameter ">toActivity<span class="token operator">: </span><a href="../../../de.uniwuerzburg.omosim.core.models/-activity/index.html">Activity</a><span class="token punctuation">, </span></span><span class="parameter ">weekday<span class="token operator">: </span><a href="../../../de.uniwuerzburg.omosim.core.models/-weekday/index.html">Weekday</a><span class="token punctuation">, </span></span><span class="parameter ">departureTime<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/LocalTime.html">LocalTime</a><span class="token punctuation">, </span></span><span class="parameter ">routes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="../../../de.uniwuerzburg.omosim.core.models/-mode/index.html">Mode</a><span class="token punctuation">, </span><a href="../../../de.uniwuerzburg.omosim.routing/-route/index.html">Route</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">carDistance<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a><span class="token punctuation">, </span></span><span class="parameter ">fromActivity<span class="token operator">: </span><a href="../../../de.uniwuerzburg.omosim.core.models/-activity/index.html">Activity</a><span class="token punctuation">, </span></span><span class="parameter ">toActivity<span class="token operator">: </span><a href="../../../de.uniwuerzburg.omosim.core.models/-activity/index.html">Activity</a><span class="token punctuation">, </span></span><span class="parameter ">weekday<span class="token operator">: </span><a href="../../../de.uniwuerzburg.omosim.core.models/-weekday/index.html">Weekday</a><span class="token punctuation">, </span></span><span class="parameter ">departureTime<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/time/LocalTime.html">LocalTime</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -134,12 +134,12 @@
       </div>
       <div data-togglable="PROPERTY">
         <h2 class="">Properties</h2>
-        <div class="table"><a data-name="-1268288355%2FProperties%2F769193423" anchor-label="carDistance" id="-1268288355%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+        <div class="table"><a data-name="-1746953825%2FProperties%2F769193423" anchor-label="carDistance" id="-1746953825%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="car-distance.html"><span>car</span><wbr></wbr><span><span>Distance</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1268288355%2FProperties%2F769193423"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1746953825%2FProperties%2F769193423"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
@@ -149,12 +149,12 @@
               </div>
             </div>
           </div>
-<a data-name="-1055343771%2FProperties%2F769193423" anchor-label="departureTime" id="-1055343771%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+<a data-name="-1491359769%2FProperties%2F769193423" anchor-label="departureTime" id="-1491359769%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="departure-time.html"><span>departure</span><wbr></wbr><span><span>Time</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1055343771%2FProperties%2F769193423"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1491359769%2FProperties%2F769193423"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
@@ -164,12 +164,12 @@
               </div>
             </div>
           </div>
-<a data-name="-310254213%2FProperties%2F769193423" anchor-label="fromActivity" id="-310254213%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+<a data-name="2030985401%2FProperties%2F769193423" anchor-label="fromActivity" id="2030985401%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="from-activity.html"><span>from</span><wbr></wbr><span><span>Activity</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-310254213%2FProperties%2F769193423"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2030985401%2FProperties%2F769193423"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
@@ -179,12 +179,12 @@
               </div>
             </div>
           </div>
-<a data-name="1665224433%2FProperties%2F769193423" anchor-label="mode" id="1665224433%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+<a data-name="-505157585%2FProperties%2F769193423" anchor-label="mode" id="-505157585%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="mode.html"><span><span>mode</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1665224433%2FProperties%2F769193423"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-505157585%2FProperties%2F769193423"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
@@ -194,27 +194,12 @@
               </div>
             </div>
           </div>
-<a data-name="1681443178%2FProperties%2F769193423" anchor-label="routes" id="1681443178%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
-          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="routes.html"><span><span>routes</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1681443178%2FProperties%2F769193423"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="routes.html">routes</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="../../../de.uniwuerzburg.omosim.core.models/-mode/index.html">Mode</a><span class="token punctuation">, </span><a href="../../../de.uniwuerzburg.omosim.routing/-route/index.html">Route</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1832353418%2FProperties%2F769193423" anchor-label="toActivity" id="1832353418%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+<a data-name="1401270600%2FProperties%2F769193423" anchor-label="toActivity" id="1401270600%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="to-activity.html"><span>to</span><wbr></wbr><span><span>Activity</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1832353418%2FProperties%2F769193423"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1401270600%2FProperties%2F769193423"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
@@ -224,12 +209,12 @@
               </div>
             </div>
           </div>
-<a data-name="-334564674%2FProperties%2F769193423" anchor-label="weekday" id="-334564674%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+<a data-name="-1747588928%2FProperties%2F769193423" anchor-label="weekday" id="-1747588928%2FProperties%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
           <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="weekday.html"><span><span>weekday</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-334564674%2FProperties%2F769193423"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1747588928%2FProperties%2F769193423"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
