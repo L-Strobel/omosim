@@ -29,7 +29,7 @@ import kotlin.math.pow
  */
 fun SGGravity.optimizeTMatrix(
     activityType: ActivityType,
-    iThresh: Double = (1/context.omosim.grid.size.toDouble()).pow(1.5)
+    iThresh: Double = 1e-4
 ) : D2Array<Double>? {
     logger.info(
         "[Experimental] Calibrating transition matrix for activity $activityType directly." +

@@ -472,7 +472,7 @@ class SGGravity(
      */
     private fun buildDiffModel(
         vActivity: ActivityType,
-        iThresh: Double = (1/context.omosim.grid.size.toDouble()).pow(1.5)
+        iThresh: Double = 1e-4
     ) : Pair<DifferentiableModel, Map<TrafficSensor, List<LinearTerm>>> {
         logger.info("Building surrogate for activity $vActivity with ${context.omosim.grid.size - 1} variables")
 
