@@ -140,8 +140,10 @@ class Run : CliktCommand() {
     ).long().default(400e6.toLong())
     private val mode_choice by option(
         help = "Type of mode choice. " +
-               "NONE: Returns trips with undefined modes." +
-               "GTFS: Uses a logit model with public transit as an option"
+               "NONE: Returns trips with undefined modes. " +
+               "CAR_ONLY: Select the car mode for every trip. " +
+               "GTFS: Uses a logit model with public transit as an option. " +
+               "FAST: Same as GTFS but without accounting for travel time. Less precise but computes significantly faster."
     ).enum<ModeChoiceOption>().default(ModeChoiceOption.NONE)
     private val return_path_coords by option(
         help = "Whether lat/lon coordinates of chosen trip paths are returned." +
