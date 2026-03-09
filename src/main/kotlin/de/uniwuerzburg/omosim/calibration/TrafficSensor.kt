@@ -24,7 +24,7 @@ import kotlin.math.sin
 class TrafficSensor(
     val name: String,
     val measurements: DoubleArray,
-    val direction: Direction,
+    val direction: Direction?,
     val fov: Geometry
 ) {
     companion object {
@@ -45,7 +45,11 @@ class TrafficSensor(
 
             // Parse header
             val header = reader.readLine()
-            val idxMap = header.split(delimiter).withIndex().associate { (i, v) -> v to i }
+            val idxMap = header
+                .split(delimiter)
+                .map{ it.lowercase() }
+                .withIndex()
+                .associate { (i, v) -> v to i }
 
             // Index of cols to extract
             val nameCol = idxMap["name"]
@@ -74,15 +78,23 @@ class TrafficSensor(
                 val fov = transformer.toModelCRS(latlonGeom)
 
                 // Direction
-                val angle = values[dirCol!!].toDouble()
+                val angle = values[dirCol!!].toDoubleOrNull()
                 val centroid = latlonGeom.centroid.coordinates.first()
-                val direction = Direction(angle, centroid, transformer)
+                val direction = angle?.let { Direction(it, centroid, transformer) }
 
                 val sensor = TrafficSensor(name, measurements, direction, fov)
                 sensors.add(sensor)
             }
             reader.close()
             return sensors
+        }
+    }
+
+    fun isInMeasurementDirection(route: LineString, leeway: Double) : Boolean {
+        return if (this.direction == null) {
+            true
+        } else {
+            this.direction.isSameDirection(route, leeway)
         }
     }
 

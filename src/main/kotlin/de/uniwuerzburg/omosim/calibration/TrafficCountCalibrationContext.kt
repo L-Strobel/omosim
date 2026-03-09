@@ -360,14 +360,14 @@ class TrafficCountCalibrationContext(
                                         .filter { sensor ->
                                             val inter = intersection(sensor.fov, route)
                                             if (inter is LineString) {
-                                                sensor.direction.isSameDirection(inter, leeway)
+                                                sensor.isInMeasurementDirection(inter, leeway)
                                             } else if (inter is MultiLineString) {
                                                 // If route crosses the sensor fov more than once check if any crossing
                                                 // is in the right direction
                                                 var sameDir = false
                                                 for (n in 0 until inter.numGeometries) {
                                                     val crossingN = inter.getGeometryN(n) as LineString
-                                                    if (sensor.direction.isSameDirection(crossingN, leeway)) {
+                                                    if (sensor.isInMeasurementDirection(crossingN, leeway)) {
                                                         sameDir = true
                                                         break
                                                     }
