@@ -1,0 +1,42 @@
+package de.uniwuerzburg.omosim.calibration.differentiablemodel
+
+/**
+ * Leaf Term. We use this instead of individual variable terms because the lowest level currently always is
+ * a sum over all variables.
+ */
+class Variable(
+    override val nVars: Int,
+    val id: Int,
+    private val coefficient: Double = 0.0
+): Term {
+    override var visited = ThreadLocal<Boolean>()
+
+    override fun gradientReverse(vals: DoubleArray, partials: DoubleArray, seed: Double) {
+        partials[id] += seed * coefficient
+    }
+
+    override fun gradientForward(variable: Int, vals: DoubleArray) : Double {
+        return coefficient
+    }
+
+    override fun evaluate(vals: DoubleArray) : Double {
+        return coefficient * vals[id]
+    }
+
+    override fun clearEvalCache() { }
+
+    override fun clearGradientCache() { }
+
+    override fun countReceivers() { }
+
+    override fun clearReceivers() { }
+
+    override fun clearSearchMarkers() { }
+
+    override fun visit(visitor: (term: Term) -> Unit) {
+        if ((visited.get() == null) || (visited.get() == false)) {
+            visited.set(true)
+            visitor(this)
+        }
+    }
+}

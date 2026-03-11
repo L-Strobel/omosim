@@ -43,7 +43,7 @@ class RouteChoice(
 
         // Run Simulation
         val agents = context.omosim.run(0.1, verbose = false)
-        context.omosim.doModeChoice(agents, ModeChoiceOption.FAST, false, false)
+        context.omosim.doModeChoice(agents, ModeChoiceOption.FAST, withPath = false, verbose = false)
 
         val odtCounts = getODTCounts(agents)
 
@@ -172,8 +172,7 @@ class RouteChoice(
                     val pAs = mutableListOf<Term>()
                     for (alternative in alternatives) {
                         // Probability of choosing that alternative
-                        val exTripsAlternative = LinearBaseTerm(model.nVars)
-                        exTripsAlternative.addTerm(iVar, 1.0)
+                        val exTripsAlternative = Variable(model.nVars, iVar, 1.0)
                         iVar += 1
                         pAs.add(exTripsAlternative)
                     }

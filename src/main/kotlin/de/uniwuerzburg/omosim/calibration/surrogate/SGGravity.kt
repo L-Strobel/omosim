@@ -19,7 +19,6 @@ import org.jetbrains.kotlinx.multik.ndarray.operations.expandDims
 import org.jetbrains.kotlinx.multik.ndarray.operations.plusAssign
 import org.jetbrains.kotlinx.multik.ndarray.operations.times
 import org.locationtech.jts.geom.Coordinate
-import kotlin.math.pow
 
 /**
  * Surrogate model builder for the gravity model surrogate.
@@ -499,12 +498,11 @@ class SGGravity(
             val weights = mutableListOf<Term>()
             val sum = LinearTerm(model.nVars)
             for (d in 0 until n) {
-                val weight = LinearBaseTerm(model.nVars)
-                if ( d != (n-1) ) {
-                    weight.addTerm(d, mrep.tMatrices[mrep.vActivity]!![o, d])
+                val weight = if ( d != (n-1) ) {
+                    Variable(model.nVars, d,  mrep.tMatrices[mrep.vActivity]!![o, d])
                 } else {
                     // Last destination is chosen as the pivot element
-                    weight.addConstant(mrep.tMatrices[mrep.vActivity]!![o, d])
+                    Constant(model.nVars, mrep.tMatrices[mrep.vActivity]!![o, d])
                 }
                 sum.addTerm(weight, 1.0)
                 weights.add(weight)
