@@ -1,8 +1,7 @@
 package de.uniwuerzburg.omosim.calibration.differentiablemodel
 
 /**
- * Leaf Term. We use this instead of individual variable terms because the lowest level currently always is
- * a sum over all variables.
+ * Leaf Term. Linear with multiple variables.
  */
 class LinearBaseTerm(
     override val nVars: Int

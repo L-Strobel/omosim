@@ -1,13 +1,12 @@
 package de.uniwuerzburg.omosim.calibration.differentiablemodel
 
 /**
- * Leaf Term. We use this instead of individual variable terms because the lowest level currently always is
- * a sum over all variables.
+ * Leaf Term. Constant Value.
  */
 class Constant(
     override val nVars: Int,
     private val value: Double = 0.0
-): Term {
+) : Term {
     override var visited = ThreadLocal<Boolean>()
 
     override fun gradientReverse(vals: DoubleArray, partials: DoubleArray, seed: Double) { }
