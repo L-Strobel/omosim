@@ -90,13 +90,15 @@ class DifferentiableModel (
     /**
      * Optimize the Differentiable Model.
      *
-     * Allowed algorithms: SM_LBFGS, SM_GD, SM_PSO, PSO, SM_SPSA, SPSA
+     * @param algorithm Options: SM_LBFGS, SM_GD, SM_PSO, PSO, SM_SPSA, SPSA
+     * @param parameters Parameters for key:value options see de.uniwuerzburg.omosim.calibration.algorithms
+     * @param x0 Starting value of variables
+     * @param nWorker Number of parallel threads for optimization
      */
     fun optimizeWith(
         algorithm: CalibrationAlgorithm?,
         parameters: Map<String,String>,
         x0: DoubleArray? = null,
-        rng: Random? = null,
         nWorker: Int? = null
     ) : DoubleArray {
         val x = when (algorithm) {
@@ -115,22 +117,16 @@ class DifferentiableModel (
                 GradientDescent.run(this, x0 ?: x0Fallback, parameters)
             }
             CalibrationAlgorithm.SM_PSO, CalibrationAlgorithm.PSO -> {
-                if (rng == null) {
-                    logger.warn("rng not supplied to PSO. Running with new Random().")
-                }
                 val objective = { x: DoubleArray -> this.evaluate(x) }
-                PSO.run(this.nVars, objective, rng ?: Random(), nWorker, parameters)
+                PSO.run(this.nVars, objective, nWorker, parameters)
             }
             CalibrationAlgorithm.SM_SPSA, CalibrationAlgorithm.SPSA -> {
                 val x0Fallback = getX0(parameters)
                 if (x0 == null) {
                     logger.warn("x0 not supplied to SPSA. Running with x0=${x0Fallback.toList()}")
                 }
-                if (rng == null) {
-                    logger.warn("rng not supplied to SPSA. Running with new Random().")
-                }
                 val objective = { x: DoubleArray -> this.evaluate(x) }
-                SPSA.run(x0 ?: x0Fallback , objective, rng ?: Random(), parameters)
+                SPSA.run(x0 ?: x0Fallback, objective, parameters = parameters)
             }
 
             else -> throw IllegalArgumentException(
