@@ -9,7 +9,6 @@ import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import de.uniwuerzburg.omosim.core.models.Cell
 import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
-import java.util.*
 
 /**
  * Calibrate OMoSim output by adjusting the gravity model.

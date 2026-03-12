@@ -4,7 +4,6 @@ package de.uniwuerzburg.omosim.calibration.differentiablemodel
 import de.uniwuerzburg.omosim.calibration.algorithms.PSO
 import kotlinx.benchmark.Blackhole
 import org.openjdk.jmh.annotations.*
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 @BenchmarkMode(Mode.AverageTime)
