@@ -135,7 +135,10 @@ class Gravity(
             for (activity in activities) {
                 val objective = o.surrogateObj(activity)
                 var d = PSO.run(
-                    context.omosim.grid.size - 1, objective, parameters = parameters
+                    context.omosim.grid.size - 1,
+                    objective,
+                    parameters = parameters,
+                    nWorker = context.omosim.nWorker
                 )
                 d = (d.toList() + listOf(1.0)).toDoubleArray()
                 updateCalibration(d, activity)
@@ -147,7 +150,10 @@ class Gravity(
             for (activity in activities) {
                 val objective = o.batchObj(activity)
                 val d = PSO.run(
-                    context.omosim.grid.size, objective, parameters = parameters
+                    context.omosim.grid.size,
+                    objective,
+                    parameters = parameters,
+                    nWorker = context.omosim.nWorker
                 )
                 updateCalibration(d, activity)
             }
@@ -157,7 +163,10 @@ class Gravity(
         ) {
             val objective = o.batchObj(activities)
             val d = PSO.run(
-                context.omosim.grid.size * activities.size, objective , parameters = parameters
+                context.omosim.grid.size * activities.size,
+                objective,
+                parameters = parameters,
+                nWorker = context.omosim.nWorker
             )
             updateCalibration(d, activities)
         }

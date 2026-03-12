@@ -73,7 +73,7 @@ class Omosim (
     val distanceCacheSize: Long = 400e6.toLong(),
     populationFile: File? = null,
     activityGroupFile: File? = null,
-    nWorker: Int? = null,
+    val nWorker: Int? = null,
     private val gtfsFile: File? = null,
     overtureRelease: String? = null,
     carOwnershipOption: CarOwnershipOption = CarOwnershipOption.FIX,

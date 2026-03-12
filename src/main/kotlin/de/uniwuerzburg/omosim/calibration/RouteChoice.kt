@@ -68,7 +68,7 @@ class RouteChoice(
             parametersCorrected["ub"] = "1.0"
 
             // Optimize
-            val x = model.optimizeWith(algorithm, parametersCorrected, x0)
+            val x = model.optimizeWith(algorithm, parametersCorrected, x0, nWorker = context.omosim.nWorker)
             unpackX(x, odtCounts)
         }
     }
