@@ -135,7 +135,7 @@ class Gravity(
             for (activity in activities) {
                 val objective = o.surrogateObj(activity)
                 var d = PSO.run(
-                    context.omosim.grid.size - 1, objective, Random(), parameters = parameters
+                    context.omosim.grid.size - 1, objective, parameters = parameters
                 )
                 d = (d.toList() + listOf(1.0)).toDoubleArray()
                 updateCalibration(d, activity)
@@ -147,7 +147,7 @@ class Gravity(
             for (activity in activities) {
                 val objective = o.batchObj(activity)
                 val d = PSO.run(
-                    context.omosim.grid.size, objective, Random(), parameters = parameters
+                    context.omosim.grid.size, objective, parameters = parameters
                 )
                 updateCalibration(d, activity)
             }
@@ -157,7 +157,7 @@ class Gravity(
         ) {
             val objective = o.batchObj(activities)
             val d = PSO.run(
-                context.omosim.grid.size * activities.size, objective, Random(), parameters = parameters
+                context.omosim.grid.size * activities.size, objective , parameters = parameters
             )
             updateCalibration(d, activities)
         }
@@ -169,7 +169,7 @@ class Gravity(
             for (activity in activities) {
                 val objective = o.surrogateObj(activity)
                 val x0 = DoubleArray(context.omosim.grid.size - 1) { 1.0 }
-                var d = SPSA.run(x0, objective, Random(), parameters = parameters)
+                var d = SPSA.run(x0, objective, parameters = parameters)
 
                 d = (d.toList() + listOf(1.0)).toDoubleArray()
                 updateCalibration(d, activity)
@@ -180,7 +180,7 @@ class Gravity(
         ) {
             val objective = o.batchObj(activities)
             val x0 = DoubleArray(context.omosim.grid.size * activities.size) { 1.0 }
-            val d = SPSA.run(x0, objective, Random(), parameters = parameters)
+            val d = SPSA.run(x0, objective, parameters = parameters)
             updateCalibration(d, activities)
         }
         fun calibrateSPSA(
@@ -189,7 +189,7 @@ class Gravity(
             for (activity in activities) {
                 val objective = o.batchObj(activity)
                 val x0 = DoubleArray(context.omosim.grid.size ) { 1.0 }
-                val d = SPSA.run(x0, objective, Random(), parameters = parameters)
+                val d = SPSA.run(x0, objective, parameters = parameters)
                 updateCalibration(d, activity)
             }
         }
@@ -205,7 +205,7 @@ class Gravity(
                 val objective = o.surrogateObjWSPSA(model, context.sensors)
                 val x0 = DoubleArray(context.omosim.grid.size - 1) { 1.0 }
                 var d = WSPSA.run(
-                    x0, objective, measurements, model, Random(), parameters = parameters
+                    x0, objective, measurements, model, parameters = parameters
                 )
                 d = (d.toList() + listOf(1.0)).toDoubleArray()
                 updateCalibration(d, activity)
@@ -221,7 +221,7 @@ class Gravity(
                 val objective = o.batchObjWSPSA(activity)
                 val x0 = DoubleArray(context.omosim.grid.size - 1) { 1.0 }
                 var d = WSPSA.run(
-                    x0, objective, measurements, model, Random(), parameters = parameters
+                    x0, objective, measurements, model, parameters = parameters
                 )
                 d = (d.toList() + listOf(1.0)).toDoubleArray()
                 updateCalibration(d, activity)

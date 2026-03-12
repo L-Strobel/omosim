@@ -2,11 +2,17 @@ package de.uniwuerzburg.omosim.calibration.algorithms
 
 import java.util.*
 import java.util.concurrent.Executors
+import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.time.measureTime
 
+/**
+ * Particle swarm optimization.
+ *
+ * Warning will use random variables independent of seed! (for performance reasons)
+ */
 object PSO {
     private const val NAME = "PSO"
 
@@ -25,14 +31,12 @@ object PSO {
     fun run (
         nDimensions: Int,
         objective: (DoubleArray) -> Double,
-        rng: Random,
         nWorker: Int? = null,
         parameters: Map<String, String>? = null,
     ) : DoubleArray {
         return run(
             nDimensions,
             objective,
-            rng,
             iterations = parameters?.get("iterations")?.toIntOrNull() ?: Defaults.iterations,
             nWorker,
             lb = parameters?.get("lb")?.toDoubleOrNull() ?: Defaults.lb,
@@ -49,7 +53,6 @@ object PSO {
     fun run(
         nDimensions: Int,
         objective: (DoubleArray) -> Double,
-        rng: Random,
         iterations: Int = Defaults.iterations,
         nWorker: Int? = null,
         lb: Double = Defaults.lb,
@@ -76,8 +79,8 @@ object PSO {
 
         // Initialize particles
         val particles = List(nParticles) {
-            val x = DoubleArray(nDimensions) { rng.nextDouble(lb, ub) }
-            val v = DoubleArray(nDimensions) { rng.nextDouble(-maxVelocity, maxVelocity) }
+            val x = DoubleArray(nDimensions) { ThreadLocalRandom.current().nextDouble(lb, ub) }
+            val v = DoubleArray(nDimensions) { ThreadLocalRandom.current().nextDouble(-maxVelocity, maxVelocity) }
             val oval = objective(x)
             if (oval < globalBest) {
                 globalBest = oval
@@ -98,8 +101,8 @@ object PSO {
                     executor.submit {
                         var inBound = true
                         for (i in 0 until nDimensions) {
-                            val rp = rng.nextDouble()
-                            val rg = rng.nextDouble()
+                            val rp = ThreadLocalRandom.current().nextDouble()
+                            val rg = ThreadLocalRandom.current().nextDouble()
 
                             // Update velocity
                             var velocity =
@@ -117,8 +120,8 @@ object PSO {
 
                             // Bound handling
                             val dInBound = when(boundStrategy) {
-                                BoundStrategy.REFLECT_Z -> bhReflectZ(particle, i, lb, ub, rng)
-                                BoundStrategy.INFINITY -> bhInfinity(particle, i, lb, ub)
+                                BoundStrategy.REFLECT_Z -> bhReflectZ(particle, i, lb, ub, ThreadLocalRandom.current())
+                                BoundStrategy.INFINITY  -> bhInfinity(particle, i, lb, ub)
                             }
                             inBound = inBound && dInBound
                         }

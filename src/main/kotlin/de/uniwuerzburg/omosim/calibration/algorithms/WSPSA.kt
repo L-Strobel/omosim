@@ -25,7 +25,7 @@ object WSPSA {
         objective:  (DoubleArray) -> Pair<Double, DoubleArray>,
         measurements: List<Double>,
         model: DifferentiableModelMultiOut,
-        rng: Random,
+        rng: Random = Random(),
         parameters: Map<String, String>? = null,
     ) : DoubleArray {
         return run(

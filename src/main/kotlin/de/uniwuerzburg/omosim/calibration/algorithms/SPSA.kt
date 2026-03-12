@@ -21,7 +21,7 @@ object SPSA {
     fun run(
         x0: DoubleArray,
         objective: (DoubleArray) -> Double,
-        rng: Random,
+        rng: Random = Random(),
         parameters: Map<String, String>? = null,
     ) : DoubleArray {
         return run(

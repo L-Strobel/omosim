@@ -9,8 +9,8 @@ import java.util.concurrent.TimeUnit
 
 @BenchmarkMode(Mode.AverageTime)
 @Fork(value = 2)
-@Warmup(iterations = 1)
-@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Warmup(iterations = 5)
+@Measurement(iterations = 5, time = 5, timeUnit = TimeUnit.SECONDS)
 @State(Scope.Benchmark)
 class IterationBenchmark {
     var model: DifferentiableModel? = null
@@ -44,14 +44,14 @@ class IterationBenchmark {
 
     @Setup
     fun setup() {
-        model = buildLargeTestModel(1000)
+        model = buildLargeTestModel(10000)
         vars = DoubleArray(model!!.nVars) { 1.1 }
     }
 
     @Benchmark
     fun psoBench(bh: Blackhole) {
         val objective = { x: DoubleArray -> model!!.evaluate(x) }
-        val x = PSO.run(model!!.nVars, objective, Random(), iterations = 100)
+        val x = PSO.run(model!!.nVars, objective, iterations = 10)
         bh.consume(x)
     }
 }
