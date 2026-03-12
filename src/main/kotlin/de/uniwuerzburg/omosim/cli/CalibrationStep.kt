@@ -51,7 +51,14 @@ class CalibrationStep (
 
             // ALG
             val alg = if (components[1] == "") {
-                null
+                // Default value
+                if (type == CalibrationType.GRAVITY) {
+                    CalibrationAlgorithm.SM_PSO // Particle swarm optimization
+                } else if (type == CalibrationType.ROUTE_CHOICE) {
+                    CalibrationAlgorithm.SM_GD // Gradient descent
+                } else {
+                    null
+                }
             } else {
                 CalibrationAlgorithm.valueOf(components[1])
             }

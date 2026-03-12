@@ -98,7 +98,7 @@ class TrafficCountCalibrationContext(
                     omosim.tourModeUtilityFn = modeChoiceCalOut
                 }
                 CalibrationType.ROUTE_CHOICE -> {
-                    RouteChoice(this).calibrate()
+                    RouteChoice(this).calibrate(step.alg, step.parameters)
                     RouteChoiceCalibrationStore(omosim).write(routeChoiceCalOut, omosim.altPercentages)
                 }
                 CalibrationType.EVALUATE -> {

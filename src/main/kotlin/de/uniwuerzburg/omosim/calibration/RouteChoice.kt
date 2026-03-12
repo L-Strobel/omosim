@@ -38,7 +38,7 @@ class RouteChoice(
      *
      * @param gurobi Use Gurobi solver. Must be installed on the system and findable by the gurobi java API.
      */
-    fun calibrate(gurobi: Boolean = false) {
+    fun calibrate(algorithm: CalibrationAlgorithm?, parameters: Map<String, String>, gurobi: Boolean = false) {
         context.omosim.mainRng.setSeed(0) // Seed impact low with 100% of agents
 
         // Run Simulation
@@ -52,7 +52,23 @@ class RouteChoice(
         } else {
             val model = buildModel(odtCounts) // Create route choice model
             val x0 = buildX0(odtCounts)
-            val x = GradientDescent.run(model, x0, lb=0.0, ub=1.0)
+
+            // Set bounds to [0, 1] independent of user specification
+            val parametersCorrected = parameters.toMutableMap()
+            val lb = parameters["lb"]?.toDoubleOrNull()
+            if ((parameters["lb"] != null) and (lb != 0.0)) {
+                logger.warn("RouteChoice: Lower bound must be 0.0 and was ${parameters["lb"]}. Setting lb it to 0.0")
+            }
+            parametersCorrected["lb"] = "0.0"
+
+            val ub = parameters["ub"]?.toDoubleOrNull()
+            if ((parameters["ub"] != null) and (ub != 1.0)) {
+                logger.warn("RouteChoice: Upper bound must be 1.0 and was ${parameters["ub"]}. Setting ub it to 1.0")
+            }
+            parametersCorrected["ub"] = "1.0"
+
+            // Optimize
+            val x = model.optimizeWith(algorithm, parametersCorrected, x0)
             unpackX(x, odtCounts)
         }
     }
