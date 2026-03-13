@@ -654,13 +654,8 @@ class Omosim (
                     val distr = createCumDist(probs.toDoubleArray())
                     val path = response.all[sampleCumDist(distr, this.mainRng)]
 
-                    val (lats, lons) = Pair(
-                        path.points.map { it.lat },
-                        path.points.map { it.lon }
-                    )
-
-                    trip.lats = lats
-                    trip.lons = lons
+                    trip.lats = path.points.map { it.lat }
+                    trip.lons = path.points.map { it.lon }
                 }
             }
         }
