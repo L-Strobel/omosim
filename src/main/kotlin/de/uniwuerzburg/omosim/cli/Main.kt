@@ -21,6 +21,7 @@ import de.uniwuerzburg.omosim.routing.RoutingMode
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
+import de.uniwuerzburg.omosim.calibration.logger as calLogger
 
 sealed interface AgentNumberDefinition
 
@@ -252,6 +253,31 @@ class Run : CliktCommand() {
                 }
             }
 
+            // Calibration steps check for unsupported order
+            val iLastGravity = calibrationParameters!!.calibration_steps.indexOfLast { it.type == CalibrationType.GRAVITY }
+            val iToRemove = mutableListOf<Int>()
+            val nSteps = calibrationParameters!!.calibration_steps.size
+            for (i in calibrationParameters!!.calibration_steps.indices) {
+                val step = calibrationParameters!!.calibration_steps[i]
+                if ((i < iLastGravity) and (step.type == CalibrationType.MODE_CHOICE)) {
+                    calLogger.warn("Found mode choice calibration before gravity calibration. Currently unsupported. Removing step $i")
+                    iToRemove.add(i)
+                }
+                if ((i < iLastGravity) and (step.type == CalibrationType.ROUTE_CHOICE)) {
+                    calLogger.warn("Found route choice calibration before gravity calibration. Currently unsupported. Removing step $i")
+                    iToRemove.add(i)
+                }
+                if ((i < (nSteps - 1)) and (step.type == CalibrationType.EVALUATE)) {
+                    calLogger.warn("Found calibration evaluation with remaining calibration steps. Currently unsupported. Removing step $i")
+                    iToRemove.add(i)
+                }
+            }
+            val calibrationSteps = calibrationParameters!!.calibration_steps.toMutableList()
+            for (i in iToRemove.sortedDescending()) {
+                calibrationSteps.removeAt(i)
+            }
+
+
             // Create output files
             val calDir = calibrationParameters!!.calibration_out_dir
             Files.createDirectories(calDir)
@@ -269,7 +295,7 @@ class Run : CliktCommand() {
                 gravityOut,
                 modeChoiceOut,
                 routeChoiceOut,
-                calibrationParameters!!.calibration_steps,
+                calibrationSteps,
             )
             return // Don't continue with normal run
         }
