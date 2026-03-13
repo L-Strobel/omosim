@@ -80,7 +80,10 @@ class TrafficCountCalibrationContext(
         steps: List<CalibrationStep>
     ) {
         // If alternative routes need to be computed
-        if (CalibrationType.ROUTE_CHOICE in steps.map { it.type }) {
+        if (
+            (CalibrationType.ROUTE_CHOICE in steps.map { it.type }) or
+            (omosim.altPercentages.isNotEmpty())
+        ) {
             affectedAltSensors = altAffectedSensors()
         }
 
