@@ -307,6 +307,7 @@ class Omosim (
                         number_fast_food = it.nFastFood,
                         number_kindergarten = it.nKinderGarten,
                         number_tourism = it.nTourism,
+                        levels = it.levels
                     )
                     GeoJsonFeature(geometry = geometry, properties = properties)
                 }

@@ -96,8 +96,12 @@ sealed class LocationChoiceDCWeightFun {
         return destination.attractions[id]!!
     }
 
-    open fun calcAttraction(properties: BuildingProperties) : Double {
-        val area = properties.area
+    open fun calcAttraction(properties: BuildingProperties, useLevels: Boolean = false) : Double {
+        val area = if(useLevels) {
+            properties.area * properties.levels
+        } else {
+            properties.area
+        }
         val areaOffice = if (properties.number_offices > 0) area else 0.0
         val areaShop = if (properties.number_shops > 0) area else 0.0
         val areaSchool = if (properties.number_schools > 0) area else 0.0
@@ -168,7 +172,7 @@ object ByPopulation: LocationChoiceDCWeightFun () {
     override val coeffRetailUnits: Double get() { throw NotImplementedError() }
     override val coeffIndustrialUnits: Double get() { throw NotImplementedError() }
 
-    override fun calcAttraction(properties: BuildingProperties): Double {
+    override fun calcAttraction(properties: BuildingProperties, useLevels: Boolean): Double {
         return properties.population ?: 0.0
     }
 

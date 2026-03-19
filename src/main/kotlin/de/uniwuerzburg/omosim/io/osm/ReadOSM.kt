@@ -31,7 +31,7 @@ fun readOSM (focusArea: Geometry, fullArea: Geometry, osmFile: File,
         val mapObject = mapObjects.removeLast()
         val geom = transformer.toModelCRS(mapObject.geometry)
         if (mapObject.type == MapObjectType.BUILDING) {
-            buildings.add ( BuildingData(mapObject.id, geom) )
+            buildings.add ( BuildingData(mapObject.id, geom, levels=mapObject.levels ?: 1) )
         } else {
             val extraInfo = MapObject(mapObject.id, mapObject.type, geom)
             extraInfoTree.insert(geom.envelopeInternal, extraInfo)

@@ -12,6 +12,7 @@ import org.locationtech.jts.geom.Geometry
 data class BuildingData (
     val osm_id: Long,
     val geometry: Geometry,
+    var levels: Int = 1
 ) {
     val area = geometry.area
     var landuse: Landuse = Landuse.NONE

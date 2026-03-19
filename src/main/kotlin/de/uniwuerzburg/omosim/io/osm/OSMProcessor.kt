@@ -52,7 +52,8 @@ fun determineType(key: String, value: String): MapObjectType? {
 class MapObject (
     val id: Long,
     val type: MapObjectType,
-    val geometry: Geometry
+    val geometry: Geometry,
+    val levels: Int? = null
 )
 
 /**
@@ -333,6 +334,21 @@ class OSMProcessor(idTrackerType: IdTrackerType,
     }
 
     /**
+     * Determine levels of building
+     *
+     * @param entity OSM object
+     * @return Number of levels or null if no level information exists
+     */
+    fun getLevels(entity: Entity) : Int? {
+        for (tag in entity.tags) {
+            if (tag.key == "building:levels") {
+                return tag.value.toIntOrNull()
+            }
+        }
+        return null
+    }
+
+    /**
      * Determine if the OSM object is relevant for omosim
      *
      * @param entity OSM object
@@ -376,9 +392,12 @@ class OSMProcessor(idTrackerType: IdTrackerType,
             val entity = container.entity
             val types = determineTypes(entity)
             val geom = getGeom(entity)
+            val levels = getLevels(entity)
+
             if (!geom.isEmpty) {
                 for (type in types) {
-                    mapObjects.add(MapObject(entity.id, type, geom))
+
+                    mapObjects.add(MapObject(entity.id, type, geom, levels))
                 }
             }
         }
@@ -387,9 +406,11 @@ class OSMProcessor(idTrackerType: IdTrackerType,
             val entity = container.entity
             val types = determineTypes(entity)
             val geom = getGeom(entity, nodeReader)
+            val levels = getLevels(entity)
+
             if (!geom.isEmpty) {
                 for (type in types) {
-                    mapObjects.add(MapObject(entity.id, type, geom))
+                    mapObjects.add(MapObject(entity.id, type, geom, levels))
                 }
             }
         }
@@ -398,9 +419,11 @@ class OSMProcessor(idTrackerType: IdTrackerType,
             val entity = container.entity
             val types = determineTypes(entity)
             val geom = getGeom(entity, wayReader, nodeReader)
+            val levels = getLevels(entity)
+
             if (!geom.isEmpty) {
                 for (type in types) {
-                    mapObjects.add(MapObject(entity.id, type, geom))
+                    mapObjects.add(MapObject(entity.id, type, geom, levels))
                 }
             }
         }

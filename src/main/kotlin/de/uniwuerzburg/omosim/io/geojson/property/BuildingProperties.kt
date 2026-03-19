@@ -35,4 +35,5 @@ data class BuildingProperties (
     val number_fast_food: Double,
     val number_kindergarten: Double,
     val number_tourism: Double,
+    val levels: Int
 ) : GeoJsonProperties()
