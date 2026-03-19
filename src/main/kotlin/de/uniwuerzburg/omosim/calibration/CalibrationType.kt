@@ -9,5 +9,5 @@ package de.uniwuerzburg.omosim.calibration
  *  EVALUATE: Test the current calibration and print out a summary
  */
 enum class CalibrationType {
-    GRAVITY, MODE_CHOICE, ROUTE_CHOICE, EVALUATE
+    GRAVITY, MODE_CHOICE, ROUTE_CHOICE, EVALUATE, DEBUG
 }

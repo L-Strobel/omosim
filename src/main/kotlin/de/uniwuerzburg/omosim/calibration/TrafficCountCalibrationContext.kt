@@ -107,6 +107,9 @@ class TrafficCountCalibrationContext(
                 CalibrationType.EVALUATE -> {
                     evaluate(0.1)
                 }
+                CalibrationType.DEBUG -> {
+                    debug(0.1)
+                }
                 null -> { logger.warn("Calibration step $i skipped. Step type is null.") }
             }
         }
@@ -139,6 +142,63 @@ class TrafficCountCalibrationContext(
         val simBase = runBatch(sharePop)
 
         printTable(simBase, simCal)
+    }
+
+    /**
+     * Test the sensor locations and directions.
+     * Will measure if at least irrelevantMeasurement vehicles pass the sensor
+     * and if the share of the traffic in the given direction is above unrealisticDirectionShare.
+     * Useful sanity check.
+     *
+     * @param sharePop Share of population to simulate in test.
+     * @param irrelevantMeasurement Number of vehicles per day below which the measurement is likely a faulty.
+     * @param unrealisticDirectionShare Share of traffic threshold. If less than this portion of the traffic passing
+     * through the sensor's fov is being picked up, the direction of the sensor is likely wrong.
+     */
+    private fun debug(sharePop: Double, irrelevantMeasurement: Int = 10, unrealisticDirectionShare: Double = 0.2) {
+        logger.info("Checking sensor locations and directions...")
+
+        // Determine affected sensors when directionality is ignored.
+        val affectedSensorsAllDirections = affectedSensors(leeway = 360.0)
+
+        // Run
+        val agents = runBatchAgents(sharePop)
+        val simCountDirectional = determineSimCounts(agents, affectedSensors, mapOf(), mapOf())
+        val simCountAllDirections = determineSimCounts(agents, affectedSensorsAllDirections, mapOf(), mapOf())
+
+        var nIssues = 0
+        for (sensor in sensors) {
+            val countDirectional = simCountDirectional[sensor]!!.sum()
+            val countAllDirections = simCountAllDirections[sensor]!!.sum()
+
+            if (sensor.measurements.sum() >= irrelevantMeasurement) {
+                // Traffic share check
+                if (
+                    (countAllDirections > irrelevantMeasurement) and
+                    (countDirectional < countAllDirections * unrealisticDirectionShare)
+                ) {
+                    val shareStr = "%.2f".format(countDirectional/countAllDirections * 100.0)
+                    logger.warn(
+                        "Sensor ${sensor.name} measures only $shareStr % of traffic passing through its field-of-vision. " +
+                        "The sensor is likely facing the wrong direction."
+                    )
+                    nIssues += 1
+                }
+                // Traffic amount check
+                else if (countDirectional < irrelevantMeasurement) {
+                    logger.warn(
+                        "Sensor ${sensor.name} measures only $irrelevantMeasurement veh/day. " +
+                        "The sensor is likely unreachable, facing the wrong direction, placed at the wrong location."
+                    )
+                    nIssues += 1
+                }
+            }
+        }
+        if (nIssues == 0) {
+            logger.info("Sensor check complete! No issues found with traffic sensor data.")
+        } else {
+            logger.info("Sensor check complete! Found issues with $nIssues sensors.")
+        }
     }
 
     /**
@@ -224,66 +284,100 @@ class TrafficCountCalibrationContext(
      */
     @Suppress("SameParameterValue")
     fun runBatch(sharePop: Double) : Map<TrafficSensor, DoubleArray> {
-       // Ensure results are deterministic
-       omosim.mainRng.setSeed(0)
-
-       // Run Simulation
-       val agents = if (omosim.censusAvailable) {
-           omosim.run(sharePop, verbose = false)
-       } else {
-           omosim.run((sharePop * totalPopulation).toInt(), verbose = false)
-       }
-       omosim.doModeChoice(agents, ModeChoiceOption.FAST, false, verbose = false)
-
-       // Determine counts at sensors
-       val simCount = sensors.associateWith { Array(T) {0.0} }.toMutableMap()
-       val visitor: TripVisitor = { trip, originActivity, destinationActivity, departureTime, _, _ ->
-           val t = departureTime.determineTimeSlice()
-
-           if (trip.mode == Mode.CAR_DRIVER) {
-               val origin = originActivity.location.getAggLoc()
-               val destination = destinationActivity.location.getAggLoc()
-
-               // Check if trip is from a real location to a real location.
-               // Always true if no legacy calibration was applied.
-               if ((origin is Cell) and (destination is Cell)) {
-                   val od = Pair(origin as Cell, destination as Cell)
-                   val odt = ODTTriple(od.first, od.second, t)
-
-                   if (odt in omosim.altPercentages) {
-                       // With route choice calibration
-                       if (od in affectedAltSensors) {
-                           val p = omosim.altPercentages[odt]!!
-                           for ((i, alternative) in affectedAltSensors[od]!!.withIndex()) {
-                               for (sensor in alternative) {
-                                 simCount[sensor]!![t] = simCount[sensor]!![t] + p[i] // Add traffic
-                               }
-                           }
-                       }
-                   } else {
-                       // Case without route choice calibration
-                       if (od in affectedSensors) {
-                           val sensors = affectedSensors[od]!!
-                           for (sensor in sensors) {
-                               simCount[sensor]!![t] = simCount[sensor]!![t] + 1 // Add traffic
-                           }
-                       }
-                   }
-               }
-           }
-       }
-       for (agent in agents) {
-           agent.mobilityDemand.first().visitTrips(visitor)
-       }
-
-       // Scale traffic to total population
-       val scaledSimCount = sensors.associateWith { DoubleArray(T) {0.0} }.toMutableMap()
-       for (sensor in sensors) {
-           for (t in 0 until T) {
-               scaledSimCount[sensor]!![t] = simCount[sensor]!![t] * totalPopulation / agents.size
-           }
-       }
+       val agents = runBatchAgents(sharePop)
+       val scaledSimCount = determineSimCounts(agents, affectedSensors, omosim.altPercentages, affectedAltSensors)
        return scaledSimCount
+    }
+
+    /**
+     * Simulate a sample of the population.
+     *
+     * @param sharePop Share of population to use.
+     * @return Agents
+     */
+    private fun runBatchAgents(sharePop: Double) : List<MobiAgent> {
+        omosim.mainRng.setSeed(0)  // Ensure results are deterministic
+
+        // Run Simulation
+        val agents = if (omosim.censusAvailable) {
+            omosim.run(sharePop, verbose = false)
+        } else {
+            omosim.run((sharePop * totalPopulation).toInt(), verbose = false)
+        }
+        omosim.doModeChoice(agents, ModeChoiceOption.FAST, false, verbose = false)
+
+        return agents
+    }
+
+    /**
+     * Determine the simulated traffic counts.
+     * The result is scaled up to the entire simulation.
+     *
+     * altPercentages and affectedAltSensors should either be both empty or both filled.
+     *
+     * @param agents Simulated agents that have undergone mode choice.
+     * @param affectedSensors key: Origin-Destination pair, value: Traffic sensors that measure a car trip for that pair.
+     * @param altPercentages key: Origin-Destination-Time triple,
+     * value: Probability distribution for each possible route alternative for the triple.
+     * @param affectedAltSensors key: Origin-Destination pair
+     * value: List that contains the sensors affected by each alternative route for the od pair.
+     * @return Agents
+     */
+    private fun determineSimCounts(
+        agents: List<MobiAgent>,
+        affectedSensors: Map<Pair<RealLocation, RealLocation>, List<TrafficSensor>>,
+        altPercentages: Map<ODTTriple, List<Double>>,
+        affectedAltSensors: Map<Pair<RealLocation, RealLocation>, List<List<TrafficSensor>>>,
+    ) : Map<TrafficSensor, DoubleArray> {
+        // Determine counts at sensors
+        val simCount = sensors.associateWith { Array(T) {0.0} }.toMutableMap()
+        val visitor: TripVisitor = { trip, originActivity, destinationActivity, departureTime, _, _ ->
+            val t = departureTime.determineTimeSlice()
+
+            if (trip.mode == Mode.CAR_DRIVER) {
+                val origin = originActivity.location.getAggLoc()
+                val destination = destinationActivity.location.getAggLoc()
+
+                // Check if trip is from a real location to a real location.
+                // Always true if no legacy calibration was applied.
+                if ((origin is Cell) and (destination is Cell)) {
+                    val od = Pair(origin as Cell, destination as Cell)
+                    val odt = ODTTriple(od.first, od.second, t)
+
+                    if (odt in altPercentages) {
+                        // With route choice calibration
+                        if (od in affectedAltSensors) {
+                            val p = altPercentages[odt]!!
+                            for ((i, alternative) in affectedAltSensors[od]!!.withIndex()) {
+                                for (sensor in alternative) {
+                                    simCount[sensor]!![t] = simCount[sensor]!![t] + p[i] // Add traffic
+                                }
+                            }
+                        }
+                    } else {
+                        // Case without route choice calibration
+                        if (od in affectedSensors) {
+                            val sensors = affectedSensors[od]!!
+                            for (sensor in sensors) {
+                                simCount[sensor]!![t] = simCount[sensor]!![t] + 1 // Add traffic
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for (agent in agents) {
+            agent.mobilityDemand.first().visitTrips(visitor)
+        }
+
+        // Scale traffic to total population
+        val scaledSimCount = sensors.associateWith { DoubleArray(T) {0.0} }.toMutableMap()
+        for (sensor in sensors) {
+            for (t in 0 until T) {
+                scaledSimCount[sensor]!![t] = simCount[sensor]!![t] * totalPopulation / agents.size
+            }
+        }
+        return scaledSimCount
     }
 
     /**
@@ -292,8 +386,8 @@ class TrafficCountCalibrationContext(
      * @return Key: origin-destination pair. Value: List of alternatives that contain lists of all sensors affected by
      * the alternative.
      */
-    private fun altAffectedSensors() : Map<Pair<RealLocation, RealLocation>, List<List<TrafficSensor>>> {
-        return affectedSensors(true)
+    private fun altAffectedSensors(leeway: Double = 30.0) : Map<Pair<RealLocation, RealLocation>, List<List<TrafficSensor>>> {
+        return affectedSensors(true, leeway = leeway)
     }
 
     /**
@@ -301,8 +395,8 @@ class TrafficCountCalibrationContext(
      *
      * @return Key: origin-destination pair. Value: List of all sensors affected by the pair.
      */
-    private fun affectedSensors() : Map<Pair<RealLocation, RealLocation>, List<TrafficSensor>> {
-        val affectedSensors = affectedSensors(false)
+    private fun affectedSensors(leeway: Double = 30.0) : Map<Pair<RealLocation, RealLocation>, List<TrafficSensor>> {
+        val affectedSensors = affectedSensors(false, leeway = leeway)
             .mapValues { (_, v) -> v.first() }
             .filter{ (_, v) -> v.isNotEmpty()}
         return affectedSensors

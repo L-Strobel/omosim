@@ -52,6 +52,7 @@ class CalibrationOptions : OptionGroup (
                "Example: GRAVITY:SM_PSO:OTHER,WORK:iterations=1000:lb=0.2"
     ).convert{ CalibrationStep.fromCLIString(it) }.multiple(
         default = listOf(
+            CalibrationStep(CalibrationType.DEBUG, null, listOf(),  mapOf()),
             CalibrationStep(CalibrationType.GRAVITY, CalibrationAlgorithm.SM_PSO, listOf(ActivityType.OTHER), mapOf()),
             CalibrationStep(CalibrationType.EVALUATE, null, listOf(),  mapOf())
         )
