@@ -27,7 +27,8 @@ import org.locationtech.jts.geom.Coordinate
  */
 class SGGravity<T: CalibrationContext, M: DifferentiableModel> (
     val context: T,
-    val objective: SGGravityObjective<T, M>
+    val objective: SGGravityObjective<T, M>,
+    val vMatrixBuilder: VMatrixBuilder
 ) {
     private val modeChoiceDummy = ModeChoiceDummyForCalibration()
     private val fixActivitiesNotHome = setOf(ActivityType.WORK, ActivityType.SCHOOL)
@@ -445,6 +446,11 @@ class SGGravity<T: CalibrationContext, M: DifferentiableModel> (
         val mrep = generateMarkovChainRep(vActivity) // Compact matrix representation
         val relevantODs = context.getRelevantODs() // Relevant origin-destination pairs for measurements
 
+        // Transition matrix containing variable terms
+        val vMatrix = vMatrixBuilder.build(nVars, n, mrep)
+
+        // Temporal trip distribution
+        val tripStartDistr = monteCarloTripStartDistribution( MC_SAMPLES )
 
         // Create graph of the expected trips matrix: E(o, d | Car)
         val expectedTrips = ActivityType.entries.associateWith {
@@ -454,35 +460,6 @@ class SGGravity<T: CalibrationContext, M: DifferentiableModel> (
                 }
             }
         }
-
-        // Transition matrix containing variable terms
-        val vMatrix = mutableListOf<List<Term>>()
-        for (o in 0 until n) {
-            // Get weight terms
-            val weights = mutableListOf<Term>()
-            val sum = LinearTerm(nVars)
-            for (d in 0 until n) {
-                val weight = if ( d != (n-1) ) {
-                    Variable(nVars, d,  mrep.tMatrices[mrep.vActivity]!![o, d])
-                } else {
-                    // Last destination is chosen as the pivot element
-                    Constant(nVars, mrep.tMatrices[mrep.vActivity]!![o, d])
-                }
-                sum.addTerm(weight, 1.0)
-                weights.add(weight)
-            }
-
-            // Normalize
-            val t = mutableListOf<Term>()
-            for (d in 0 until n) {
-                t.add( DivisionTerm(nVars, weights[d], sum) )
-            }
-
-            vMatrix.add(t)
-        }
-
-        // Temporal trip distribution
-        val tripStartDistr = monteCarloTripStartDistribution( MC_SAMPLES )
 
         // Add expected trips for each destination activity
         for (activity in ActivityType.entries) {
