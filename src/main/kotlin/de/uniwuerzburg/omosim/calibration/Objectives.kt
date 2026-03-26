@@ -6,9 +6,8 @@ import com.gurobi.gurobi.GRBLinExpr
 import com.gurobi.gurobi.GRBModel
 import com.gurobi.gurobi.GRBQuadExpr
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearTerm
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.QuadraticTerm
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.Term
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.*
+import de.uniwuerzburg.omosim.core.models.ActivityType
 
 /**
  * Objective: sum(m-s)^2
@@ -77,4 +76,90 @@ fun grbSseObjective(
         }
     }
     return obj
+}
+
+interface SGGravityObjective <T: CalibrationContext, M: DifferentiableModel> {
+    fun build (
+        nVars: Int,
+        context: T,
+        expectedTrips: Map<ActivityType, List<List<LinearTerm>>>,
+        tripStartDistr: Map<ActivityType, DoubleArray>
+    ) : M
+}
+
+object TrafficCountSSE : SGGravityObjective<TrafficCountCalibrationContext, DifferentiableModelSingleOut> {
+    override fun build (
+        nVars: Int,
+        context: TrafficCountCalibrationContext,
+        expectedTrips: Map<ActivityType, List<List<LinearTerm>>>,
+        tripStartDistr: Map<ActivityType, DoubleArray>
+    ) : DifferentiableModelSingleOut {
+        // Simulated traffic counts
+        val simCount = getSimCountsFromDemand(nVars, context, expectedTrips, tripStartDistr)
+
+        // Objective
+        val obj = sseObjective(nVars, context.sensors, simCount)
+
+        // Create model
+        val model = DifferentiableModelSingleOut(nVars)
+        model.setRootTerm(obj)
+
+        return model
+    }
+}
+
+object TrafficCountSeparate : SGGravityObjective<TrafficCountCalibrationContext, DifferentiableModelMultiOut> {
+    override fun build (
+        nVars: Int,
+        context: TrafficCountCalibrationContext,
+        expectedTrips: Map<ActivityType, List<List<LinearTerm>>>,
+        tripStartDistr: Map<ActivityType, DoubleArray>
+    ) : DifferentiableModelMultiOut {
+        // Simulated traffic counts
+        val simCount = getSimCountsFromDemand(nVars, context, expectedTrips, tripStartDistr)
+
+        // Create DifferentiableModelMultiOut from simulated counts
+        val countsFlat = mutableListOf<Term>()
+        for (sensor in context.sensors) {
+            for (t in 0 until T) {
+                countsFlat.add( simCount[sensor]!![t] )
+            }
+        }
+        val model = DifferentiableModelMultiOut(countsFlat.first().nVars)
+        model.setRootTerms(countsFlat)
+
+        return model
+    }
+}
+
+private fun getSimCountsFromDemand(
+    nVars: Int,
+    context: TrafficCountCalibrationContext,
+    expectedTrips: Map<ActivityType, List<List<LinearTerm>>>,
+    tripStartDistr: Map<ActivityType, DoubleArray>
+) : Map<TrafficSensor, List<LinearTerm>>{
+    // Simulated traffic counts
+    val simCount = mutableMapOf<TrafficSensor, List<LinearTerm>>()
+    for (sensor in context.sensors) {
+        simCount[sensor] = List(T) { LinearTerm(nVars) }
+    }
+    for ((o, origin) in context.omosim.grid.withIndex()) {
+        for ((d, destination) in context.omosim.grid.withIndex()) {
+            val od = Pair(origin, destination)
+            if (od in context.affectedSensors) {
+                val affected = context.affectedSensors[od]!!
+                for (sensor in affected) {
+                    for (t in 0 until T) {
+                        for (activity in ActivityType.entries) {
+                            simCount[sensor]!![t].addTerm(
+                                expectedTrips[activity]!![o][d],
+                                coefficient = context.totalPopulation * tripStartDistr[activity]!![t]
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return simCount
 }

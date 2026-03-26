@@ -1,6 +1,8 @@
 package de.uniwuerzburg.omosim.calibration
 
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearTerm
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.Term
 import de.uniwuerzburg.omosim.cli.CalibrationStep
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.Omosim
@@ -32,9 +34,9 @@ import kotlin.math.pow
  */
 class TrafficCountCalibrationContext(
     trafficCountDataFile: File,
-    val omosim: Omosim,
+    override val omosim: Omosim,
     population: Double? = null,
-) {
+) : CalibrationContext {
     val sensors: List<TrafficSensor> = TrafficSensor.readSensorData(trafficCountDataFile, omosim.transformer)
     val finder = omosim.destinationFinder as DestinationFinderDefault
     val affectedSensors: Map<Pair<RealLocation, RealLocation>, List<TrafficSensor>>
@@ -517,6 +519,25 @@ class TrafficCountCalibrationContext(
             }
         }
         return sse
+    }
+
+    /**
+     * Determine od-Pairs that contribute to sensor measurements.
+     * @return Set of relevant od-Pairs
+     */
+    override fun getRelevantODs(): Set<Pair<Int, Int>> {
+        val relevantODs = mutableSetOf<Pair<Int, Int>>()
+        for ((o, origin) in omosim.grid.withIndex()) {
+            for ((d, destination) in omosim.grid.withIndex()) {
+                val od = Pair(origin, destination)
+                if (od in affectedSensors) {
+                    if (affectedSensors[od]!!.isNotEmpty()) {
+                        relevantODs.add(Pair(o, d))
+                    }
+                }
+            }
+        }
+        return relevantODs
     }
 }
 

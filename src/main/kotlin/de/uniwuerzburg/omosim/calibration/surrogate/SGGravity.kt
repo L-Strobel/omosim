@@ -25,8 +25,9 @@ import org.locationtech.jts.geom.Coordinate
  *
  * @param context Calibration context to use. Includes a Simulator (OMoSim) and the traffic count data.
  */
-class SGGravity(
-    val context: TrafficCountCalibrationContext
+class SGGravity<T: CalibrationContext, M: DifferentiableModel> (
+    val context: T,
+    val objective: SGGravityObjective<T, M>
 ) {
     private val modeChoiceDummy = ModeChoiceDummyForCalibration()
     private val fixActivitiesNotHome = setOf(ActivityType.WORK, ActivityType.SCHOOL)
@@ -46,45 +47,6 @@ class SGGravity(
                         context.omosim.activityGenerator.javaClass.simpleName
             )
         }
-    }
-
-    /**
-     * Build surrogate for a gravity model with Sum-of-Squared-Errors objective.
-     * Variables = Gravity Model attraction scalers for one activity type.
-     *
-     * @param activityType ActivityType for which the gravity model will be variable
-     * @return surrogate model
-     */
-    fun buildModelSSE(
-        activityType: ActivityType
-    ): DifferentiableModel {
-        val (model, _) = buildDiffModel(activityType)
-        return model
-    }
-
-    /**
-     * Build surrogate for a gravity model. Returns the simulated traffic counts at each sensor.
-     * Used in W-SPSA.
-     * Variables = Gravity Model attraction scalers for one activity type.
-     *
-     * @param activityType ActivityType for which the gravity model will be variable
-     * @return surrogate model
-     */
-    fun buildModelSimCounts(
-        activityType: ActivityType,
-    ): DifferentiableModelMultiOut {
-        val (_, simCounts) = buildDiffModel(activityType)
-
-        // Create DifferentiableModelMultiOut from simulated counts
-        val countsFlat = mutableListOf<Term>()
-        for (sensor in context.sensors) {
-            for (t in 0 until T) {
-                countsFlat.add( simCounts[sensor]!![t] )
-            }
-        }
-        val model = DifferentiableModelMultiOut(countsFlat.first().nVars)
-        model.setRootTerms(countsFlat)
-        return model
     }
 
     /**
@@ -408,7 +370,7 @@ class SGGravity(
      * @return Distributions where key is of size T
      */
     @Suppress("SameParameterValue")
-    fun monteCarloTripStartDistribution(n: Int, weekday: Weekday = Weekday.UNDEFINED) : Map<ActivityType, DoubleArray> {
+    private fun monteCarloTripStartDistribution(n: Int, weekday: Weekday = Weekday.UNDEFINED) : Map<ActivityType, DoubleArray> {
         val distr = ActivityType.entries.associateWith {
             DoubleArray(T) { 0.0 }
         }.toMutableMap()
@@ -462,31 +424,33 @@ class SGGravity(
     }
 
     /**
-     * Create computational graph of surrogate model.
+     * Build surrogate for a gravity model with Sum-of-Squared-Errors objective.
+     * Variables = Gravity Model attraction scalers for one activity type.
      *
      * @param vActivity ActivityType for which the gravity model will be variable
      * @param iThresh Performance parameter.
      * All terms with coefficients below this value will be ignored and not added to the result.
      * Higher values -> Computes faster but is a rougher approximation of the markov chain representation.
+     *
+     * @return surrogate model
      */
-    private fun buildDiffModel(
+    fun build(
         vActivity: ActivityType,
         iThresh: Double = 1e-4
-    ) : Pair<DifferentiableModel, Map<TrafficSensor, List<LinearTerm>>> {
+    ) : M {
         logger.info("Building surrogate for activity $vActivity with ${context.omosim.grid.size - 1} variables")
 
         val n = context.omosim.grid.size
+        val nVars = context.omosim.grid.size - 1
         val mrep = generateMarkovChainRep(vActivity) // Compact matrix representation
-        val relevantODs = getRelevantODs(context.affectedSensors) // Relevant origin-destination pairs for measurements
+        val relevantODs = context.getRelevantODs() // Relevant origin-destination pairs for measurements
 
-        // Init diff model
-        val model = DifferentiableModel(context.omosim.grid.size - 1)
 
         // Create graph of the expected trips matrix: E(o, d | Car)
         val expectedTrips = ActivityType.entries.associateWith {
             List(n) {
                 List(n) {
-                    LinearTerm(model.nVars)
+                    LinearTerm(nVars)
                 }
             }
         }
@@ -496,13 +460,13 @@ class SGGravity(
         for (o in 0 until n) {
             // Get weight terms
             val weights = mutableListOf<Term>()
-            val sum = LinearTerm(model.nVars)
+            val sum = LinearTerm(nVars)
             for (d in 0 until n) {
                 val weight = if ( d != (n-1) ) {
-                    Variable(model.nVars, d,  mrep.tMatrices[mrep.vActivity]!![o, d])
+                    Variable(nVars, d,  mrep.tMatrices[mrep.vActivity]!![o, d])
                 } else {
                     // Last destination is chosen as the pivot element
-                    Constant(model.nVars, mrep.tMatrices[mrep.vActivity]!![o, d])
+                    Constant(nVars, mrep.tMatrices[mrep.vActivity]!![o, d])
                 }
                 sum.addTerm(weight, 1.0)
                 weights.add(weight)
@@ -511,7 +475,7 @@ class SGGravity(
             // Normalize
             val t = mutableListOf<Term>()
             for (d in 0 until n) {
-                t.add( DivisionTerm(model.nVars, weights[d], sum) )
+                t.add( DivisionTerm(nVars, weights[d], sum) )
             }
 
             vMatrix.add(t)
@@ -524,7 +488,7 @@ class SGGravity(
         for (activity in ActivityType.entries) {
             addE(
                 LinearTermBuilder,
-                model.nVars,
+                nVars,
                 mrep,
                 expectedTrips[activity]!!,
                 vMatrix,
@@ -534,40 +498,15 @@ class SGGravity(
             )
         }
 
-        // Simulated traffic counts
-        val simCount = mutableMapOf<TrafficSensor, List<LinearTerm>>()
-        for (sensor in context.sensors) {
-            simCount[sensor] = List(T) { LinearTerm(model.nVars) }
-        }
-        for ((o, origin) in context.omosim.grid.withIndex()) {
-            for ((d, destination) in context.omosim.grid.withIndex()) {
-                val od = Pair(origin, destination)
-                if (od in context.affectedSensors) {
-                    val affected = context.affectedSensors[od]!!
-                    for (sensor in affected) {
-                        for (t in 0 until T) {
-                            for (activity in ActivityType.entries) {
-                                simCount[sensor]!![t].addTerm(
-                                    expectedTrips[activity]!![o][d], context.totalPopulation * tripStartDistr[activity]!![t]
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         // Objective
-        val obj = sseObjective(model.nVars, context.sensors, simCount)
-
-        model.setRootTerm(obj)
+        val model = objective.build(nVars, context, expectedTrips, tripStartDistr)
 
         // Logging
         var terms = 0
         model.visit { terms += 1 }
         logger.info("Building surrogate complete. Number of terms: $terms")
 
-        return model to simCount
+        return model
     }
 
     /**

@@ -1,6 +1,6 @@
 package de.uniwuerzburg.omosim.calibration.algorithms
 
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModel
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelSingleOut
 import kotlin.time.measureTime
 
 object GradientDescent {
@@ -14,7 +14,7 @@ object GradientDescent {
     }
 
     fun run(
-        model: DifferentiableModel,
+        model: DifferentiableModelSingleOut,
         x0: DoubleArray,
         parameters: Map<String, String>? = null
     ) : DoubleArray {
@@ -29,7 +29,7 @@ object GradientDescent {
     }
 
     fun run(
-        model: DifferentiableModel,
+        model: DifferentiableModelSingleOut,
         x0: DoubleArray,
         iterations: Int = Defaults.iterations,
         lr0: Double = Defaults.lr0,

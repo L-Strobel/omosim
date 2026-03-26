@@ -1,13 +1,13 @@
 package de.uniwuerzburg.omosim.calibration.algorithms
 
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModel
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelSingleOut
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearBaseTerm
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearTerm
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.QuadraticTerm
 
 object TestObjectives {
-    fun diffModel() : Pair<(DoubleArray) -> Double, DifferentiableModel> {
-        val model = DifferentiableModel(1)
+    fun diffModel() : Pair<(DoubleArray) -> Double, DifferentiableModelSingleOut> {
+        val model = DifferentiableModelSingleOut(1)
         val base = LinearBaseTerm(1)
         base.addTerm(0, 1.0)
         val quad = QuadraticTerm(1, base, base, 1.0)
@@ -19,7 +19,7 @@ object TestObjectives {
         return Pair(objective, model)
     }
 
-    fun sphere(nDimensions: Int, shift: Double) : Pair<(DoubleArray) -> Double, DifferentiableModel> {
+    fun sphere(nDimensions: Int, shift: Double) : Pair<(DoubleArray) -> Double, DifferentiableModelSingleOut> {
         val objective =  { x: DoubleArray ->
             var oval = 0.0
             for (i in 0 until nDimensions) {
@@ -27,7 +27,7 @@ object TestObjectives {
             }
             oval
         }
-        val model = DifferentiableModel(nDimensions)
+        val model = DifferentiableModelSingleOut(nDimensions)
         val sum = LinearTerm(nDimensions)
         for (i in 0 until nDimensions) {
             val base = LinearBaseTerm(nDimensions)

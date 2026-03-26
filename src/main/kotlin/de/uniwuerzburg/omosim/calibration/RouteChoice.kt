@@ -158,7 +158,7 @@ class RouteChoice(
      */
     private fun buildModel(
         odtCounts: Map<ODTTriple, Double>
-    ) : DifferentiableModel {
+    ) : DifferentiableModelSingleOut {
         // Setup. Initialize differentiable model
         var nVar = 0
         for ((od, alternatives) in context.affectedAltSensors.entries) {
@@ -169,7 +169,7 @@ class RouteChoice(
                 }
             }
         }
-        val model = DifferentiableModel(nVar)
+        val model = DifferentiableModelSingleOut(nVar)
 
         // Initialize simulated traffic counts
         val simCount = mutableMapOf<TrafficSensor, List<LinearTerm>>()

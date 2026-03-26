@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit
  */
 class DifferentiableModelMultiOut (
     val nVars: Int
-) {
+) : DifferentiableModel{
     private var roots: List<Term> = listOf()
 
     fun setRootTerms(terms: List<Term>) {
@@ -68,7 +68,7 @@ class DifferentiableModelMultiOut (
         }
     }
 
-    fun visit(visitor: (term: Term) -> Unit) {
+    override fun visit(visitor: (term: Term) -> Unit) {
         for (root in roots) {
             root.visit(visitor)
         }
