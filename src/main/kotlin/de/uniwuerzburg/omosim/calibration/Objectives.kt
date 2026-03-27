@@ -163,3 +163,52 @@ private fun getSimCountsFromDemand(
     }
     return simCount
 }
+
+
+object DFMatch : SGGravityObjective<DistanceFunctionMatchContext, DifferentiableModelSingleOut> {
+    override fun build (
+        nVars: Int,
+        context: DistanceFunctionMatchContext,
+        expectedTrips: Map<ActivityType, List<List<LinearTerm>>>,
+        tripStartDistr: Map<ActivityType, DoubleArray>
+    ) : DifferentiableModelSingleOut {
+        val omosim = context.omosim
+        val n = context.omosim.grid.size
+
+        val expectedTotalDistance = LinearTerm(nVars)
+        val expectedTotalTrips = LinearTerm(nVars)
+        for ((o, origin) in omosim.grid.withIndex()) {
+            val distances = omosim.routingCache.getDistances(origin, omosim.grid)
+
+            for (d in 0 until n) {
+                val expectedTripCount = LinearTerm(nVars)
+                expectedTripCount.addTerm(
+                    expectedTrips[context.activity]!![o][d],
+                    context.totalPopulation
+                )
+
+                expectedTotalDistance.addTerm(
+                    expectedTripCount,
+                    distances[d] / 1000.0
+                )
+                expectedTotalTrips.addTerm(
+                    expectedTripCount,
+                    1.0
+                )
+            }
+        }
+        val expectedMean = DivisionTerm(nVars, expectedTotalDistance, expectedTotalTrips)
+
+        // (m - s)^2 = m^2 - 2ms + s^2
+        val obj = LinearTerm(nVars)
+        obj.addConstant(context.mean * context.mean)
+        obj.addTerm(expectedMean, -2 * context.mean)
+        val qTerm = QuadraticTerm(nVars, expectedMean, expectedMean,1.0)
+        obj.addTerm(qTerm, 1.0)
+
+        val model = DifferentiableModelSingleOut(nVars)
+        model.setRootTerm(obj)
+
+        return model
+    }
+}

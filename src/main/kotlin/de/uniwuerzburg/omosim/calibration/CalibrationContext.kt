@@ -4,6 +4,7 @@ import de.uniwuerzburg.omosim.core.Omosim
 
 interface CalibrationContext {
     val omosim: Omosim
+    val totalPopulation: Double
 
     /**
      * Determine od-Pairs that are relevant for calibration.

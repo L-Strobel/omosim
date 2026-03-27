@@ -28,7 +28,7 @@ import org.locationtech.jts.geom.Coordinate
 class SGGravity<T: CalibrationContext, M: DifferentiableModel> (
     val context: T,
     val objective: SGGravityObjective<T, M>,
-    val vMatrixBuilder: VMatrixBuilder
+    val vMatrixBuilder: VMatrixBuilder<T>
 ) {
     private val modeChoiceDummy = ModeChoiceDummyForCalibration()
     private val fixActivitiesNotHome = setOf(ActivityType.WORK, ActivityType.SCHOOL)
@@ -371,7 +371,7 @@ class SGGravity<T: CalibrationContext, M: DifferentiableModel> (
      * @return Distributions where key is of size T
      */
     @Suppress("SameParameterValue")
-    private fun monteCarloTripStartDistribution(n: Int, weekday: Weekday = Weekday.UNDEFINED) : Map<ActivityType, DoubleArray> {
+    fun monteCarloTripStartDistribution(n: Int, weekday: Weekday = Weekday.UNDEFINED) : Map<ActivityType, DoubleArray> {
         val distr = ActivityType.entries.associateWith {
             DoubleArray(T) { 0.0 }
         }.toMutableMap()
@@ -442,12 +442,11 @@ class SGGravity<T: CalibrationContext, M: DifferentiableModel> (
         logger.info("Building surrogate for activity $vActivity with ${context.omosim.grid.size - 1} variables")
 
         val n = context.omosim.grid.size
-        val nVars = context.omosim.grid.size - 1
         val mrep = generateMarkovChainRep(vActivity) // Compact matrix representation
         val relevantODs = context.getRelevantODs() // Relevant origin-destination pairs for measurements
 
         // Transition matrix containing variable terms
-        val vMatrix = vMatrixBuilder.build(nVars, n, mrep)
+        val (vMatrix, nVars) = vMatrixBuilder.build(context, mrep)
 
         // Temporal trip distribution
         val tripStartDistr = monteCarloTripStartDistribution( MC_SAMPLES )

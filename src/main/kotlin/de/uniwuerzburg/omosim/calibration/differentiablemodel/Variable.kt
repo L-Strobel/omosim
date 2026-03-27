@@ -6,7 +6,7 @@ package de.uniwuerzburg.omosim.calibration.differentiablemodel
 class Variable(
     override val nVars: Int,
     val id: Int,
-    private val coefficient: Double = 0.0
+    private val coefficient: Double
 ) : Term {
     override var visited = ThreadLocal<Boolean>()
 

@@ -226,6 +226,12 @@ class Run : CliktCommand() {
             modeSpeedUp = mode_speed_up
         )
 
+        // TODO test
+        println("DFtest")
+        val dfmcontext = DistanceFunctionMatchContext(2.0, omosim, ActivityType.OTHER)
+        dfmcontext.calibrate()
+        println("DFtest")
+
         // Apply Calibration
         if (calibration_file_gravity != null) {
             val finder = omosim.destinationFinder as DestinationFinderDefault

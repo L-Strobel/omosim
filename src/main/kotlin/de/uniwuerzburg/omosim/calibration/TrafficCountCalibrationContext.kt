@@ -41,7 +41,7 @@ class TrafficCountCalibrationContext(
     val finder = omosim.destinationFinder as DestinationFinderDefault
     val affectedSensors: Map<Pair<RealLocation, RealLocation>, List<TrafficSensor>>
     var affectedAltSensors: Map<Pair<RealLocation, RealLocation>, List<List<TrafficSensor>>> = mapOf()
-    val totalPopulation: Double
+    override val totalPopulation: Double
 
     init {
         T = sensors.first().measurements.size // Set number of time slices

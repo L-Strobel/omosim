@@ -1,5 +1,8 @@
 package de.uniwuerzburg.omosim.core
 
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearTerm
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.Term
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.Variable
 import de.uniwuerzburg.omosim.core.models.Landuse
 import de.uniwuerzburg.omosim.core.models.RealLocation
 import de.uniwuerzburg.omosim.io.geojson.property.BuildingProperties
@@ -63,6 +66,8 @@ sealed class LocationChoiceDCWeightFun {
      * @return ln(f(d))
      */
     abstract fun deterrenceFunction(distance: Double) : Double
+
+    abstract fun deterrenceFunctionAsTerm(distance: Double) : Pair<Term, Int>
 
     /**
      * Calculates the probabilistic weight of a destination given the distance from the origin.
@@ -180,6 +185,10 @@ object ByPopulation: LocationChoiceDCWeightFun () {
         throw NotImplementedError()
     }
 
+    override fun deterrenceFunctionAsTerm(distance: Double): Pair<Term, Int> {
+        throw NotImplementedError()
+    }
+
     override fun calcFor(destination: RealLocation, distance: Double): Double {
         throw NotImplementedError()
     }
@@ -218,6 +227,10 @@ class PureAttraction (
     ) : LocationChoiceDCWeightFun( ) {
 
     override fun deterrenceFunction(distance: Double): Double {
+        throw NotImplementedError()
+    }
+
+    override fun deterrenceFunctionAsTerm(distance: Double): Pair<Term, Int> {
         throw NotImplementedError()
     }
 
@@ -260,12 +273,24 @@ class LogNormDCUtil (
     override val coeffRetailUnits: Double,
     override val coeffIndustrialUnits: Double,
     // For deterrence function
-    private val coeff0: Double,
-    private val coeff1: Double,
+    var coeff0: Double,
+    var coeff1: Double,
     ) : LocationChoiceDCWeightFun( ) {
 
     override fun deterrenceFunction(distance: Double) : Double {
         return coeff0 * ln(distance) * ln(distance) + coeff1 * ln(distance)
+    }
+
+    override fun deterrenceFunctionAsTerm(distance: Double): Pair<Term, Int> {
+        val nVars = 2
+        val termA = Variable(nVars, 0, ln(distance) * ln(distance))
+        val termB = Variable(nVars, 1, ln(distance))
+
+        val term = LinearTerm(nVars)
+        term.addTerm(termA, 1.0)
+        term.addTerm(termB, 1.0)
+
+        return Pair(term, nVars)
     }
 }
 
@@ -331,6 +356,21 @@ class LogNormPowerDCUtil (
         return coeff0 * ln(distance) * ln(distance) + coeff1 * ln(distance) + coeff2 * distance
     }
 
+
+    override fun deterrenceFunctionAsTerm(distance: Double): Pair<Term, Int> {
+        val nVars = 3
+        val termA = Variable(nVars, 0, ln(distance) * ln(distance))
+        val termB = Variable(nVars, 1, ln(distance))
+        val termC = Variable(nVars, 2, distance)
+
+        val term = LinearTerm(nVars)
+        term.addTerm(termA, 1.0)
+        term.addTerm(termB, 1.0)
+        term.addTerm(termC, 1.0)
+
+        return Pair(term, nVars)
+    }
+
     override fun calcFor(destination: RealLocation, distance: Double): Double {
         return  if (distance / 1000 > maxValidDistance) {
             return 0.0
@@ -380,5 +420,17 @@ data class CombinedDCUtil(
 
     override fun deterrenceFunction(distance: Double) : Double {
         return coeff0 * distance  + coeff1 * ln(distance)
+    }
+
+    override fun deterrenceFunctionAsTerm(distance: Double): Pair<Term, Int> {
+        val nVars = 2
+        val termA = Variable(nVars, 0, distance)
+        val termB = Variable(nVars, 1, ln(distance))
+
+        val term = LinearTerm(nVars)
+        term.addTerm(termA, 1.0)
+        term.addTerm(termB, 1.0)
+
+        return Pair(term, nVars)
     }
 }

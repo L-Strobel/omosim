@@ -1,13 +1,12 @@
 package de.uniwuerzburg.omosim.calibration.surrogate
 
 import com.gurobi.gurobi.*
+import de.uniwuerzburg.omosim.calibration.*
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.MC_SAMPLES
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
-import de.uniwuerzburg.omosim.calibration.TrafficSensor
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelSingleOut
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.TermBuilder
-import de.uniwuerzburg.omosim.calibration.grbSseObjective
 import de.uniwuerzburg.omosim.calibration.handleGrbStatus
-import de.uniwuerzburg.omosim.calibration.logger
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.ones
@@ -27,7 +26,7 @@ import kotlin.math.pow
  * Higher values -> Computes faster but is a rougher approximation of the markov chain representation.
  * @return Optimal transition matrix
  */
-fun SGGravity.optimizeTMatrix(
+fun SGGravity<TrafficCountCalibrationContext, DifferentiableModelSingleOut>.optimizeTMatrix(
     activityType: ActivityType,
     iThresh: Double = 1e-4
 ) : D2Array<Double>? {
