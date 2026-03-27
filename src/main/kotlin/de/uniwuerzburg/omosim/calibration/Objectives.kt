@@ -165,7 +165,10 @@ private fun getSimCountsFromDemand(
 }
 
 
-object DFMatch : SGGravityObjective<DistanceFunctionMatchContext, DifferentiableModelSingleOut> {
+class DFMatchSSE (
+    val activity: ActivityType,
+    val mean: Double
+) : SGGravityObjective<DistanceFunctionMatchContext, DifferentiableModelSingleOut> {
     override fun build (
         nVars: Int,
         context: DistanceFunctionMatchContext,
@@ -183,7 +186,7 @@ object DFMatch : SGGravityObjective<DistanceFunctionMatchContext, Differentiable
             for (d in 0 until n) {
                 val expectedTripCount = LinearTerm(nVars)
                 expectedTripCount.addTerm(
-                    expectedTrips[context.activity]!![o][d],
+                    expectedTrips[activity]!![o][d],
                     context.totalPopulation
                 )
 
@@ -201,8 +204,8 @@ object DFMatch : SGGravityObjective<DistanceFunctionMatchContext, Differentiable
 
         // (m - s)^2 = m^2 - 2ms + s^2
         val obj = LinearTerm(nVars)
-        obj.addConstant(context.mean * context.mean)
-        obj.addTerm(expectedMean, -2 * context.mean)
+        obj.addConstant(mean * mean)
+        obj.addTerm(expectedMean, -2 * mean)
         val qTerm = QuadraticTerm(nVars, expectedMean, expectedMean,1.0)
         obj.addTerm(qTerm, 1.0)
 

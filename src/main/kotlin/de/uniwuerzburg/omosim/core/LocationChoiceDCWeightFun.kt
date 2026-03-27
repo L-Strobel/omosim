@@ -67,7 +67,17 @@ sealed class LocationChoiceDCWeightFun {
      */
     abstract fun deterrenceFunction(distance: Double) : Double
 
-    abstract fun deterrenceFunctionAsTerm(distance: Double) : Pair<Term, Int>
+    open fun deterrenceFunctionAsTerm(distance: Double) : Pair<Term, Int> {
+        throw NotImplementedError()
+    }
+
+    open fun getDistanceParameters() : DoubleArray {
+        throw NotImplementedError()
+    }
+
+    open fun setDistanceParameters(parameters: DoubleArray) {
+        throw NotImplementedError()
+    }
 
     /**
      * Calculates the probabilistic weight of a destination given the distance from the origin.
@@ -185,10 +195,6 @@ object ByPopulation: LocationChoiceDCWeightFun () {
         throw NotImplementedError()
     }
 
-    override fun deterrenceFunctionAsTerm(distance: Double): Pair<Term, Int> {
-        throw NotImplementedError()
-    }
-
     override fun calcFor(destination: RealLocation, distance: Double): Double {
         throw NotImplementedError()
     }
@@ -227,10 +233,6 @@ class PureAttraction (
     ) : LocationChoiceDCWeightFun( ) {
 
     override fun deterrenceFunction(distance: Double): Double {
-        throw NotImplementedError()
-    }
-
-    override fun deterrenceFunctionAsTerm(distance: Double): Pair<Term, Int> {
         throw NotImplementedError()
     }
 
@@ -273,8 +275,8 @@ class LogNormDCUtil (
     override val coeffRetailUnits: Double,
     override val coeffIndustrialUnits: Double,
     // For deterrence function
-    var coeff0: Double,
-    var coeff1: Double,
+    private var coeff0: Double,
+    private var coeff1: Double,
     ) : LocationChoiceDCWeightFun( ) {
 
     override fun deterrenceFunction(distance: Double) : Double {
@@ -291,6 +293,15 @@ class LogNormDCUtil (
         term.addTerm(termB, 1.0)
 
         return Pair(term, nVars)
+    }
+
+    override fun getDistanceParameters(): DoubleArray {
+        return doubleArrayOf(coeff0, coeff1)
+    }
+
+    override fun setDistanceParameters(parameters: DoubleArray) {
+        coeff0 = parameters[0]
+        coeff1 = parameters[1]
     }
 }
 
@@ -328,9 +339,9 @@ class LogNormPowerDCUtil (
     override val coeffRetailUnits: Double,
     override val coeffIndustrialUnits: Double,
     // For deterrence function
-    private val coeff0: Double,
-    private val coeff1: Double,
-    private val coeff2: Double
+    private var coeff0: Double,
+    private var coeff1: Double,
+    private var coeff2: Double
 ) : LocationChoiceDCWeightFun( ) {
     @Transient
     private var maxValidDistance: Double = Double.MAX_VALUE
@@ -356,7 +367,6 @@ class LogNormPowerDCUtil (
         return coeff0 * ln(distance) * ln(distance) + coeff1 * ln(distance) + coeff2 * distance
     }
 
-
     override fun deterrenceFunctionAsTerm(distance: Double): Pair<Term, Int> {
         val nVars = 3
         val termA = Variable(nVars, 0, ln(distance) * ln(distance))
@@ -369,6 +379,16 @@ class LogNormPowerDCUtil (
         term.addTerm(termC, 1.0)
 
         return Pair(term, nVars)
+    }
+
+    override fun getDistanceParameters(): DoubleArray {
+        return doubleArrayOf(coeff0, coeff1, coeff2)
+    }
+
+    override fun setDistanceParameters(parameters: DoubleArray) {
+        coeff0 = parameters[0]
+        coeff1 = parameters[1]
+        coeff2 = parameters[2]
     }
 
     override fun calcFor(destination: RealLocation, distance: Double): Double {
@@ -414,8 +434,8 @@ data class CombinedDCUtil(
     override val coeffRetailUnits: Double,
     override val coeffIndustrialUnits: Double,
     // For deterrence function
-    private val coeff0: Double,
-    private val coeff1: Double,
+    private var coeff0: Double,
+    private var coeff1: Double,
 ) : LocationChoiceDCWeightFun( ) {
 
     override fun deterrenceFunction(distance: Double) : Double {
@@ -432,5 +452,14 @@ data class CombinedDCUtil(
         term.addTerm(termB, 1.0)
 
         return Pair(term, nVars)
+    }
+
+    override fun getDistanceParameters(): DoubleArray {
+        return doubleArrayOf(coeff0, coeff1)
+    }
+
+    override fun setDistanceParameters(parameters: DoubleArray) {
+        coeff0 = parameters[0]
+        coeff1 = parameters[1]
     }
 }

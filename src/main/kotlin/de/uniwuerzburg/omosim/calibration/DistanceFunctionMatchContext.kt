@@ -5,49 +5,73 @@ import de.uniwuerzburg.omosim.calibration.algorithms.GradientDescent
 import de.uniwuerzburg.omosim.calibration.surrogate.DistanceFunctionVMatrixBuilder
 import de.uniwuerzburg.omosim.calibration.surrogate.SGGravity
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
-import de.uniwuerzburg.omosim.core.LogNormDCUtil
 import de.uniwuerzburg.omosim.core.Omosim
 import de.uniwuerzburg.omosim.core.models.ActivityType
-import de.uniwuerzburg.omosim.core.models.MobiAgent
-import de.uniwuerzburg.omosim.core.models.ModeChoiceOption
 
 class DistanceFunctionMatchContext(
-    val mean: Double,
     override val omosim: Omosim,
-    val activity: ActivityType,
     population: Double? = null
 ) : CalibrationContext {
-    override val totalPopulation: Double
+    override val totalPopulation: Double = population ?: initTotalPopulation()
 
-    init {
-        // TODO dedup
-        // Total population in area. Used to scale the estimated traffic counts.
-        totalPopulation = if (population != null) {
-            population
-        } else if (omosim.censusAvailable) {
-            omosim.buildings.sumOf { it.population }
-        } else {
-            val estimate = omosim.buildings.size * 3.0
-            logger.warn(
-                "Population size not available. Please supply the population size with --calibration_population or " +
-                        "with a census file. Falling back to population size estimate of %.3g".format(estimate))
-            estimate
+    // TODO Store Results and Change to interface more similar to TrafficCountCal
+    fun calibrate(mean: Double, activity: ActivityType) {
+        val finder = omosim.destinationFinder as DestinationFinderDefault
+        val dcFunction = finder.locChoiceWeightFuns[activity]!!
+
+        // Calibrate
+        val objective = DFMatchSSE(activity, mean)
+        val model = SGGravity(this, objective, DistanceFunctionVMatrixBuilder).build(activity)
+        val base  = dcFunction.getDistanceParameters()
+        val calibrated = GradientDescent.run(
+            model,
+            base,
+            mapOf("iterations" to "100", "lr0" to "0.001", "ub" to "0.0", "lb" to "-1000.0")
+        )
+
+        evaluate(base, calibrated, objective)
+        dcFunction.setDistanceParameters(calibrated)
+    }
+
+    fun evaluate(base: DoubleArray, calibrated: DoubleArray, objective: DFMatchSSE) {
+        val finder = omosim.destinationFinder as DestinationFinderDefault
+        val dcFunction = finder.locChoiceWeightFuns[objective.activity]!!
+
+        dcFunction.setDistanceParameters(calibrated)
+        val meanDistanceCal = getMeanDistance(objective.activity)
+
+        dcFunction.setDistanceParameters(base)
+        val meanDistanceBase = getMeanDistance(objective.activity)
+
+        println("Evaluate Distance Function Match (${objective.activity}):")
+        println("Mean trip distance Goal: %.3f km".format(objective.mean))
+        println("                   Base: %.3f km".format(meanDistanceBase))
+        println("                   Calibrated: %.3f km".format(meanDistanceCal))
+    }
+
+    private fun getMeanDistance(activity: ActivityType) : Double {
+        val agents = runBatchAgents(0.1)
+
+        // Determine mean
+        val tripLengths = mutableListOf<Double>()
+        for (agent in agents) {
+            val activities = agent.mobilityDemand.first().activities
+            val trips = agent.mobilityDemand.first().trips
+            for (i in trips.indices) {
+                val trip = trips[i]
+                val nextActivity = activities[i+1]
+
+                if (nextActivity.type == activity) {
+                    tripLengths.add(trip.distance!!)
+                }
+            }
         }
+        return tripLengths.sum() / tripLengths.size
     }
 
-    fun calibrate() {
-        evaluate()
-        val model = SGGravity(this, DFMatch, DistanceFunctionVMatrixBuilder).build(activity)
-        val x0 = doubleArrayOf( -1.384e-01, -1.225e+00) // TODO adapt
-        var d = BFGS.run(model, x0, mapOf("lr0" to "0.001", "ub" to "0.0", "lb" to "-1000.0"))
-        print(d.toList())
-        var dcFn = (omosim.destinationFinder as DestinationFinderDefault).locChoiceWeightFuns[activity]
-        dcFn = (dcFn as LogNormDCUtil)
-        dcFn.coeff0 = d[0]
-        dcFn.coeff1 = d[1]
-        evaluate()
-    }
-
+    /**
+     * All origin-destination pairs are relevant here.
+     */
     override fun getRelevantODs(): Set<Pair<Int, Int>> {
         val relevantODs = mutableSetOf<Pair<Int, Int>>()
         for (o in 0 until this.omosim.grid.size) {
@@ -56,32 +80,5 @@ class DistanceFunctionMatchContext(
             }
         }
         return relevantODs
-    }
-
-    // TODO dedup
-    private fun runBatchAgents(sharePop: Double) : List<MobiAgent> {
-        omosim.mainRng.setSeed(0)  // Ensure results are deterministic
-
-        // Run Simulation
-        val agents = if (omosim.censusAvailable) {
-            omosim.run(sharePop, verbose = false)
-        } else {
-            omosim.run((sharePop * totalPopulation).toInt(), verbose = false)
-        }
-        omosim.doModeChoice(agents, ModeChoiceOption.FAST, false, verbose = false)
-
-        return agents
-    }
-
-    fun evaluate() {
-        val agents = runBatchAgents(0.1)
-        val tripLengths = mutableListOf<Double>()
-
-        for (agent in agents) {
-            for (trip in agent.mobilityDemand.first().trips) {
-                tripLengths.add(trip.distance!!)
-            }
-        }
-        println("Mean distance is ${tripLengths.sum() / tripLengths.size}")
     }
 }

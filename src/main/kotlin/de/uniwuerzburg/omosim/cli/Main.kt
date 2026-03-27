@@ -226,11 +226,10 @@ class Run : CliktCommand() {
             modeSpeedUp = mode_speed_up
         )
 
-        // TODO test
-        println("DFtest")
-        val dfmcontext = DistanceFunctionMatchContext(2.0, omosim, ActivityType.OTHER)
-        dfmcontext.calibrate()
-        println("DFtest")
+        // TODO Set real values and test in large test
+        val dfmcontext = DistanceFunctionMatchContext(omosim)
+        dfmcontext.calibrate(2.0, ActivityType.OTHER)
+        dfmcontext.calibrate(5.0, ActivityType.WORK)
 
         // Apply Calibration
         if (calibration_file_gravity != null) {

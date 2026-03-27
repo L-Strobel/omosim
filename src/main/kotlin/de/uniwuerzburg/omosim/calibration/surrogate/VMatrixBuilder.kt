@@ -5,7 +5,6 @@ import de.uniwuerzburg.omosim.calibration.DistanceFunctionMatchContext
 import de.uniwuerzburg.omosim.calibration.TrafficCountCalibrationContext
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.*
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
-import de.uniwuerzburg.omosim.core.models.ActivityType
 import org.jetbrains.kotlinx.multik.ndarray.data.get
 
 interface VMatrixBuilder<T: CalibrationContext> {
@@ -55,13 +54,13 @@ object DistanceFunctionVMatrixBuilder : VMatrixBuilder<DistanceFunctionMatchCont
 
         val omosim = context.omosim
         val finder = omosim.destinationFinder as DestinationFinderDefault
-        val dcFunction = finder.locChoiceWeightFuns[context.activity]!!
+        val dcFunction = finder.locChoiceWeightFuns[mrep.vActivity]!!
         val (_, nVars) = dcFunction.deterrenceFunctionAsTerm(1.0)
         val n = context.omosim.grid.size
 
         for ((o, origin) in omosim.grid.withIndex()) {
             val distances = omosim.routingCache.getDistances(origin, omosim.grid)
-            val attractions = finder.getWeightsNoOrigin(omosim.grid, activityType=context.activity)
+            val attractions = finder.getWeightsNoOrigin(omosim.grid, activityType=mrep.vActivity)
 
             val weights = mutableListOf<Term>()
             val sum = LinearTerm(nVars)

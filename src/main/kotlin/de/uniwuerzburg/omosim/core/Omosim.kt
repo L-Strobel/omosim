@@ -178,7 +178,7 @@ class Omosim (
         // Create routing cache
         routingCache = RoutingCache(routingMode, hopper, distanceCacheSize, dispatcher)
         if (routingMode == RoutingMode.GRAPHHOPPER) {
-            val weightFunction = locChoiceWeightFuns[ ActivityType.OTHER]!!
+            val weightFunction = locChoiceWeightFuns[ActivityType.OTHER]!!
             val priorityValues = grid.map { weightFunction.calcForNoOrigin(it) } // Priority of cells for caching
             routingCache.load(grid, cacheDir, priorityValues)
         }

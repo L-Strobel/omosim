@@ -439,7 +439,7 @@ class SGGravity<T: CalibrationContext, M: DifferentiableModel> (
         vActivity: ActivityType,
         iThresh: Double = 1e-4
     ) : M {
-        logger.info("Building surrogate for activity $vActivity with ${context.omosim.grid.size - 1} variables")
+        logger.info("Building surrogate for activity $vActivity")
 
         val n = context.omosim.grid.size
         val mrep = generateMarkovChainRep(vActivity) // Compact matrix representation
@@ -447,6 +447,8 @@ class SGGravity<T: CalibrationContext, M: DifferentiableModel> (
 
         // Transition matrix containing variable terms
         val (vMatrix, nVars) = vMatrixBuilder.build(context, mrep)
+
+        logger.info("Number of variables: $nVars")
 
         // Temporal trip distribution
         val tripStartDistr = monteCarloTripStartDistribution( MC_SAMPLES )

@@ -1,8 +1,6 @@
 package de.uniwuerzburg.omosim.calibration
 
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearTerm
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.Term
 import de.uniwuerzburg.omosim.cli.CalibrationStep
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.Omosim
@@ -41,7 +39,7 @@ class TrafficCountCalibrationContext(
     val finder = omosim.destinationFinder as DestinationFinderDefault
     val affectedSensors: Map<Pair<RealLocation, RealLocation>, List<TrafficSensor>>
     var affectedAltSensors: Map<Pair<RealLocation, RealLocation>, List<List<TrafficSensor>>> = mapOf()
-    override val totalPopulation: Double
+    override val totalPopulation: Double = population ?: initTotalPopulation()
 
     init {
         T = sensors.first().measurements.size // Set number of time slices
@@ -52,19 +50,6 @@ class TrafficCountCalibrationContext(
             )
         }
         affectedSensors = affectedSensors()
-
-        // Total population in area. Used to scale the estimated traffic counts.
-        totalPopulation = if (population != null) {
-            population
-        } else if (omosim.censusAvailable) {
-            omosim.buildings.sumOf { it.population }
-        } else {
-            val estimate = omosim.buildings.size * 3.0
-            logger.warn(
-                "Population size not available. Please supply the population size with --calibration_population or " +
-                "with a census file. Falling back to population size estimate of %.3g".format(estimate))
-            estimate
-        }
     }
 
     /**
@@ -220,7 +205,7 @@ class TrafficCountCalibrationContext(
         val mseBase = mse(simBase)
 
         // Print table
-        println("EVALUATION RESULT:")
+        println("Evaluate Traffic Counts:")
 
         // Header
         println("_".repeat(cellWidth*5 + 4*3))
@@ -289,26 +274,6 @@ class TrafficCountCalibrationContext(
        val agents = runBatchAgents(sharePop)
        val scaledSimCount = determineSimCounts(agents, affectedSensors, omosim.altPercentages, affectedAltSensors)
        return scaledSimCount
-    }
-
-    /**
-     * Simulate a sample of the population.
-     *
-     * @param sharePop Share of population to use.
-     * @return Agents
-     */
-    private fun runBatchAgents(sharePop: Double) : List<MobiAgent> {
-        omosim.mainRng.setSeed(0)  // Ensure results are deterministic
-
-        // Run Simulation
-        val agents = if (omosim.censusAvailable) {
-            omosim.run(sharePop, verbose = false)
-        } else {
-            omosim.run((sharePop * totalPopulation).toInt(), verbose = false)
-        }
-        omosim.doModeChoice(agents, ModeChoiceOption.FAST, false, verbose = false)
-
-        return agents
     }
 
     /**

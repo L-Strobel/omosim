@@ -12,7 +12,6 @@ import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.ones
 import org.jetbrains.kotlinx.multik.ndarray.data.D2Array
 import org.jetbrains.kotlinx.multik.ndarray.data.set
-import kotlin.math.pow
 
 /**
  * Optimize the transition matrix of one activity directly with the gurobi solver
