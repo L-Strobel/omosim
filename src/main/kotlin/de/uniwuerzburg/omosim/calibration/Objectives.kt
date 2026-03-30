@@ -1,10 +1,6 @@
 package de.uniwuerzburg.omosim.calibration
 
-import com.gurobi.gurobi.GRB
-import com.gurobi.gurobi.GRBExpr
-import com.gurobi.gurobi.GRBLinExpr
-import com.gurobi.gurobi.GRBModel
-import com.gurobi.gurobi.GRBQuadExpr
+import com.gurobi.gurobi.*
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.*
 import de.uniwuerzburg.omosim.core.models.ActivityType
@@ -167,7 +163,8 @@ private fun getSimCountsFromDemand(
 
 class DFMatchSSE (
     val activity: ActivityType,
-    val mean: Double
+    val mean: Double,
+    val variance: Double
 ) : SGGravityObjective<DistanceFunctionMatchContext, DifferentiableModelSingleOut> {
     override fun build (
         nVars: Int,
@@ -180,6 +177,7 @@ class DFMatchSSE (
 
         val expectedTotalDistance = LinearTerm(nVars)
         val expectedTotalTrips = LinearTerm(nVars)
+        val expectedODCount = mutableMapOf<Pair<Int, Int>, LinearTerm>()
         for ((o, origin) in omosim.grid.withIndex()) {
             val distances = omosim.routingCache.getDistances(origin, omosim.grid)
 
@@ -189,6 +187,7 @@ class DFMatchSSE (
                     expectedTrips[activity]!![o][d],
                     context.totalPopulation
                 )
+                expectedODCount[Pair(o,d)] = expectedTripCount
 
                 expectedTotalDistance.addTerm(
                     expectedTripCount,
@@ -202,12 +201,40 @@ class DFMatchSSE (
         }
         val expectedMean = DivisionTerm(nVars, expectedTotalDistance, expectedTotalTrips)
 
+        val expectedDiviations = LinearTerm(nVars)
+        for ((o, origin) in omosim.grid.withIndex()) {
+            val distances = omosim.routingCache.getDistances(origin, omosim.grid)
+
+            for (d in 0 until n) {
+                val expectedTripCount = expectedODCount[Pair(o,d)]!!
+
+                val subtraction = LinearTerm(nVars) // x - mu
+                subtraction.addConstant(distances[d] / 1000.0)
+                subtraction.addTerm(expectedMean, -1.0)
+
+                val square = QuadraticTerm(nVars, subtraction, subtraction, 1.0)
+
+                val expectedODDeviation = QuadraticTerm(nVars, square, expectedTripCount, 1.0)
+
+                expectedDiviations.addTerm(
+                    expectedODDeviation,
+                    1.0
+                )
+            }
+        }
+        val expectedVar = DivisionTerm(nVars, expectedDiviations, expectedTotalTrips)
+
         // (m - s)^2 = m^2 - 2ms + s^2
         val obj = LinearTerm(nVars)
         obj.addConstant(mean * mean)
         obj.addTerm(expectedMean, -2 * mean)
-        val qTerm = QuadraticTerm(nVars, expectedMean, expectedMean,1.0)
-        obj.addTerm(qTerm, 1.0)
+        val qTermMean = QuadraticTerm(nVars, expectedMean, expectedMean,1.0)
+        obj.addTerm(qTermMean, 1.0)
+
+        obj.addConstant(variance * variance)
+        obj.addTerm(expectedVar, -2 * variance)
+        val qTermVar = QuadraticTerm(nVars, expectedVar, expectedVar,1.0)
+        obj.addTerm(qTermVar, 1.0)
 
         val model = DifferentiableModelSingleOut(nVars)
         model.setRootTerm(obj)

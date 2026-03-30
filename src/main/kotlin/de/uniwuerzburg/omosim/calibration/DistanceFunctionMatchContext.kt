@@ -6,6 +6,7 @@ import de.uniwuerzburg.omosim.calibration.surrogate.SGGravity
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.Omosim
 import de.uniwuerzburg.omosim.core.models.ActivityType
+import kotlin.math.pow
 
 class DistanceFunctionMatchContext(
     override val omosim: Omosim,
@@ -14,20 +15,19 @@ class DistanceFunctionMatchContext(
     override val totalPopulation: Double = population ?: initTotalPopulation()
 
     // TODO VAR
-    // TODO Early quit
     // TODO Store Results and Change to interface more similar to TrafficCountCal
-    fun calibrate(mean: Double, activity: ActivityType) {
+    fun calibrate(mean: Double, variance: Double, activity: ActivityType) {
         val finder = omosim.destinationFinder as DestinationFinderDefault
         val dcFunction = finder.locChoiceWeightFuns[activity]!!
 
         // Calibrate
-        val objective = DFMatchSSE(activity, mean)
+        val objective = DFMatchSSE(activity, mean, variance)
         val model = SGGravity(this, objective, DistanceFunctionVMatrixBuilder).build(activity)
         val base  = dcFunction.getDistanceParameters()
         val calibrated = GradientDescent.run(
             model,
             base,
-            mapOf("iterations" to "1000", "lr0" to "0.001", "ub" to "0.0", "lb" to "-1000.0")
+            mapOf("iterations" to "10", "lr0" to "0.0001", "ub" to "0.0", "lb" to "-100.0")
         )
 
         evaluate(base, calibrated, objective)
@@ -39,18 +39,21 @@ class DistanceFunctionMatchContext(
         val dcFunction = finder.locChoiceWeightFuns[objective.activity]!!
 
         dcFunction.setDistanceParameters(calibrated)
-        val meanDistanceCal = getMeanDistance(objective.activity)
+        val (meanDistanceCal, varDistanceCal) = getMeanVarDistance(objective.activity)
 
         dcFunction.setDistanceParameters(base)
-        val meanDistanceBase = getMeanDistance(objective.activity)
+        val (meanDistanceBase, varDistanceBase) = getMeanVarDistance(objective.activity)
 
         println("Evaluate Distance Function Match (${objective.activity}):")
         println("Mean trip distance Goal: %.3f km".format(objective.mean))
         println("                   Base: %.3f km".format(meanDistanceBase))
         println("                   Calibrated: %.3f km".format(meanDistanceCal))
+        println("Var trip distance  Goal: %.3f km".format(objective.variance))
+        println("                   Base: %.3f km".format(varDistanceBase))
+        println("                   Calibrated: %.3f km".format(varDistanceCal))
     }
 
-    private fun getMeanDistance(activity: ActivityType) : Double {
+    private fun getMeanVarDistance(activity: ActivityType) : Pair<Double, Double> {
         val agents = runBatchAgents(0.1)
 
         // Determine mean
@@ -67,7 +70,9 @@ class DistanceFunctionMatchContext(
                 }
             }
         }
-        return tripLengths.sum() / tripLengths.size
+        val mean = tripLengths.sum() / tripLengths.size
+        val variance = tripLengths.sumOf { (it - mean).pow(2.0) } / tripLengths.size
+        return Pair(mean, variance)
     }
 
     /**

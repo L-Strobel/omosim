@@ -67,6 +67,7 @@ object GradientDescent {
                 // Bound Projection
                 x.project(lb, ub)
             }
+            // TODO Check for NaNs
 
             // Evaluate
             val loss = model.evaluate(x)
