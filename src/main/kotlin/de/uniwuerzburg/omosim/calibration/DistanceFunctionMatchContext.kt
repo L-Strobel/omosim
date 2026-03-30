@@ -1,6 +1,5 @@
 package de.uniwuerzburg.omosim.calibration
 
-import de.uniwuerzburg.omosim.calibration.algorithms.BFGS
 import de.uniwuerzburg.omosim.calibration.algorithms.GradientDescent
 import de.uniwuerzburg.omosim.calibration.surrogate.DistanceFunctionVMatrixBuilder
 import de.uniwuerzburg.omosim.calibration.surrogate.SGGravity
@@ -14,6 +13,8 @@ class DistanceFunctionMatchContext(
 ) : CalibrationContext {
     override val totalPopulation: Double = population ?: initTotalPopulation()
 
+    // TODO VAR
+    // TODO Early quit
     // TODO Store Results and Change to interface more similar to TrafficCountCal
     fun calibrate(mean: Double, activity: ActivityType) {
         val finder = omosim.destinationFinder as DestinationFinderDefault
@@ -26,7 +27,7 @@ class DistanceFunctionMatchContext(
         val calibrated = GradientDescent.run(
             model,
             base,
-            mapOf("iterations" to "100", "lr0" to "0.001", "ub" to "0.0", "lb" to "-1000.0")
+            mapOf("iterations" to "1000", "lr0" to "0.001", "ub" to "0.0", "lb" to "-1000.0")
         )
 
         evaluate(base, calibrated, objective)

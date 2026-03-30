@@ -23,4 +23,8 @@ internal object ProgressLogger {
     fun logFinalLoss(name: String, loss: Double) {
         logger.info("Finished $name. Loss:$loss")
     }
+
+    fun logEarlyTermination(name: String, reason: String) {
+        logger.debug("$name. Early termination: $reason")
+    }
 }

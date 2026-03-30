@@ -1,6 +1,8 @@
 package de.uniwuerzburg.omosim.calibration.algorithms
 
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelSingleOut
+import org.jetbrains.kotlinx.multik.api.stat.abs
+import kotlin.math.abs
 import kotlin.time.measureTime
 
 object GradientDescent {
@@ -11,6 +13,7 @@ object GradientDescent {
         const val lr0 = 1.0e-8
         const val lb = 1e-3
         const val ub = 1e3
+        val lTol: Double? = null
     }
 
     fun run(
@@ -24,7 +27,8 @@ object GradientDescent {
             iterations = parameters?.get("iterations")?.toIntOrNull() ?: Defaults.iterations,
             lr0 = parameters?.get("lr0")?.toDoubleOrNull() ?: Defaults.lr0,
             lb = parameters?.get("lb")?.toDoubleOrNull() ?: Defaults.lb,
-            ub = parameters?.get("ub")?.toDoubleOrNull() ?: Defaults.ub
+            ub = parameters?.get("ub")?.toDoubleOrNull() ?: Defaults.ub,
+            lTol = parameters?.get("lTol")?.toDoubleOrNull() ?: Defaults.lTol
         )
     }
 
@@ -34,7 +38,8 @@ object GradientDescent {
         iterations: Int = Defaults.iterations,
         lr0: Double = Defaults.lr0,
         lb: Double = Defaults.lb,
-        ub: Double = Defaults.ub
+        ub: Double = Defaults.ub,
+        lTol: Double? = Defaults.lTol
     ) : DoubleArray {
         ProgressLogger.logParameters(this.NAME,"lr0=$lr0:lb=$lb:ub$ub")
 
@@ -43,6 +48,7 @@ object GradientDescent {
         val x = x0.copyOf()
         var bestX = x0.copyOf()
         var bestLoss = model.evaluate(x0)
+        var lastLoss = bestLoss
         ProgressLogger.logInitialLoss(this.NAME, bestLoss)
 
         // Descent
@@ -68,6 +74,15 @@ object GradientDescent {
                 bestX = x.copyOf()
                 bestLoss = loss
             }
+            if (lTol != null) {
+                if (abs(loss - lastLoss) < lTol) {
+                    ProgressLogger.logEarlyTermination(
+                        this.NAME,reason = "Loss change below lTol (${lTol})"
+                    )
+                    break
+                }
+            }
+            lastLoss = loss
             ProgressLogger.logProgress(this.NAME, i, time, bestLoss)
         }
         ProgressLogger.logFinalLoss(this.NAME, bestLoss)
