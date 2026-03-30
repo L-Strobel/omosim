@@ -164,7 +164,7 @@ private fun getSimCountsFromDemand(
 class DFMatchSSE (
     val activity: ActivityType,
     val mean: Double,
-    val variance: Double
+    val m2: Double
 ) : SGGravityObjective<DistanceFunctionMatchContext, DifferentiableModelSingleOut> {
     override fun build (
         nVars: Int,
@@ -201,28 +201,20 @@ class DFMatchSSE (
         }
         val expectedMean = DivisionTerm(nVars, expectedTotalDistance, expectedTotalTrips)
 
-        val expectedDiviations = LinearTerm(nVars)
+        val expectedSumOfSquare = LinearTerm(nVars)
         for ((o, origin) in omosim.grid.withIndex()) {
             val distances = omosim.routingCache.getDistances(origin, omosim.grid)
 
             for (d in 0 until n) {
                 val expectedTripCount = expectedODCount[Pair(o,d)]!!
 
-                val subtraction = LinearTerm(nVars) // x - mu
-                subtraction.addConstant(distances[d] / 1000.0)
-                subtraction.addTerm(expectedMean, -1.0)
-
-                val square = QuadraticTerm(nVars, subtraction, subtraction, 1.0)
-
-                val expectedODDeviation = QuadraticTerm(nVars, square, expectedTripCount, 1.0)
-
-                expectedDiviations.addTerm(
-                    expectedODDeviation,
-                    1.0
+                expectedSumOfSquare.addTerm(
+                    expectedTripCount,
+                    (distances[d] / 1000.0) * (distances[d] / 1000.0)
                 )
             }
         }
-        val expectedVar = DivisionTerm(nVars, expectedDiviations, expectedTotalTrips)
+        val moment2 = DivisionTerm(nVars, expectedSumOfSquare, expectedTotalTrips)
 
         // (m - s)^2 = m^2 - 2ms + s^2
         val obj = LinearTerm(nVars)
@@ -231,10 +223,15 @@ class DFMatchSSE (
         val qTermMean = QuadraticTerm(nVars, expectedMean, expectedMean,1.0)
         obj.addTerm(qTermMean, 1.0)
 
-        obj.addConstant(variance * variance)
-        obj.addTerm(expectedVar, -2 * variance)
-        val qTermVar = QuadraticTerm(nVars, expectedVar, expectedVar,1.0)
-        obj.addTerm(qTermVar, 1.0)
+        val objMoment2 = LinearTerm(nVars)
+        objMoment2.addConstant(m2 * m2)
+        objMoment2.addTerm(moment2, -2 * m2)
+        val qTermVar = QuadraticTerm(nVars, moment2, moment2,1.0)
+        objMoment2.addTerm(qTermVar, 1.0)
+
+        obj.addTerm(
+            PowerTerm(nVars, objMoment2, -2), 1.0
+        )
 
         val model = DifferentiableModelSingleOut(nVars)
         model.setRootTerm(obj)
