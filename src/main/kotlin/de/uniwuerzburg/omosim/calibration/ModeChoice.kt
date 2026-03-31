@@ -114,7 +114,7 @@ class ModeChoice(
                 val normTerm = LinearTerm(model.nVars)
                 normTerm.addConstant(1.0)
                 normTerm.addTerm(eTerm, 1.0)
-                val pTerm = PowerTerm(model.nVars, normTerm, -1)
+                val pTerm = PowerTerm(model.nVars, normTerm, -1.0)
 
                 // Add expected origin destination trips to sim counts
                 var o = tour.trips.first().fromActivity.location.getAggLoc()!! as Cell

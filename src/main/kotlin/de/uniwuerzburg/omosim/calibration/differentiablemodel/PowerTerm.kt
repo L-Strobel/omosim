@@ -5,7 +5,7 @@ import kotlin.math.pow
 class PowerTerm(
     nVars: Int,
     private val base: Term,
-    private val power: Int
+    private val power: Double
 ): BranchTerm(nVars) {
     init {
         children.add(base)

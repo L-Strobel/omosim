@@ -230,7 +230,8 @@ class DFMatchSSE (
         objMoment2.addTerm(qTermVar, 1.0)
 
         obj.addTerm(
-            PowerTerm(nVars, objMoment2, -2), 1.0
+            //objMoment2, 1.0
+            PowerTerm(nVars, objMoment2, 0.5), 1.0
         )
 
         val model = DifferentiableModelSingleOut(nVars)
