@@ -75,6 +75,15 @@ object GradientDescent {
                 bestX = x.copyOf()
                 bestLoss = loss
             }
+            ProgressLogger.logProgress(this.NAME, i, time, bestLoss)
+
+            // Early Termination
+            if (loss.isNaN()) {
+                ProgressLogger.logEarlyTermination(
+                    this.NAME, reason = "Loss is NaN"
+                )
+                break
+            }
             if (lTol != null) {
                 if (abs(loss - lastLoss) < lTol) {
                     ProgressLogger.logEarlyTermination(
@@ -84,7 +93,6 @@ object GradientDescent {
                 }
             }
             lastLoss = loss
-            ProgressLogger.logProgress(this.NAME, i, time, bestLoss)
         }
         ProgressLogger.logFinalLoss(this.NAME, bestLoss)
         return bestX

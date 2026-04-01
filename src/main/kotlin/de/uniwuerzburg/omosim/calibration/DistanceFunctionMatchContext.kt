@@ -27,7 +27,7 @@ class DistanceFunctionMatchContext(
         val calibrated = GradientDescent.run(
             model,
             base,
-            mapOf("iterations" to "1000", "lr0" to "0.001", "ub" to "0.0", "lb" to "-100.0")
+            mapOf("iterations" to "1000", "lr0" to "0.001", "ub" to "-0.001", "lb" to "-100.0", "lTol" to "0.00001")
         )
 
         evaluate(base, calibrated, objective)
