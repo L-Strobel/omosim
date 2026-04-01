@@ -90,7 +90,7 @@ sealed class LocationChoiceDCWeightFun {
         // Minimum distance where at which distance has an influence. The left side of the deterrence functions
         // are poorly fitted due to the maximum resolution in the MID being 500m.
         val distanceAdj = if (distance <= 0.0) {
-            Double.MIN_VALUE
+            0.01 // 10 Meters // TODO think about implications: ln(<0) * ln(<0) -> Positive
         } else {
             distance / 1000
         }

@@ -75,12 +75,19 @@ object GradientDescent {
                 bestX = x.copyOf()
                 bestLoss = loss
             }
+            ProgressLogger.logProgress(this.NAME, -1, time, loss) // TODO Remove
             ProgressLogger.logProgress(this.NAME, i, time, bestLoss)
 
             // Early Termination
             if (loss.isNaN()) {
                 ProgressLogger.logEarlyTermination(
                     this.NAME, reason = "Loss is NaN"
+                )
+                break
+            }
+            if (loss.isInfinite()) {
+                ProgressLogger.logEarlyTermination(
+                    this.NAME, reason = "Loss is Infinite"
                 )
                 break
             }

@@ -67,7 +67,7 @@ object DistanceFunctionVMatrixBuilder : VMatrixBuilder<DistanceFunctionMatchCont
             for (d in 0 until n) {
                 // TODO refactor
                 val distanceAdj = if (distances[d].toDouble() <= 0.0) {
-                    Double.MIN_VALUE
+                    0.01 // 10 Meters
                 } else {
                     distances[d].toDouble() / 1000
                 }
