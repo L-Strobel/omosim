@@ -49,6 +49,7 @@ object GradientDescent {
         var bestX = x0.copyOf()
         var bestLoss = model.evaluate(x0)
         var lastLoss = bestLoss
+        var nNoImprovement = 0
         ProgressLogger.logInitialLoss(this.NAME, bestLoss)
 
         // Descent
@@ -67,15 +68,17 @@ object GradientDescent {
                 // Bound Projection
                 x.project(lb, ub)
             }
-            // TODO Check for NaNs
 
             // Evaluate
             val loss = model.evaluate(x)
             if (loss < bestLoss) {
                 bestX = x.copyOf()
                 bestLoss = loss
+                nNoImprovement = 0
+            } else {
+                nNoImprovement += 1
             }
-            ProgressLogger.logProgress(this.NAME, -1, time, loss) // TODO Remove
+            ProgressLogger.logProgress(this.NAME, -1, time, loss) // TODO Remove. // TODO: Warn about jittering gradients
             ProgressLogger.logProgress(this.NAME, i, time, bestLoss)
 
             // Early Termination
@@ -88,6 +91,12 @@ object GradientDescent {
             if (loss.isInfinite()) {
                 ProgressLogger.logEarlyTermination(
                     this.NAME, reason = "Loss is Infinite"
+                )
+                break
+            }
+            if (nNoImprovement > 5) {
+                ProgressLogger.logEarlyTermination(
+                    this.NAME, reason = "No improvement in 5 iterations"
                 )
                 break
             }
