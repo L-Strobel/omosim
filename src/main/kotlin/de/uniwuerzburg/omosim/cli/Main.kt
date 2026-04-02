@@ -233,6 +233,7 @@ class Run : CliktCommand() {
         dfmcontext.calibrate(4.83,  155.42, ActivityType.OTHER)
         dfmcontext.calibrate(2.21, 44.60, ActivityType.SHOPPING)
 
+        // TODO fix BEELINE
 
         // Apply Calibration
         if (calibration_file_gravity != null) {

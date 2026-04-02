@@ -14,7 +14,6 @@ class DistanceFunctionMatchContext(
 ) : CalibrationContext {
     override val totalPopulation: Double = population ?: initTotalPopulation()
 
-    // TODO VAR
     // TODO Store Results and Change to interface more similar to TrafficCountCal
     fun calibrate(mean: Double, m2: Double, activity: ActivityType) {
         val finder = omosim.destinationFinder as DestinationFinderDefault
@@ -22,7 +21,7 @@ class DistanceFunctionMatchContext(
 
         // Calibrate
         val objective = DFMatchSSE(activity, mean, m2)
-        val model = SGGravity(this, objective, DistanceFunctionVMatrixBuilder).build(activity)
+        val model = SGGravity(this, objective, DistanceFunctionVMatrixBuilder, null).build(activity)
         val base  = dcFunction.getDistanceParameters()
         val calibrated = GradientDescent.run(
             model,

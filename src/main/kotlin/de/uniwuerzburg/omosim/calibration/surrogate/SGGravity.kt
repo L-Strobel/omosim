@@ -28,7 +28,8 @@ import org.locationtech.jts.geom.Coordinate
 class SGGravity<T: CalibrationContext, M: DifferentiableModel> (
     val context: T,
     val objective: SGGravityObjective<T, M>,
-    val vMatrixBuilder: VMatrixBuilder<T>
+    val vMatrixBuilder: VMatrixBuilder<T>,
+    val mode: Mode? = Mode.CAR_DRIVER
 ) {
     private val modeChoiceDummy = ModeChoiceDummyForCalibration()
     private val fixActivitiesNotHome = setOf(ActivityType.WORK, ActivityType.SCHOOL)
@@ -168,7 +169,7 @@ class SGGravity<T: CalibrationContext, M: DifferentiableModel> (
             }
         }
 
-        return SGCompactMatrixRep(h, mPriorVar, mPriorCnst, tMatrices, getPCar(), vActivity)
+        return SGCompactMatrixRep(h, mPriorVar, mPriorCnst, tMatrices, getPMode(mode), vActivity)
     }
 
     /**
@@ -306,6 +307,15 @@ class SGGravity<T: CalibrationContext, M: DifferentiableModel> (
         val probability: Double
     )
 
+    private fun getPMode(mode: Mode?) : Map<ActivityType, D2Array<Double>> {
+        return when(mode) {
+            Mode.CAR_DRIVER -> getPCar()
+            null -> ActivityType.entries.associateWith { // All Modes
+                mk.ones<Double>(context.omosim.grid.size, context.omosim.grid.size)
+            }
+            else -> throw IllegalArgumentException("SGGravity: Mode $mode not supported!")
+        }
+    }
     /**
      * Get probability matrix for the car mode. Each entry gives the probability that the origin-destination trip
      * given by o=row and d=col is by car.
