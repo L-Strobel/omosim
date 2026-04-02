@@ -1,10 +1,8 @@
 package de.uniwuerzburg.omosim.calibration.algorithms
 
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelSingleOut
-import org.jetbrains.kotlinx.multik.api.stat.abs
 import kotlin.math.abs
 import kotlin.math.pow
-import kotlin.time.measureTime
 import kotlin.time.measureTimedValue
 
 object GradientDescent {
@@ -101,7 +99,6 @@ object GradientDescent {
             } else {
                 nNoImprovement += 1
             }
-            ProgressLogger.logProgress(this.NAME, -1, time, loss) // TODO Remove. // TODO: Warn about jittering gradients
             ProgressLogger.logProgress(this.NAME, i, time, bestLoss)
 
             // Early Termination

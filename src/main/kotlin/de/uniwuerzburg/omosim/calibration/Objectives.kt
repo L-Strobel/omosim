@@ -218,10 +218,10 @@ class DFMatchSSE (
 
         // (m - s)^2 = m^2 - 2ms + s^2
         val obj = LinearTerm(nVars)
-        obj.addConstant(mean * mean)
-        obj.addTerm(expectedMean, -2 * mean)
+        obj.addConstant(mean * mean * 10)
+        obj.addTerm(expectedMean, -2 * mean * 10)
         val qTermMean = QuadraticTerm(nVars, expectedMean, expectedMean,1.0)
-        obj.addTerm(qTermMean, 1.0)
+        obj.addTerm(qTermMean, 1.0 * 10.0)
 
         val objMoment2 = LinearTerm(nVars)
         objMoment2.addConstant(m2 * m2)

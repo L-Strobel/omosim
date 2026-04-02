@@ -27,9 +27,9 @@ class DistanceFunctionMatchContext(
             model,
             base,
             mapOf(
-                "iterations" to "1000",
+                "iterations" to "100",
                 "lr0" to "0.001",
-                "ub" to "0.0",
+                "ub" to "10.0",
                 "lb" to "-100.0",
                 "lTol" to "0.00001",
                 "backTracking" to "true"
