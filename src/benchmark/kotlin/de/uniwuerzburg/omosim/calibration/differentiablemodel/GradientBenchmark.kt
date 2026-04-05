@@ -5,6 +5,9 @@ import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
 import kotlinx.benchmark.Blackhole
 import kotlinx.benchmark.Scope
 import org.openjdk.jmh.annotations.*
+import org.tensorflow.Operand
+import org.tensorflow.types.TFloat32
+import smile.stat.Hypothesis.F
 import java.util.concurrent.TimeUnit
 
 @BenchmarkMode(Mode.AverageTime)
@@ -14,20 +17,22 @@ import java.util.concurrent.TimeUnit
 @State(Scope.Benchmark)
 class GradientBenchmark {
     var model: DifferentiableModelUVBase? = null
-    var modelTF: DifferentiableModelUV? = null
+    var modelTF: TfModel? = null
     var vars: DoubleArray? = null
-
+    var varsF: TFloat32? = null
 
     @Suppress("SameParameterValue")
-    fun buildLargeTestModelTF(nVars: Int) : DifferentiableModelUV {
+    fun buildLargeTestModelTF(nVars: Int) : TfModel {
         val model = TfModel(nVars)
-        var lTerm1 = model.createLinearTerm()
+
+        val terms = mutableListOf<Operand<TFloat32>>()
         for (i in 0 until nVars) {
             val c = model.createConstant(1.3f)
             val m = model.createMultiplication(model.getVariable(i), model.createConstant(3.3f))
-            val lbTerm = model.createLinearTerm(c, m)
-            lTerm1 = model.createLinearTerm(lTerm1, lbTerm)
+            terms.add(c)
+            terms.add(m)
         }
+        val lTerm1 = model.createLinearTerm(terms)
 
         val c1 = model.createConstant(2.2f)
         val m1 = model.createMultiplication(model.getVariable(0), model.createConstant(1.1f))
@@ -73,9 +78,10 @@ class GradientBenchmark {
 
     @Setup
     fun setup() {
-        modelTF = buildLargeTestModelTF(1000)
-        model = buildLargeTestModel(1000)
+        modelTF = buildLargeTestModelTF(5000)
+        model = buildLargeTestModel(5000)
         vars = DoubleArray(model!!.nVars) { 1.1 }
+        varsF =  TFloat32.vectorOf(*FloatArray(model!!.nVars) { 1.1f })
     }
 
     @Benchmark
@@ -96,8 +102,8 @@ class GradientBenchmark {
 
     @Benchmark
     fun tfBench(bh: Blackhole) {
-        val g = DoubleArray(model!!.nVars) {0.0}
-        modelTF!!.gradient(vars!!, g)
+        val g = FloatArray(model!!.nVars) { 0.0f }
+        modelTF!!.gradientF(varsF!!, g)
         bh.consume(g)
     }
 }

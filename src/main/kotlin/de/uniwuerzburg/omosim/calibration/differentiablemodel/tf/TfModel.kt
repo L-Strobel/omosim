@@ -9,6 +9,10 @@ import org.tensorflow.ndarray.buffer.DataBuffers
 import org.tensorflow.op.Ops
 import org.tensorflow.op.core.Constant
 import org.tensorflow.op.core.Gradients
+import org.tensorflow.proto.ConfigProto
+import org.tensorflow.proto.GPUOptions
+import org.tensorflow.proto.GraphOptions
+import org.tensorflow.proto.OptimizerOptions
 import org.tensorflow.types.TFloat32
 
 
@@ -18,6 +22,29 @@ class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
     val x = tf.variable(Shape.of(nVars.toLong()), TFloat32::class.java)
     private var root: Operand<TFloat32>? = null
     var dx: Gradients? = null
+    var session: Session? = null // TODO close
+
+    var graphOptions: GraphOptions = GraphOptions.newBuilder()
+        .setOptimizerOptions(
+            OptimizerOptions.newBuilder()
+                .setGlobalJitLevel(OptimizerOptions.GlobalJitLevel.ON_1)
+                .setOptLevel(OptimizerOptions.Level.L1)
+                .build()
+        )
+        .build()
+
+    var gpuOptions: GPUOptions = GPUOptions.newBuilder()
+        .setAllowGrowth(true)
+        .setPerProcessGpuMemoryFraction(0.5)
+        .build()
+
+    var config: ConfigProto = ConfigProto.newBuilder()
+        .setAllowSoftPlacement(true)
+        .setGraphOptions(graphOptions)
+        .setGpuOptions(gpuOptions)
+        .setIntraOpParallelismThreads(Runtime.getRuntime().availableProcessors())
+        .setInterOpParallelismThreads(2)
+        .build()
 
     fun getVariable(i: Int) : Operand<TFloat32> {
         return tf.gather(x, tf.constant(i), tf.constant(0))
@@ -58,9 +85,22 @@ class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
     fun setRoot(root: Operand<TFloat32>) {
         this.root = root
         this.dx = tf.gradients(root, listOf(x))
+        this.session = Session(graph, config)
     }
 
+    fun gradientF(vals: TFloat32, gradient: FloatArray) {
+        val outFBuffer = DataBuffers.ofFloats(gradient.size.toLong()) // TODO lateinit
+        val dxOperand: Operand<TFloat32> = dx!!.dy(0) // TODO lateinit
 
+        val result = session!!.runner()
+            .feed(x, vals)
+            .fetch(dxOperand)
+            .run()
+        val gradientOutput = result[0] as TFloat32
+        gradientOutput.copyTo(outFBuffer)
+        gradientOutput.close()
+        outFBuffer.read(gradient)
+    }
 
     override fun gradient(vals: DoubleArray, gradient: DoubleArray) {
         val outArray = FloatArray(gradient.size)
@@ -69,15 +109,14 @@ class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
         val xValue = TFloat32.vectorOf(*floatVals)
         val dxOperand: Operand<TFloat32> = dx!!.dy(0)
 
-        Session(graph).use { session ->
-            val result = session.runner()
-                .feed(x, xValue)
-                .fetch(dxOperand)
-                .run()
-            val gradientOutput = result[0] as TFloat32
-            gradientOutput.copyTo(outFBuffer)
-            gradientOutput.close()
-        }
+        val result = session!!.runner()
+            .feed(x, xValue)
+            .fetch(dxOperand)
+            .run()
+
+        val gradientOutput = result[0] as TFloat32
+        gradientOutput.copyTo(outFBuffer)
+        gradientOutput.close()
         outFBuffer.read(outArray)
         for (i in outArray.indices) {
             gradient[i] = outArray[i].toDouble()
