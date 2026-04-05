@@ -25,10 +25,11 @@ import org.locationtech.jts.geom.Coordinate
  *
  * @param context Calibration context to use. Includes a Simulator (OMoSim) and the traffic count data.
  */
-class SGGravity<T: CalibrationContext, M: DifferentiableModel> (
+class SGGravity<T: CalibrationContext, M: DifferentiableModel, ACC, V> (
     val context: T,
-    val objective: SGGravityObjective<T, M>,
-    val vMatrixBuilder: VMatrixBuilder<T>,
+    val objective: SGGravityObjective<T, M, ACC>,
+    val vMatrixBuilder: VMatrixBuilder<T, V>,
+    val termBuilder: TermBuilder<ACC, V>,
     val mode: Mode? = Mode.CAR_DRIVER
 ) {
     private val modeChoiceDummy = ModeChoiceDummyForCalibration()
@@ -467,7 +468,7 @@ class SGGravity<T: CalibrationContext, M: DifferentiableModel> (
         val expectedTrips = ActivityType.entries.associateWith {
             List(n) {
                 List(n) {
-                    LinearTerm(nVars)
+                    termBuilder.new(nVars)
                 }
             }
         }
@@ -475,7 +476,7 @@ class SGGravity<T: CalibrationContext, M: DifferentiableModel> (
         // Add expected trips for each destination activity
         for (activity in ActivityType.entries) {
             addE(
-                LinearTermBuilder,
+                termBuilder,
                 nVars,
                 mrep,
                 expectedTrips[activity]!!,
@@ -490,7 +491,7 @@ class SGGravity<T: CalibrationContext, M: DifferentiableModel> (
         val model = objective.build(nVars, context, expectedTrips, tripStartDistr)
 
         // Logging
-        var terms = model.getSize()
+        val terms = model.getSize()
         logger.info("Building surrogate complete. Number of terms: $terms")
 
         return model

@@ -12,11 +12,12 @@ import kotlin.math.abs
  * T: Term
  * V: Variable
  */
-interface TermBuilder<T, V> {
-    fun addVar(term: T, v: V, coefficient: Double) {}
-    fun addConstant(term: T, constant: Double) {}
-    fun addTerm(term: T, other: T, coefficient: Double) {}
-    fun new(nVars: Int) : T
+interface TermBuilder<ACC, V> {
+    fun addVar(term: ACC, v: V, coefficient: Double) {}
+    fun addConstant(term: ACC, constant: Double) {}
+    fun addTerm(term: ACC, other: ACC, coefficient: Double) {}
+    fun new(nVars: Int) : ACC
+
 
     /**
      * Creates the terms that compute the following matrix multiplication:
@@ -44,7 +45,7 @@ interface TermBuilder<T, V> {
         transpose: Boolean = true,
         relevantRCs: Set<Pair<Int, Int>>? = null,
         cTol: Double
-    ) : List<List<T>> {
+    ) : List<List<ACC>> {
         // Dimensions
         val lRow = left.shape[0]
         val lCol = left.shape[1]

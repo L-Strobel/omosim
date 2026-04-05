@@ -74,16 +74,16 @@ fun grbSseObjective(
     return obj
 }
 
-interface SGGravityObjective <T: CalibrationContext, M: DifferentiableModel> {
+interface SGGravityObjective <T: CalibrationContext, M: DifferentiableModel, V> {
     fun build (
         nVars: Int,
         context: T,
-        expectedTrips: Map<ActivityType, List<List<LinearTerm>>>,
+        expectedTrips: Map<ActivityType, List<List<V>>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ) : M
 }
 
-object TrafficCountSSE : SGGravityObjective<TrafficCountCalibrationContext, DifferentiableModelUVBase> {
+object TrafficCountSSE : SGGravityObjective<TrafficCountCalibrationContext, DifferentiableModelUVBase, LinearTerm> {
     override fun build (
         nVars: Int,
         context: TrafficCountCalibrationContext,
@@ -104,7 +104,7 @@ object TrafficCountSSE : SGGravityObjective<TrafficCountCalibrationContext, Diff
     }
 }
 
-object TrafficCountSeparate : SGGravityObjective<TrafficCountCalibrationContext, DifferentiableModelMV> {
+object TrafficCountSeparate : SGGravityObjective<TrafficCountCalibrationContext, DifferentiableModelMV, LinearTerm> {
     override fun build (
         nVars: Int,
         context: TrafficCountCalibrationContext,
@@ -165,7 +165,7 @@ class DFMatchSSE (
     val activity: ActivityType,
     val mean: Double,
     val m2: Double
-) : SGGravityObjective<DistanceFunctionMatchContext, DifferentiableModelUVBase> {
+) : SGGravityObjective<DistanceFunctionMatchContext, DifferentiableModelUVBase, LinearTerm> {
     override fun build (
         nVars: Int,
         context: DistanceFunctionMatchContext,

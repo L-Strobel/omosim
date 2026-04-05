@@ -7,11 +7,11 @@ import de.uniwuerzburg.omosim.calibration.differentiablemodel.*
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import org.jetbrains.kotlinx.multik.ndarray.data.get
 
-interface VMatrixBuilder<T: CalibrationContext> {
-    fun build(context: T, mrep: SGGravity.SGCompactMatrixRep) : Pair<List<List<Term>>, Int>
+interface VMatrixBuilder<T: CalibrationContext, V> {
+    fun build(context: T, mrep: SGGravity.SGCompactMatrixRep) : Pair<List<List<V>>, Int>
 }
 
-object TrafficCountVMatrixBuilder : VMatrixBuilder<TrafficCountCalibrationContext> {
+object TrafficCountVMatrixBuilder : VMatrixBuilder<TrafficCountCalibrationContext, Term> {
     override fun build(
         context: TrafficCountCalibrationContext, mrep: SGGravity.SGCompactMatrixRep,
     ) : Pair<List<List<Term>>, Int> {
@@ -46,7 +46,7 @@ object TrafficCountVMatrixBuilder : VMatrixBuilder<TrafficCountCalibrationContex
     }
 }
 
-object DistanceFunctionVMatrixBuilder : VMatrixBuilder<DistanceFunctionMatchContext> {
+object DistanceFunctionVMatrixBuilder : VMatrixBuilder<DistanceFunctionMatchContext, Term> {
     override fun build(
         context: DistanceFunctionMatchContext, mrep: SGGravity.SGCompactMatrixRep,
     ) : Pair<List<List<Term>>, Int> {
