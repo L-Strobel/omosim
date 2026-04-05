@@ -53,6 +53,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.+")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.13")
+    implementation("org.tensorflow:tensorflow-core-platform:1.1.0")
 }
 
 benchmark {

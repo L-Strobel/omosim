@@ -6,7 +6,7 @@ import kotlin.math.abs
 class DifferentiableModelUVBaseTest {
 
     @Suppress("SameParameterValue")
-    private fun buildLargeTestModel(nVars: Int) : DifferentiableModelUVBase {
+    fun buildLargeTestModel(nVars: Int) : DifferentiableModelUVBase {
         val model = DifferentiableModelUVBase(nVars)
 
         val lTerm1 = LinearTerm(nVars)

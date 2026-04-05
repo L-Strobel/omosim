@@ -1,7 +1,9 @@
 package de.uniwuerzburg.omosim.calibration.differentiablemodel
 
 
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
 import kotlinx.benchmark.Blackhole
+import kotlinx.benchmark.Scope
 import org.openjdk.jmh.annotations.*
 import java.util.concurrent.TimeUnit
 
@@ -12,7 +14,36 @@ import java.util.concurrent.TimeUnit
 @State(Scope.Benchmark)
 class GradientBenchmark {
     var model: DifferentiableModelUVBase? = null
+    var modelTF: DifferentiableModelUV? = null
     var vars: DoubleArray? = null
+
+
+    @Suppress("SameParameterValue")
+    fun buildLargeTestModelTF(nVars: Int) : DifferentiableModelUV {
+        val model = TfModel(nVars)
+        var lTerm1 = model.createLinearTerm()
+        for (i in 0 until nVars) {
+            val c = model.createConstant(1.3f)
+            val m = model.createMultiplication(model.getVariable(i), model.createConstant(3.3f))
+            val lbTerm = model.createLinearTerm(c, m)
+            lTerm1 = model.createLinearTerm(lTerm1, lbTerm)
+        }
+
+        val c1 = model.createConstant(2.2f)
+        val m1 = model.createMultiplication(model.getVariable(0), model.createConstant(1.1f))
+        val p1 = model.createLinearTerm(c1, m1)
+
+        val c2 = model.createConstant(2.2f)
+        val m2 = model.createMultiplication(model.getVariable(1), model.createConstant(1.1f))
+        val p2 = model.createLinearTerm(c2, m2)
+
+        val mult = model.createMultiplication(p1, p2)
+        val top = model.createMultiplication(mult, model.createConstant(-1.1f))
+
+        val dTerm = model.createDivision(lTerm1, top)
+        model.setRoot(dTerm)
+        return model
+    }
 
     fun buildLargeTestModel(nVars: Int) : DifferentiableModelUVBase {
         val model = DifferentiableModelUVBase(nVars)
@@ -42,6 +73,7 @@ class GradientBenchmark {
 
     @Setup
     fun setup() {
+        modelTF = buildLargeTestModelTF(1000)
         model = buildLargeTestModel(1000)
         vars = DoubleArray(model!!.nVars) { 1.1 }
     }
@@ -59,6 +91,13 @@ class GradientBenchmark {
     fun reverseBench(bh: Blackhole) {
         val g = DoubleArray(model!!.nVars) {0.0}
         model!!.gradientReverse(vars!!, g, 1.0)
+        bh.consume(g)
+    }
+
+    @Benchmark
+    fun tfBench(bh: Blackhole) {
+        val g = DoubleArray(model!!.nVars) {0.0}
+        modelTF!!.gradient(vars!!, g)
         bh.consume(g)
     }
 }
