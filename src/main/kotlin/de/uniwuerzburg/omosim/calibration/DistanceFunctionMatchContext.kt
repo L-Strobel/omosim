@@ -1,6 +1,9 @@
 package de.uniwuerzburg.omosim.calibration
 
 import de.uniwuerzburg.omosim.calibration.algorithms.GradientDescent
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearTermBuilder
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfTermBuilder
 import de.uniwuerzburg.omosim.calibration.surrogate.DistanceFunctionVMatrixBuilder
 import de.uniwuerzburg.omosim.calibration.surrogate.SGGravity
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
@@ -20,9 +23,25 @@ class DistanceFunctionMatchContext(
         val dcFunction = finder.locChoiceWeightFuns[activity]!!
 
         // Calibrate
-        val objective = DFMatchSSE(activity, mean, m2)
-        val model = SGGravity(this, objective, DistanceFunctionVMatrixBuilder, null).build(activity)
+        /*val objective = DFMatchSSE(activity, mean, m2)
+        val model = SGGravity(this, objective, DistanceFunctionVMatrixBuilder, LinearTermBuilder, null).build(activity)
+        val base  = dcFunction.getDistanceParameters()*/
+
+        val tfModel = TfModel(2)
+
+        // Calibrate
+        val objective = DFMatchSSETF(activity, mean, m2, tfModel)
+        val model = SGGravity(
+            this,
+            objective,
+            DistanceFunctionVMatrixBuilder.DistanceFunctionVMatrixBuilderTF,
+            TfTermBuilder(tfModel),
+            null
+        ).build(activity)
         val base  = dcFunction.getDistanceParameters()
+
+        println( model.evaluate(base) )
+
         val calibrated = GradientDescent.run(
             model,
             base,
@@ -32,12 +51,13 @@ class DistanceFunctionMatchContext(
                 "ub" to "10.0",
                 "lb" to "-100.0",
                 "lTol" to "0.00001",
-                "backTracking" to "true"
+                "backTracking" to "false"
             )
         )
 
-        evaluate(base, calibrated, objective)
+        //evaluate(base, calibrated, objective)
         dcFunction.setDistanceParameters(calibrated)
+        tfModel.close()
     }
 
     fun evaluate(base: DoubleArray, calibrated: DoubleArray, objective: DFMatchSSE) {

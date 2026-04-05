@@ -28,7 +28,7 @@ import org.locationtech.jts.geom.Coordinate
 class SGGravity<T: CalibrationContext, M: DifferentiableModel, ACC, V> (
     val context: T,
     val objective: SGGravityObjective<T, M, ACC>,
-    val vMatrixBuilder: VMatrixBuilder<T, V>,
+    val vMatrixBuilder: VMatrixBuilder<T, ACC, V>,
     val termBuilder: TermBuilder<ACC, V>,
     val mode: Mode? = Mode.CAR_DRIVER
 ) {
@@ -457,7 +457,7 @@ class SGGravity<T: CalibrationContext, M: DifferentiableModel, ACC, V> (
         val relevantODs = context.getRelevantODs() // Relevant origin-destination pairs for measurements
 
         // Transition matrix containing variable terms
-        val (vMatrix, nVars) = vMatrixBuilder.build(context, mrep)
+        val (vMatrix, nVars) = vMatrixBuilder.build(termBuilder, context, mrep)
 
         logger.info("Number of variables: $nVars")
 

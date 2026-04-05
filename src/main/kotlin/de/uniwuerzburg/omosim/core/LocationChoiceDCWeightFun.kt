@@ -3,12 +3,15 @@ package de.uniwuerzburg.omosim.core
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearTerm
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.Term
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.Variable
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfTermBuilder
 import de.uniwuerzburg.omosim.core.models.Landuse
 import de.uniwuerzburg.omosim.core.models.RealLocation
 import de.uniwuerzburg.omosim.io.geojson.property.BuildingProperties
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import org.tensorflow.Operand
+import org.tensorflow.types.TFloat32
 import kotlin.math.exp
 import kotlin.math.ln
 
@@ -68,6 +71,10 @@ sealed class LocationChoiceDCWeightFun {
     abstract fun deterrenceFunction(distance: Double) : Double
 
     open fun deterrenceFunctionAsTerm(distance: Double) : Pair<Term, Int> {
+        throw NotImplementedError()
+    }
+
+    open fun deterrenceFunctionAsTFTerm(distance: Double, builder: TfTermBuilder) : Pair<Operand<TFloat32>, Int> {
         throw NotImplementedError()
     }
 
@@ -291,6 +298,21 @@ class LogNormDCUtil (
         val term = LinearTerm(nVars)
         term.addTerm(termA, 1.0)
         term.addTerm(termB, 1.0)
+
+        return Pair(term, nVars)
+    }
+
+    override fun deterrenceFunctionAsTFTerm(distance: Double, builder: TfTermBuilder): Pair<Operand<TFloat32>, Int> {
+        val tf = builder.model.tf
+        val nVars = 2
+
+        val vA = builder.model.getVariable(0)
+        val vB = builder.model.getVariable(1)
+
+        val termA = tf.math.mul(vA, tf.constant((ln(distance) * ln(distance)).toFloat()))
+        val termB = tf.math.mul(vB, tf.constant(ln(distance).toFloat()))
+
+        val term = tf.math.add(termA, termB)
 
         return Pair(term, nVars)
     }
