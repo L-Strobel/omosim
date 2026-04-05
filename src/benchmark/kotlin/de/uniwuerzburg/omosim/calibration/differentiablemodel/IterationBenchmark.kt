@@ -12,11 +12,11 @@ import java.util.concurrent.TimeUnit
 @Measurement(iterations = 5, time = 5, timeUnit = TimeUnit.SECONDS)
 @State(Scope.Benchmark)
 class IterationBenchmark {
-    var model: DifferentiableModelSingleOut? = null
+    var model: DifferentiableModelUVBase? = null
     var vars: DoubleArray? = null
 
-    fun buildLargeTestModel(nVars: Int) : DifferentiableModelSingleOut {
-        val model = DifferentiableModelSingleOut(nVars)
+    fun buildLargeTestModel(nVars: Int) : DifferentiableModelUVBase {
+        val model = DifferentiableModelUVBase(nVars)
 
         val lTerm1 = LinearTerm(nVars)
         for (i in 0 until nVars) {

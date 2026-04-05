@@ -2,7 +2,7 @@ package de.uniwuerzburg.omosim.calibration
 
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.algorithms.*
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelMultiOut
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelMV
 import de.uniwuerzburg.omosim.calibration.surrogate.SGGravity
 import de.uniwuerzburg.omosim.calibration.surrogate.TrafficCountVMatrixBuilder
 import de.uniwuerzburg.omosim.calibration.surrogate.optimizeTMatrix
@@ -270,7 +270,7 @@ class Gravity(
          * Special case of the sum of squares objective using the surrogate model for WSPSA.
          * WSPSA requires that the simulated counts at each traffic counting station are returned separately.
          */
-        fun surrogateObjWSPSA(model: DifferentiableModelMultiOut, sensors: List<TrafficSensor>): (DoubleArray) ->
+        fun surrogateObjWSPSA(model: DifferentiableModelMV, sensors: List<TrafficSensor>): (DoubleArray) ->
         Pair<Double, DoubleArray> {
             return { x: DoubleArray ->
                 val simCounts = model.evaluate(x)

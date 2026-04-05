@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit
 /**
  * Warning: Don't use within coroutines!! ThreadLocal cache will be unstable. Use an ExecutorService instead.
  */
-class DifferentiableModelMultiOut (
+class DifferentiableModelMV (
     val nVars: Int
 ) : DifferentiableModel{
     private var roots: List<Term> = listOf()

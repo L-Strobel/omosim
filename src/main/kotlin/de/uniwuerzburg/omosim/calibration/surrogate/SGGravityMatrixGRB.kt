@@ -4,7 +4,7 @@ import com.gurobi.gurobi.*
 import de.uniwuerzburg.omosim.calibration.*
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.MC_SAMPLES
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelSingleOut
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUVBase
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.TermBuilder
 import de.uniwuerzburg.omosim.calibration.handleGrbStatus
 import de.uniwuerzburg.omosim.core.models.ActivityType
@@ -25,7 +25,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
  * Higher values -> Computes faster but is a rougher approximation of the markov chain representation.
  * @return Optimal transition matrix
  */
-fun SGGravity<TrafficCountCalibrationContext, DifferentiableModelSingleOut>.optimizeTMatrix(
+fun SGGravity<TrafficCountCalibrationContext, DifferentiableModelUVBase>.optimizeTMatrix(
     activityType: ActivityType,
     iThresh: Double = 1e-4
 ) : D2Array<Double>? {

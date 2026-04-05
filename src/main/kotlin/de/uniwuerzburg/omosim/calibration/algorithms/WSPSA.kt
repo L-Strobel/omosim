@@ -1,6 +1,6 @@
 package de.uniwuerzburg.omosim.calibration.algorithms
 
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelMultiOut
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelMV
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.pow
@@ -24,7 +24,7 @@ object WSPSA {
         x0: DoubleArray,
         objective:  (DoubleArray) -> Pair<Double, DoubleArray>,
         measurements: List<Double>,
-        model: DifferentiableModelMultiOut,
+        model: DifferentiableModelMV,
         rng: Random = Random(),
         parameters: Map<String, String>? = null,
     ) : DoubleArray {
@@ -49,7 +49,7 @@ object WSPSA {
         x0: DoubleArray,
         objective: (DoubleArray) -> Pair<Double, DoubleArray>,
         measurements: List<Double>,
-        model: DifferentiableModelMultiOut,
+        model: DifferentiableModelMV,
         rng: Random,
         iterations: Int = Defaults.iterations,
         lb: Double = Defaults.lb,

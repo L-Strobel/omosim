@@ -83,13 +83,13 @@ interface SGGravityObjective <T: CalibrationContext, M: DifferentiableModel> {
     ) : M
 }
 
-object TrafficCountSSE : SGGravityObjective<TrafficCountCalibrationContext, DifferentiableModelSingleOut> {
+object TrafficCountSSE : SGGravityObjective<TrafficCountCalibrationContext, DifferentiableModelUVBase> {
     override fun build (
         nVars: Int,
         context: TrafficCountCalibrationContext,
         expectedTrips: Map<ActivityType, List<List<LinearTerm>>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
-    ) : DifferentiableModelSingleOut {
+    ) : DifferentiableModelUVBase {
         // Simulated traffic counts
         val simCount = getSimCountsFromDemand(nVars, context, expectedTrips, tripStartDistr)
 
@@ -97,20 +97,20 @@ object TrafficCountSSE : SGGravityObjective<TrafficCountCalibrationContext, Diff
         val obj = sseObjective(nVars, context.sensors, simCount)
 
         // Create model
-        val model = DifferentiableModelSingleOut(nVars)
+        val model = DifferentiableModelUVBase(nVars)
         model.setRootTerm(obj)
 
         return model
     }
 }
 
-object TrafficCountSeparate : SGGravityObjective<TrafficCountCalibrationContext, DifferentiableModelMultiOut> {
+object TrafficCountSeparate : SGGravityObjective<TrafficCountCalibrationContext, DifferentiableModelMV> {
     override fun build (
         nVars: Int,
         context: TrafficCountCalibrationContext,
         expectedTrips: Map<ActivityType, List<List<LinearTerm>>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
-    ) : DifferentiableModelMultiOut {
+    ) : DifferentiableModelMV {
         // Simulated traffic counts
         val simCount = getSimCountsFromDemand(nVars, context, expectedTrips, tripStartDistr)
 
@@ -121,7 +121,7 @@ object TrafficCountSeparate : SGGravityObjective<TrafficCountCalibrationContext,
                 countsFlat.add( simCount[sensor]!![t] )
             }
         }
-        val model = DifferentiableModelMultiOut(countsFlat.first().nVars)
+        val model = DifferentiableModelMV(countsFlat.first().nVars)
         model.setRootTerms(countsFlat)
 
         return model
@@ -165,13 +165,13 @@ class DFMatchSSE (
     val activity: ActivityType,
     val mean: Double,
     val m2: Double
-) : SGGravityObjective<DistanceFunctionMatchContext, DifferentiableModelSingleOut> {
+) : SGGravityObjective<DistanceFunctionMatchContext, DifferentiableModelUVBase> {
     override fun build (
         nVars: Int,
         context: DistanceFunctionMatchContext,
         expectedTrips: Map<ActivityType, List<List<LinearTerm>>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
-    ) : DifferentiableModelSingleOut {
+    ) : DifferentiableModelUVBase {
         val omosim = context.omosim
         val n = context.omosim.grid.size
 
@@ -234,7 +234,7 @@ class DFMatchSSE (
             PowerTerm(nVars, objMoment2, 0.5), 1.0
         )
 
-        val model = DifferentiableModelSingleOut(nVars)
+        val model = DifferentiableModelUVBase(nVars)
         model.setRootTerm(obj)
 
         return model

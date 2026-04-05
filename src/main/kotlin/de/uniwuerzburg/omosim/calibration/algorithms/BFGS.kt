@@ -1,6 +1,6 @@
 package de.uniwuerzburg.omosim.calibration.algorithms
 
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelSingleOut
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUVBase
 import smile.math.BFGS
 import kotlin.time.measureTimedValue
 
@@ -16,7 +16,7 @@ object BFGS {
     }
 
     fun run (
-        model: DifferentiableModelSingleOut,
+        model: DifferentiableModelUVBase,
         x0: DoubleArray,
         parameters: Map<String, String>? = null,
     ) : DoubleArray {
@@ -32,7 +32,7 @@ object BFGS {
     }
 
     fun run(
-        model: DifferentiableModelSingleOut,
+        model: DifferentiableModelUVBase,
         x0: DoubleArray,
         iterations: Int = Defaults.iterations,
         lb: Double = Defaults.lb,

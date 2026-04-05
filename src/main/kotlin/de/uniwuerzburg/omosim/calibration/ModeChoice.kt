@@ -70,8 +70,8 @@ class ModeChoice(
         mc: ModeChoiceFast,
         rng: Random,
         objective: ModeChoiceCalibrationObjective
-    ) : DifferentiableModelSingleOut {
-        val model = DifferentiableModelSingleOut(1) // Only variable: Intercept of car mode
+    ) : DifferentiableModelUVBase {
+        val model = DifferentiableModelUVBase(1) // Only variable: Intercept of car mode
 
         // Initialize simulated traffic counts
         val simCount = mutableMapOf<TrafficSensor, List<LinearTerm>>()
