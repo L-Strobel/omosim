@@ -20,14 +20,16 @@ class DifferentiableModelUVBase (
         countReceivers()
     }
 
-    override fun gradient(vals: DoubleArray, gradient: DoubleArray) {
-        gradientReverse(vals, gradient, 1.0)
+    override fun gradient(vals: DoubleArray, gradient: DoubleArray) : Double {
+        return gradientReverse(vals, gradient, 1.0)
     }
 
-    fun gradientReverse(vals: DoubleArray, partials: DoubleArray, seed: Double) {
+    fun gradientReverse(vals: DoubleArray, partials: DoubleArray, seed: Double) : Double {
         root.gradientReverse(vals, partials, seed)
+        val y = root.evaluate(vals)
         clearGradientCache()
         clearEvalCache()
+        return y
     }
 
     fun gradientForward(variable: Int, vals: DoubleArray): Double {

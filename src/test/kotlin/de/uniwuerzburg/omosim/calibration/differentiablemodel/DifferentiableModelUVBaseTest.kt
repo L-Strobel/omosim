@@ -5,31 +5,33 @@ import kotlin.math.abs
 
 class DifferentiableModelUVBaseTest {
 
-    @Suppress("SameParameterValue")
-    fun buildLargeTestModel(nVars: Int) : DifferentiableModelUVBase {
-        val model = DifferentiableModelUVBase(nVars)
+    companion object {
+        @Suppress("SameParameterValue")
+        fun buildLargeTestModel(nVars: Int) : DifferentiableModelUVBase {
+            val model = DifferentiableModelUVBase(nVars)
 
-        val lTerm1 = LinearTerm(nVars)
-        for (i in 0 until nVars) {
-            val lbTerm = LinearBaseTerm(nVars)
-            lbTerm.addConstant(1.3)
-            lbTerm.addTerm(i, 3.3)
-            lTerm1.addTerm(lbTerm, 1.0)
+            val lTerm1 = LinearTerm(nVars)
+            for (i in 0 until nVars) {
+                val lbTerm = LinearBaseTerm(nVars)
+                lbTerm.addConstant(1.3)
+                lbTerm.addTerm(i, 3.3)
+                lTerm1.addTerm(lbTerm, 1.0)
+            }
+
+            val p1 = LinearBaseTerm(nVars)
+            p1.addConstant(2.2)
+            p1.addTerm(0, 1.1)
+
+            val p2 = LinearBaseTerm(nVars)
+            p2.addConstant(2.2)
+            p2.addTerm(1, 1.1)
+
+            val top = QuadraticTerm(nVars, p1, p2,-1.1)
+
+            val dTerm = DivisionTerm(nVars, lTerm1, top)
+            model.setRootTerm(dTerm)
+            return  model
         }
-
-        val p1 = LinearBaseTerm(nVars)
-        p1.addConstant(2.2)
-        p1.addTerm(0, 1.1)
-
-        val p2 = LinearBaseTerm(nVars)
-        p2.addConstant(2.2)
-        p2.addTerm(1, 1.1)
-
-        val top = QuadraticTerm(nVars, p1, p2,-1.1)
-
-        val dTerm = DivisionTerm(nVars, lTerm1, top)
-        model.setRootTerm(dTerm)
-        return  model
     }
 
     @Test
