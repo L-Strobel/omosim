@@ -158,7 +158,7 @@ class RouteChoice(
      */
     private fun buildModel(
         odtCounts: Map<ODTTriple, Double>
-    ) : DifferentiableModelUVBase {
+    ) : DifferentiableModelUV {
         // Setup. Initialize differentiable model
         var nVar = 0
         for ((od, alternatives) in context.affectedAltSensors.entries) {

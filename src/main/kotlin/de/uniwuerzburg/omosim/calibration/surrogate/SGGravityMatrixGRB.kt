@@ -6,7 +6,6 @@ import de.uniwuerzburg.omosim.calibration.CalibrationConstants.MC_SAMPLES
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUVBase
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.TermBuilder
-import de.uniwuerzburg.omosim.calibration.handleGrbStatus
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.ones

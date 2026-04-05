@@ -1,6 +1,6 @@
 package de.uniwuerzburg.omosim.calibration.algorithms
 
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUVBase
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUV
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.time.measureTimedValue
@@ -18,7 +18,7 @@ object GradientDescent {
     }
 
     fun run(
-        model: DifferentiableModelUVBase,
+        model: DifferentiableModelUV,
         x0: DoubleArray,
         parameters: Map<String, String>? = null
     ) : DoubleArray {
@@ -35,7 +35,7 @@ object GradientDescent {
     }
 
     fun run(
-        model: DifferentiableModelUVBase,
+        model: DifferentiableModelUV,
         x0: DoubleArray,
         iterations: Int = Defaults.iterations,
         lr0: Double = Defaults.lr0,
@@ -61,7 +61,7 @@ object GradientDescent {
             val g = DoubleArray(x0.size) { 0.0 }
             val (loss, time) = measureTimedValue {
                 // Compute Gradient
-                model.gradientReverse(x, g, 1.0)
+                model.gradient(x, g)
 
                 // Evaluate
                 var newX = updateX(x, g, lr0, lb, ub) // Gradient Step and Bound Handling

@@ -1,9 +1,6 @@
 package de.uniwuerzburg.omosim.calibration.algorithms
 
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUVBase
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearBaseTerm
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearTerm
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.QuadraticTerm
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.*
 
 object TestObjectives {
     fun diffModel() : Pair<(DoubleArray) -> Double, DifferentiableModelUVBase> {
@@ -19,7 +16,7 @@ object TestObjectives {
         return Pair(objective, model)
     }
 
-    fun sphere(nDimensions: Int, shift: Double) : Pair<(DoubleArray) -> Double, DifferentiableModelUVBase> {
+    fun sphere(nDimensions: Int, shift: Double) : Pair<(DoubleArray) -> Double, DifferentiableModelUV> {
         val objective =  { x: DoubleArray ->
             var oval = 0.0
             for (i in 0 until nDimensions) {
