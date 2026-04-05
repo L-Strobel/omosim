@@ -10,7 +10,7 @@ import smile.util.function.DifferentiableMultivariateFunction
 
 abstract class DifferentiableModelUV(
     val nVars: Int
-) : DifferentiableMultivariateFunction {
+) : DifferentiableMultivariateFunction, DifferentiableModel {
     abstract fun gradient(vals: DoubleArray, gradient: DoubleArray) : Double
     abstract fun evaluate(vals: DoubleArray): Double
 

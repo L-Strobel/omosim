@@ -490,8 +490,7 @@ class SGGravity<T: CalibrationContext, M: DifferentiableModel> (
         val model = objective.build(nVars, context, expectedTrips, tripStartDistr)
 
         // Logging
-        var terms = 0
-        model.visit { terms += 1 }
+        var terms = model.getSize()
         logger.info("Building surrogate complete. Number of terms: $terms")
 
         return model

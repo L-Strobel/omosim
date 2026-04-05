@@ -151,4 +151,8 @@ class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
     override fun g(x: DoubleArray?, gradient: DoubleArray?): Double {
         return gradient(x!!, gradient!!)
     }
+
+    override fun getSize(): Int {
+        return graph.operations().asSequence().count()
+    }
 }

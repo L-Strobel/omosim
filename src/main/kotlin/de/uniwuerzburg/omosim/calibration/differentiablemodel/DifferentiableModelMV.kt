@@ -68,10 +68,16 @@ class DifferentiableModelMV (
         }
     }
 
-    override fun visit(visitor: (term: Term) -> Unit) {
+    private fun visit(visitor: (term: Term) -> Unit) {
         for (root in roots) {
             root.visit(visitor)
         }
         clearSearchMarkers()
+    }
+
+    override fun getSize(): Int {
+        var terms = 0
+        this.visit { terms += 1 }
+        return terms
     }
 }
