@@ -29,12 +29,25 @@ class DistanceFunctionMatchContext(
 
         val tfModel = TfModel(2)
 
+        /*
+        // Test
+        println("Test Start")
+        DistanceFunctionVMatrixBuilder.TFTestBuilder(
+            TfTermBuilder(tfModel),
+            this,
+            ActivityType.OTHER
+        )
+        println("Test Stop")
+        throw AssertionError("Done")
+        //
+        */
+
         // Calibrate
         val objective = DFMatchSSETF(activity, mean, m2, tfModel)
         val model = SGGravity(
             this,
             objective,
-            DistanceFunctionVMatrixBuilder.DistanceFunctionVMatrixBuilderTF,
+            DistanceFunctionVMatrixBuilder.DistanceFunctionVMatrixBuilderTFTensor,
             TfTermBuilder(tfModel),
             null
         ).build(activity)

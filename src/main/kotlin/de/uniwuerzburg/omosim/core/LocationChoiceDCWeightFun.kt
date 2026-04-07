@@ -11,6 +11,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import org.tensorflow.Operand
+import org.tensorflow.ndarray.StdArrays
 import org.tensorflow.types.TFloat32
 import kotlin.math.exp
 import kotlin.math.ln
@@ -71,6 +72,10 @@ sealed class LocationChoiceDCWeightFun {
     abstract fun deterrenceFunction(distance: Double) : Double
 
     open fun deterrenceFunctionAsTerm(distance: Double) : Pair<Term, Int> {
+        throw NotImplementedError()
+    }
+
+    open fun applyDeterrenceToTensor(distances: Array<FloatArray>, builder: TfTermBuilder): Operand<TFloat32> {
         throw NotImplementedError()
     }
 
@@ -315,6 +320,37 @@ class LogNormDCUtil (
         val term = tf.math.add(termA, termB)
 
         return Pair(term, nVars)
+    }
+
+    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, builder: TfTermBuilder): Operand<TFloat32> {
+        val tf = builder.model.tf
+
+        val vA = builder.model.getVariable(0)
+        val vB = builder.model.getVariable(1)
+
+        val lnDistance = Array(distances.size) {
+            i -> FloatArray(distances[0].size) {
+                j -> ln(distances[i][j])
+            }
+        }
+        val mLnDistance = TFloat32.tensorOf(StdArrays.ndCopyOf(lnDistance))
+        builder.model.addTensor(mLnDistance)
+        val oLnDistance = tf.constant(mLnDistance)
+
+        val lnDistanceSquared = Array(distances.size) {
+            i -> FloatArray(distances[0].size) {
+                j -> ln(distances[i][j]) * ln(distances[i][j])
+            }
+        }
+        val mLnDistanceSquared = TFloat32.tensorOf(StdArrays.ndCopyOf(lnDistanceSquared))
+        builder.model.addTensor(mLnDistanceSquared)
+        val oLnDistanceSquared = tf.constant(mLnDistanceSquared)
+
+        val tA = tf.math.mul(vA, oLnDistanceSquared)
+        val tB = tf.math.mul(vB, oLnDistance)
+
+        val term = tf.math.add(tA, tB)
+        return term
     }
 
     override fun getDistanceParameters(): DoubleArray {

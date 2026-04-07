@@ -18,14 +18,15 @@ import org.tensorflow.types.TFloat32
 
 
 class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
-    private val graph = Graph()
+    val graph = Graph()
     val tf: Ops = Ops.create(graph)
     val x: Variable<TFloat32> = tf.variable(Shape.of(nVars.toLong()), TFloat32::class.java)
-    private val inputTensor: TFloat32 = TFloat32.tensorOf(Shape.of(nVars.toLong()))
+    val inputTensor: TFloat32 = TFloat32.tensorOf(Shape.of(nVars.toLong()))
     private val ioBuffer: FloatDataBuffer = DataBuffers.ofFloats(nVars.toLong())
     private lateinit var root: Operand<TFloat32>
     private lateinit var dx: Operand<TFloat32>
-    private lateinit var session: Session
+    lateinit var session: Session
+    private val tensors = mutableListOf<TFloat32>()
 
     // Configs
     private var graphOptions: GraphOptions = GraphOptions.newBuilder()
@@ -40,7 +41,7 @@ class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
         .setAllowGrowth(true)
         .setPerProcessGpuMemoryFraction(0.5)
         .build()
-    private var config: ConfigProto = ConfigProto.newBuilder()
+    var config: ConfigProto = ConfigProto.newBuilder()
         .setAllowSoftPlacement(true)
         .setGraphOptions(graphOptions)
         .setGpuOptions(gpuOptions)
@@ -84,6 +85,10 @@ class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
         return tf.math.pow(base, tf.constant(power))
     }
 
+    fun addTensor(tensor: TFloat32) {
+        tensors.add(tensor)
+    }
+
     fun finalize(root: Operand<TFloat32>) {
         this.root = root
         this.dx = tf.gradients(root, listOf(x)).dy(0)
@@ -93,9 +98,10 @@ class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
     fun close() {
         this.session.close()
         this.inputTensor.close()
+        this.tensors.forEach { it.close() }
     }
 
-    private fun fillInputTensor(data: DoubleArray) {
+    fun fillInputTensor(data: DoubleArray) {
         for (i in data.indices) {
             ioBuffer.setFloat(data[i].toFloat(), i.toLong())
         }
