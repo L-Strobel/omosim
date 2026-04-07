@@ -5,6 +5,7 @@ import de.uniwuerzburg.omosim.calibration.*
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.MC_SAMPLES
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUVBase
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.Matrix
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.TermBuilder
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import org.jetbrains.kotlinx.multik.api.mk
@@ -44,29 +45,33 @@ fun SGGravity<TrafficCountCalibrationContext, DifferentiableModelUVBase, GRBVar,
 
         // Create gurobi expression of the expected trips matrix: E(o, d | Car)
         val expectedTrips = ActivityType.entries.associateWith {
-            List(n) {
+            Matrix(
                 List(n) {
-                    GRBLinExpr()
+                    List(n) {
+                        GRBLinExpr()
+                    }
                 }
-            }
+            )
         }
 
         // Transition matrix
-        val vMatrix = List<List<GRBVar>>(n) { o ->
-            model.addVars(
-                DoubleArray(n) { 0.0 },
-                DoubleArray(n) { 1.0 },
-                DoubleArray(n) { 0.0 },
-                CharArray(n) { GRB.CONTINUOUS },
-                Array(n) { d -> "W_${o}_$d" }
-            ).toList()
-        }
+        val vMatrix = Matrix(
+            List<List<GRBVar>>(n) { o ->
+                model.addVars(
+                    DoubleArray(n) { 0.0 },
+                    DoubleArray(n) { 1.0 },
+                    DoubleArray(n) { 0.0 },
+                    CharArray(n) { GRB.CONTINUOUS },
+                    Array(n) { d -> "W_${o}_$d" }
+                ).toList()
+            }
+        )
 
         // Ensure that each row of vMatrix is a proper probability distribution
         for (o in 0 until n) {
             val rowSum = GRBLinExpr()
             for (d in 0 until n) {
-                rowSum.addTerm(1.0, vMatrix[o][d])
+                rowSum.addTerm(1.0, vMatrix.get(o, d))
             }
             model.addConstr(rowSum, GRB.EQUAL, 1.0, "PCondition")
         }
@@ -99,7 +104,7 @@ fun SGGravity<TrafficCountCalibrationContext, DifferentiableModelUVBase, GRBVar,
                 val eODA = mutableMapOf<ActivityType, GRBVar> ()
                 for (activity in ActivityType.entries) {
                     val v = model.addVar( 0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, "demand")
-                    model.addConstr( expectedTrips[activity]!![o][d], GRB.EQUAL, v,"demandEq")
+                    model.addConstr( expectedTrips[activity]!!.get(o, d), GRB.EQUAL, v,"demandEq")
                     eODA[activity] = v
                 }
 
@@ -135,7 +140,7 @@ fun SGGravity<TrafficCountCalibrationContext, DifferentiableModelUVBase, GRBVar,
             val result = mk.ones<Double>(context.omosim.grid.size, context.omosim.grid.size)
             for(o in context.omosim.grid.indices) {
                 for (d in context.omosim.grid.indices) {
-                    result[o, d] = vMatrix[o][d].get(GRB.DoubleAttr.X)
+                    result[o, d] = vMatrix.get(o, d).get(GRB.DoubleAttr.X)
                 }
             }
             model.dispose()

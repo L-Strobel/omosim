@@ -466,11 +466,13 @@ class SGGravity<T: CalibrationContext, M: DifferentiableModel, ACC, V> (
 
         // Create graph of the expected trips matrix: E(o, d | Car)
         val expectedTrips = ActivityType.entries.associateWith {
-            List(n) {
+            Matrix(
                 List(n) {
-                    termBuilder.new(nVars)
+                    List(n) {
+                        termBuilder.new(nVars)
+                    }
                 }
-            }
+            )
         }
 
         // Add expected trips for each destination activity
@@ -513,8 +515,8 @@ class SGGravity<T: CalibrationContext, M: DifferentiableModel, ACC, V> (
         builder: TermBuilder<T, K>,
         nVars: Int,
         mrep: SGCompactMatrixRep,
-        expectedTrips: List<List<T>>,
-        vMatrix : List<List<K>>,
+        expectedTrips: Matrix<T>,
+        vMatrix : Matrix<K>,
         relevantODs: Set<Pair<Int, Int>>,
         iThresh: Double,
         activity: ActivityType
@@ -564,7 +566,7 @@ class SGGravity<T: CalibrationContext, M: DifferentiableModel, ACC, V> (
                         val h = mrep.h.flatten()
                         for (col in 0 until n) {
                             for (row in 0 until n) {
-                                builder.addVar(vStart[col], vMatrix[row][col], h[row])
+                                builder.addVar(vStart[col], vMatrix.get(row, col), h[row])
                             }
                         }
                         // For other segments: V = (K^T)X
@@ -635,18 +637,18 @@ class SGGravity<T: CalibrationContext, M: DifferentiableModel, ACC, V> (
                 if (Pair(o, d) !in relevantODs) { continue }
                 // F
                 if (mrep.vActivity != activity) {
-                    builder.addConstant(expectedTrips[o][d], fix[o, d])
+                    builder.addConstant(expectedTrips.get(o, d), fix[o, d])
                 }
 
                 // V
-                if (mVar.size == 1) {
-                    builder.addTerm(expectedTrips[o][d], mVar[0][o], tMatrixCar[o,d])
+                if (mVar.shape().first == 1) {
+                    builder.addTerm(expectedTrips.get(o, d), mVar.get(0, o), tMatrixCar[o,d])
                 } else {
-                    builder.addTerm(expectedTrips[o][d], mVar[o][d], pCar[o, d])
+                    builder.addTerm(expectedTrips.get(o, d), mVar.get(o, d), pCar[o, d])
                 }
                 if ((mrep.vActivity in fixActivities) and (mrep.vActivity == activity)){
                     // For segments that started at vActivity: V = (diag(v)K)^T
-                    builder.addTerm(expectedTrips[o][d], vStart[o], mPriorVarTCar[o, d])
+                    builder.addTerm(expectedTrips.get(o, d), vStart[o], mPriorVarTCar[o, d])
                 }
             }
         }

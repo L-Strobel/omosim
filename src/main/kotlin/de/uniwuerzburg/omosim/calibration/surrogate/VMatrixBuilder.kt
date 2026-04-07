@@ -9,10 +9,13 @@ import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfTermBuilder
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import org.jetbrains.kotlinx.multik.ndarray.data.get
 import org.tensorflow.Operand
+import org.tensorflow.ndarray.StdArrays
 import org.tensorflow.types.TFloat32
+import org.tensorflow.types.TInt32
+
 
 interface VMatrixBuilder<T: CalibrationContext, ACC, V> {
-    fun build(builder: TermBuilder<ACC, V>, context: T, mrep: SGGravity.SGCompactMatrixRep) : Pair<List<List<V>>, Int>
+    fun build(builder: TermBuilder<ACC, V>, context: T, mrep: SGGravity.SGCompactMatrixRep) : Pair<Matrix<V>, Int>
 }
 
 object TrafficCountVMatrixBuilder : VMatrixBuilder<TrafficCountCalibrationContext, LinearTerm, Term> {
@@ -20,7 +23,7 @@ object TrafficCountVMatrixBuilder : VMatrixBuilder<TrafficCountCalibrationContex
         builder: TermBuilder<LinearTerm, Term>,
         context: TrafficCountCalibrationContext,
         mrep: SGGravity.SGCompactMatrixRep
-    ): Pair<List<List<Term>>, Int> {
+    ): Pair<Matrix<Term>, Int> {
         val n = context.omosim.grid.size
         val nVars = context.omosim.grid.size - 1
 
@@ -48,7 +51,7 @@ object TrafficCountVMatrixBuilder : VMatrixBuilder<TrafficCountCalibrationContex
 
             vMatrix.add(t)
         }
-        return Pair(vMatrix, nVars)
+        return Pair(Matrix(vMatrix), nVars)
     }
 }
 
@@ -57,7 +60,7 @@ object DistanceFunctionVMatrixBuilder : VMatrixBuilder<DistanceFunctionMatchCont
         builder: TermBuilder<LinearTerm, Term>,
         context: DistanceFunctionMatchContext,
         mrep: SGGravity.SGCompactMatrixRep,
-    ) : Pair<List<List<Term>>, Int> {
+    ) : Pair<Matrix<Term>, Int> {
         val vMatrix = mutableListOf<List<Term>>()
 
         val omosim = context.omosim
@@ -97,7 +100,7 @@ object DistanceFunctionVMatrixBuilder : VMatrixBuilder<DistanceFunctionMatchCont
 
             vMatrix.add(t)
         }
-        return Pair(vMatrix, nVars)
+        return Pair(Matrix(vMatrix), nVars)
     }
 
     object DistanceFunctionVMatrixBuilderTF : VMatrixBuilder<DistanceFunctionMatchContext, TfAccumulatingTerm, Operand<TFloat32>> {
@@ -105,7 +108,7 @@ object DistanceFunctionVMatrixBuilder : VMatrixBuilder<DistanceFunctionMatchCont
             builder: TermBuilder<TfAccumulatingTerm, Operand<TFloat32>>,
             context: DistanceFunctionMatchContext,
             mrep: SGGravity.SGCompactMatrixRep,
-        ): Pair<List<List<Operand<TFloat32>>>, Int> {
+        ): Pair<Matrix<Operand<TFloat32>>, Int> {
             builder as TfTermBuilder // TODO Refactor this
 
             val tf = builder.model.tf
@@ -147,7 +150,7 @@ object DistanceFunctionVMatrixBuilder : VMatrixBuilder<DistanceFunctionMatchCont
 
                 vMatrix.add(t)
             }
-            return Pair(vMatrix, nVars)
+            return Pair(Matrix(vMatrix), nVars)
         }
     }
 }

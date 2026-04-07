@@ -82,7 +82,7 @@ interface SGGravityObjective <T: CalibrationContext, M: DifferentiableModel, V> 
     fun build (
         nVars: Int,
         context: T,
-        expectedTrips: Map<ActivityType, List<List<V>>>,
+        expectedTrips: Map<ActivityType, Matrix<V>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ) : M
 }
@@ -91,7 +91,7 @@ object TrafficCountSSE : SGGravityObjective<TrafficCountCalibrationContext, Diff
     override fun build (
         nVars: Int,
         context: TrafficCountCalibrationContext,
-        expectedTrips: Map<ActivityType, List<List<LinearTerm>>>,
+        expectedTrips: Map<ActivityType, Matrix<LinearTerm>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ) : DifferentiableModelUVBase {
         // Simulated traffic counts
@@ -112,7 +112,7 @@ object TrafficCountSeparate : SGGravityObjective<TrafficCountCalibrationContext,
     override fun build (
         nVars: Int,
         context: TrafficCountCalibrationContext,
-        expectedTrips: Map<ActivityType, List<List<LinearTerm>>>,
+        expectedTrips: Map<ActivityType, Matrix<LinearTerm>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ) : DifferentiableModelMV {
         // Simulated traffic counts
@@ -135,7 +135,7 @@ object TrafficCountSeparate : SGGravityObjective<TrafficCountCalibrationContext,
 private fun getSimCountsFromDemand(
     nVars: Int,
     context: TrafficCountCalibrationContext,
-    expectedTrips: Map<ActivityType, List<List<LinearTerm>>>,
+    expectedTrips: Map<ActivityType, Matrix<LinearTerm>>,
     tripStartDistr: Map<ActivityType, DoubleArray>
 ) : Map<TrafficSensor, List<LinearTerm>>{
     // Simulated traffic counts
@@ -152,7 +152,7 @@ private fun getSimCountsFromDemand(
                     for (t in 0 until T) {
                         for (activity in ActivityType.entries) {
                             simCount[sensor]!![t].addTerm(
-                                expectedTrips[activity]!![o][d],
+                                expectedTrips[activity]!!.get(o, d),
                                 coefficient = context.totalPopulation * tripStartDistr[activity]!![t]
                             )
                         }
@@ -173,7 +173,7 @@ class DFMatchSSE (
     override fun build (
         nVars: Int,
         context: DistanceFunctionMatchContext,
-        expectedTrips: Map<ActivityType, List<List<LinearTerm>>>,
+        expectedTrips: Map<ActivityType, Matrix<LinearTerm>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ) : DifferentiableModelUVBase {
         val omosim = context.omosim
@@ -188,7 +188,7 @@ class DFMatchSSE (
             for (d in 0 until n) {
                 val expectedTripCount = LinearTerm(nVars)
                 expectedTripCount.addTerm(
-                    expectedTrips[activity]!![o][d],
+                    expectedTrips[activity]!!.get(o, d),
                     context.totalPopulation
                 )
                 expectedODCount[Pair(o,d)] = expectedTripCount
@@ -254,7 +254,7 @@ class DFMatchSSETF (
     override fun build (
         nVars: Int,
         context: DistanceFunctionMatchContext,
-        expectedTrips: Map<ActivityType, List<List<TfAccumulatingTerm>>>,
+        expectedTrips: Map<ActivityType, Matrix<TfAccumulatingTerm>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ) : TfModel {
         val tf = model.tf
@@ -269,7 +269,7 @@ class DFMatchSSETF (
             val distances = omosim.routingCache.getDistances(origin, omosim.grid)
 
             for (d in 0 until n) {
-                val expectedTripCount = tf.math.mul(expectedTrips[activity]!![o][d].value, totalPopulation)
+                val expectedTripCount = tf.math.mul(expectedTrips[activity]!!.get(o, d).value, totalPopulation)
                 expectedODCount[Pair(o,d)] = expectedTripCount
 
                 val expectedTotalDistanceEntry = tf.math.mul(expectedTripCount, tf.constant((distances[d] / 1000.0).toFloat()))
@@ -298,12 +298,12 @@ class DFMatchSSETF (
         val moment2 = tf.math.div(expectedSumOfSquare, expectedTotalTrips)
 
         // (m - s)^2 = m^2 - 2ms + s^2
-        val a1 =  tf.constant( (mean * mean * 10).toFloat() )
+        val a1 = tf.constant( (mean * mean * 10).toFloat() )
         val b1 = tf.math.mul(expectedMean, tf.constant( (-2 * mean * 10).toFloat() ))
         val c1 = tf.math.mul( tf.math.mul(expectedMean, expectedMean), tf.constant(10f) )
         val t1 = tf.math.addN(listOf(a1, b1, c1))
 
-        val a2 =  tf.constant( (m2 * m2).toFloat() )
+        val a2 = tf.constant( (m2 * m2).toFloat() )
         val b2 = tf.math.mul(moment2, tf.constant( (-2 * m2).toFloat() ))
         val c2 = tf.math.mul(moment2, moment2)
         val t2 = tf.math.pow(tf.math.addN(listOf(a2, b2, c2)), tf.constant(0.5f))
