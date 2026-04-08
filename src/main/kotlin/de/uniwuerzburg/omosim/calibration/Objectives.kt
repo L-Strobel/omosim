@@ -80,19 +80,19 @@ fun grbSseObjective(
     return obj
 }
 
-interface SGGravityObjective <T: CalibrationContext, M: DifferentiableModel, V, MAT: Matrix<V>> {
+interface SGGravityObjective <M: DifferentiableModel, V, MAT: Matrix<V>> {
     fun build (
         nVars: Int,
-        context: T,
         expectedTrips: Map<ActivityType, MAT>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ) : M
 }
 
-object TrafficCountSSE : SGGravityObjective<TrafficCountCalibrationContext, DifferentiableModelUVBase, LinearTerm, Matrix<LinearTerm>> {
+class TrafficCountSSE(
+    val context: TrafficCountCalibrationContext
+) : SGGravityObjective<DifferentiableModelUVBase, LinearTerm, Matrix<LinearTerm>> {
     override fun build (
         nVars: Int,
-        context: TrafficCountCalibrationContext,
         expectedTrips: Map<ActivityType, Matrix<LinearTerm>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ) : DifferentiableModelUVBase {
@@ -110,10 +110,11 @@ object TrafficCountSSE : SGGravityObjective<TrafficCountCalibrationContext, Diff
     }
 }
 
-object TrafficCountSeparate : SGGravityObjective<TrafficCountCalibrationContext, DifferentiableModelMV, LinearTerm, Matrix<LinearTerm>> {
+class TrafficCountSeparate(
+    val context: TrafficCountCalibrationContext
+) : SGGravityObjective<DifferentiableModelMV, LinearTerm, Matrix<LinearTerm>> {
     override fun build (
         nVars: Int,
-        context: TrafficCountCalibrationContext,
         expectedTrips: Map<ActivityType, Matrix<LinearTerm>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ) : DifferentiableModelMV {
@@ -170,11 +171,11 @@ private fun getSimCountsFromDemand(
 class DFMatchSSE (
     val activity: ActivityType,
     val mean: Double,
-    val m2: Double
-) : SGGravityObjective<DistanceFunctionMatchContext, DifferentiableModelUVBase, LinearTerm, Matrix<LinearTerm>> {
+    val m2: Double,
+    val context: DistanceFunctionMatchContext
+) : SGGravityObjective<DifferentiableModelUVBase, LinearTerm, Matrix<LinearTerm>> {
     override fun build (
         nVars: Int,
-        context: DistanceFunctionMatchContext,
         expectedTrips: Map<ActivityType, Matrix<LinearTerm>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ) : DifferentiableModelUVBase {
@@ -251,11 +252,11 @@ class DFMatchSSETF (
     val activity: ActivityType,
     val mean: Double,
     val m2: Double,
-    val model: TfModel
-) : SGGravityObjective<DistanceFunctionMatchContext, TfModel, TfAccumulatingTerm, Matrix<TfAccumulatingTerm>> {
+    val model: TfModel,
+    val context: DistanceFunctionMatchContext
+) : SGGravityObjective<TfModel, TfAccumulatingTerm, Matrix<TfAccumulatingTerm>> {
     override fun build(
         nVars: Int,
-        context: DistanceFunctionMatchContext,
         expectedTrips: Map<ActivityType, Matrix<TfAccumulatingTerm>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ): TfModel {
@@ -317,15 +318,16 @@ class DFMatchSSETF (
         return model
     }
 }
+
 class DFMatchSSETFTF (
     val activity: ActivityType,
     val mean: Double,
     val m2: Double,
-    val model: TfModel
-) : SGGravityObjective<DistanceFunctionMatchContext, TfModel, Operand<TFloat32>, MatrixTF> {
+    val model: TfModel,
+    val context: DistanceFunctionMatchContext
+) : SGGravityObjective<TfModel, Operand<TFloat32>, MatrixTF> {
     override fun build(
         nVars: Int,
-        context: DistanceFunctionMatchContext,
         expectedTrips: Map<ActivityType, MatrixTF>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ): TfModel {

@@ -25,10 +25,12 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
  * Higher values -> Computes faster but is a rougher approximation of the markov chain representation.
  * @return Optimal transition matrix
  */
-fun SGGravity<TrafficCountCalibrationContext, DifferentiableModelUVBase, GRBVar, GRBLinExpr, Matrix<GRBVar>>.optimizeTMatrix(
+fun SGGravity<DifferentiableModelUVBase, GRBVar, GRBLinExpr, Matrix<GRBVar>>.optimizeTMatrix(
     activityType: ActivityType,
     iThresh: Double = 1e-4
 ) : D2Array<Double>? {
+    context as TrafficCountCalibrationContext
+
     logger.info(
         "[Experimental] Calibrating transition matrix for activity $activityType directly." +
                 "Number of variables: ${context.omosim.grid.size}"
@@ -36,7 +38,7 @@ fun SGGravity<TrafficCountCalibrationContext, DifferentiableModelUVBase, GRBVar,
     val m3rep = generateMarkovChainRep(activityType)
 
     val n = context.omosim.grid.size
-    val relevantODs = getRelevantODs(context.affectedSensors)
+    val relevantODs = context.getRelevantODs()
 
     try {
         // Setup

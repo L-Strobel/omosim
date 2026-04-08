@@ -45,11 +45,11 @@ class DistanceFunctionMatchContext(
         */
 
         // Calibrate
-        val objective = DFMatchSSETFTF(activity, mean, m2, tfModel)
+        val objective = DFMatchSSETFTF(activity, mean, m2, tfModel, this)
         val model = SGGravity(
             this,
             objective,
-            DistanceFunctionVMatrixBuilderTFTensor,
+            DistanceFunctionVMatrixBuilderTFTensor(this),
             TfTermBuilderDummy(tfModel),
             null
         ).build(activity)
