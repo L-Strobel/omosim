@@ -4,6 +4,7 @@ import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearTerm
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.Term
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.Variable
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfTermBuilder
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfTermBuilderDummy
 import de.uniwuerzburg.omosim.core.models.Landuse
 import de.uniwuerzburg.omosim.core.models.RealLocation
 import de.uniwuerzburg.omosim.io.geojson.property.BuildingProperties
@@ -75,7 +76,7 @@ sealed class LocationChoiceDCWeightFun {
         throw NotImplementedError()
     }
 
-    open fun applyDeterrenceToTensor(distances: Array<FloatArray>, builder: TfTermBuilder): Operand<TFloat32> {
+    open fun applyDeterrenceToTensor(distances: Array<FloatArray>, builder: TfTermBuilderDummy): Operand<TFloat32> {
         throw NotImplementedError()
     }
 
@@ -322,7 +323,7 @@ class LogNormDCUtil (
         return Pair(term, nVars)
     }
 
-    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, builder: TfTermBuilder): Operand<TFloat32> {
+    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, builder: TfTermBuilderDummy): Operand<TFloat32> {
         val tf = builder.model.tf
 
         val vA = builder.model.getVariable(0)

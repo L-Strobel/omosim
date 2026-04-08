@@ -4,7 +4,9 @@ import de.uniwuerzburg.omosim.calibration.algorithms.GradientDescent
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearTermBuilder
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfTermBuilder
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfTermBuilderDummy
 import de.uniwuerzburg.omosim.calibration.surrogate.DistanceFunctionVMatrixBuilder
+import de.uniwuerzburg.omosim.calibration.surrogate.DistanceFunctionVMatrixBuilderTFTensor
 import de.uniwuerzburg.omosim.calibration.surrogate.SGGravity
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.Omosim
@@ -43,12 +45,12 @@ class DistanceFunctionMatchContext(
         */
 
         // Calibrate
-        val objective = DFMatchSSETF(activity, mean, m2, tfModel)
+        val objective = DFMatchSSETFTF(activity, mean, m2, tfModel)
         val model = SGGravity(
             this,
             objective,
-            DistanceFunctionVMatrixBuilder.DistanceFunctionVMatrixBuilderTFTensor,
-            TfTermBuilder(tfModel),
+            DistanceFunctionVMatrixBuilderTFTensor,
+            TfTermBuilderDummy(tfModel),
             null
         ).build(activity)
         val base  = dcFunction.getDistanceParameters()

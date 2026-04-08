@@ -30,3 +30,24 @@ class TfTermBuilder(
         return TfAccumulatingTerm(model.tf.constant(0f))
     }
 }
+
+
+class TfTermBuilderDummy(
+    val model: TfModel
+) : TermBuilder<Operand<TFloat32>, Operand<TFloat32>> {
+    override fun addVar(term: Operand<TFloat32>, v: Operand<TFloat32>, coefficient: Double) {
+
+    }
+
+    override fun addConstant(term: Operand<TFloat32>, constant: Double) {
+
+    }
+
+    override fun addTerm(term: Operand<TFloat32>, other: Operand<TFloat32>, coefficient: Double) {
+
+    }
+
+    override fun new(nVars: Int): Operand<TFloat32> {
+        throw NotImplementedError()
+    }
+}

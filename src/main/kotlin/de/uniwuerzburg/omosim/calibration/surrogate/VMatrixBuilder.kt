@@ -6,6 +6,7 @@ import de.uniwuerzburg.omosim.calibration.TrafficCountCalibrationContext
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.*
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfAccumulatingTerm
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfTermBuilder
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfTermBuilderDummy
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import de.uniwuerzburg.omosim.io.json.OutputActivity
@@ -67,7 +68,7 @@ object DistanceFunctionVMatrixBuilder : VMatrixBuilder<DistanceFunctionMatchCont
         builder: TermBuilder<LinearTerm, Term>,
         context: DistanceFunctionMatchContext,
         mrep: SGGravity.SGCompactMatrixRep,
-    ) : Pair<Matrix<Term>, Int> {
+    ): Pair<Matrix<Term>, Int> {
         val vMatrix = mutableListOf<List<Term>>()
 
         val omosim = context.omosim
@@ -78,7 +79,7 @@ object DistanceFunctionVMatrixBuilder : VMatrixBuilder<DistanceFunctionMatchCont
 
         for ((o, origin) in omosim.grid.withIndex()) {
             val distances = omosim.routingCache.getDistances(origin, omosim.grid)
-            val attractions = finder.getWeightsNoOrigin(omosim.grid, activityType=mrep.vActivity)
+            val attractions = finder.getWeightsNoOrigin(omosim.grid, activityType = mrep.vActivity)
 
             val weights = mutableListOf<Term>()
             val sum = LinearTerm(nVars)
@@ -102,107 +103,107 @@ object DistanceFunctionVMatrixBuilder : VMatrixBuilder<DistanceFunctionMatchCont
             // Normalize
             val t = mutableListOf<Term>()
             for (d in 0 until n) {
-                t.add( DivisionTerm(nVars, weights[d], sum) )
+                t.add(DivisionTerm(nVars, weights[d], sum))
             }
 
             vMatrix.add(t)
         }
         return Pair(Matrix(vMatrix), nVars)
     }
+}
 
-    object DistanceFunctionVMatrixBuilderTF : VMatrixBuilder<DistanceFunctionMatchContext, TfAccumulatingTerm, Operand<TFloat32>> {
-        override fun build(
-            builder: TermBuilder<TfAccumulatingTerm, Operand<TFloat32>>,
-            context: DistanceFunctionMatchContext,
-            mrep: SGGravity.SGCompactMatrixRep,
-        ): Pair<Matrix<Operand<TFloat32>>, Int> {
-            builder as TfTermBuilder // TODO Refactor this
+object DistanceFunctionVMatrixBuilderTF : VMatrixBuilder<DistanceFunctionMatchContext, TfAccumulatingTerm, Operand<TFloat32>> {
+    override fun build(
+        builder: TermBuilder<TfAccumulatingTerm, Operand<TFloat32>>,
+        context: DistanceFunctionMatchContext,
+        mrep: SGGravity.SGCompactMatrixRep,
+    ): Pair<Matrix<Operand<TFloat32>>, Int> {
+        builder as TfTermBuilder // TODO Refactor this
 
-            val tf = builder.model.tf
-            val vMatrix = mutableListOf<List<Operand<TFloat32>>>()
+        val tf = builder.model.tf
+        val vMatrix = mutableListOf<List<Operand<TFloat32>>>()
 
-            val omosim = context.omosim
-            val finder = omosim.destinationFinder as DestinationFinderDefault
-            val dcFunction = finder.locChoiceWeightFuns[mrep.vActivity]!!
-            val (_, nVars) = dcFunction.deterrenceFunctionAsTFTerm(1.0, builder)
-            val n = context.omosim.grid.size
+        val omosim = context.omosim
+        val finder = omosim.destinationFinder as DestinationFinderDefault
+        val dcFunction = finder.locChoiceWeightFuns[mrep.vActivity]!!
+        val (_, nVars) = dcFunction.deterrenceFunctionAsTFTerm(1.0, builder)
+        val n = context.omosim.grid.size
 
-            for ((o, origin) in omosim.grid.withIndex()) {
-                val distances = omosim.routingCache.getDistances(origin, omosim.grid)
-                val attractions = finder.getWeightsNoOrigin(omosim.grid, activityType = mrep.vActivity)
+        for ((o, origin) in omosim.grid.withIndex()) {
+            val distances = omosim.routingCache.getDistances(origin, omosim.grid)
+            val attractions = finder.getWeightsNoOrigin(omosim.grid, activityType = mrep.vActivity)
 
-                val weights = mutableListOf<Operand<TFloat32>>()
-                for (d in 0 until n) {
-                    // TODO refactor
-                    val distanceAdj = if (distances[d].toDouble() <= 0.0) {
-                        0.01 // 10 Meters
-                    } else {
-                        distances[d].toDouble() / 1000
-                    }
-
-                    val (exponent, _) = dcFunction.deterrenceFunctionAsTFTerm(distanceAdj, builder)
-                    val deterrenceValue = tf.math.exp(exponent)
-                    val attraction =  tf.constant(attractions[d].toFloat())
-                    val weight = tf.math.mul(deterrenceValue, attraction)
-                    weights.add(weight)
+            val weights = mutableListOf<Operand<TFloat32>>()
+            for (d in 0 until n) {
+                // TODO refactor
+                val distanceAdj = if (distances[d].toDouble() <= 0.0) {
+                    0.01 // 10 Meters
+                } else {
+                    distances[d].toDouble() / 1000
                 }
 
-                val sum = tf.math.addN(weights)
-
-                // Normalize
-                val t = mutableListOf<Operand<TFloat32>>()
-                for (d in 0 until n) {
-                    t.add( tf.math.div(weights[d], sum) )
-                }
-
-                vMatrix.add(t)
+                val (exponent, _) = dcFunction.deterrenceFunctionAsTFTerm(distanceAdj, builder)
+                val deterrenceValue = tf.math.exp(exponent)
+                val attraction =  tf.constant(attractions[d].toFloat())
+                val weight = tf.math.mul(deterrenceValue, attraction)
+                weights.add(weight)
             }
-            return Pair(Matrix(vMatrix), nVars)
+
+            val sum = tf.math.addN(weights)
+
+            // Normalize
+            val t = mutableListOf<Operand<TFloat32>>()
+            for (d in 0 until n) {
+                t.add( tf.math.div(weights[d], sum) )
+            }
+
+            vMatrix.add(t)
         }
+        return Pair(Matrix(vMatrix), nVars)
     }
+}
 
-    object DistanceFunctionVMatrixBuilderTFTensor : VMatrixBuilder<DistanceFunctionMatchContext, TfAccumulatingTerm, Operand<TFloat32>> {
-        override fun build(
-            builder: TermBuilder<TfAccumulatingTerm, Operand<TFloat32>>,
-            context: DistanceFunctionMatchContext,
-            mrep: SGGravity.SGCompactMatrixRep,
-        ): Pair<MatrixTF, Int> {
-            builder as TfTermBuilder // TODO Refactor this
+object DistanceFunctionVMatrixBuilderTFTensor : VMatrixBuilder<DistanceFunctionMatchContext, Operand<TFloat32>, Operand<TFloat32>> {
+    override fun build(
+        builder: TermBuilder<Operand<TFloat32>, Operand<TFloat32>>,
+        context: DistanceFunctionMatchContext,
+        mrep: SGGravity.SGCompactMatrixRep,
+    ): Pair<MatrixTF, Int> {
+        builder as TfTermBuilderDummy // TODO Refactor this
 
-            val omosim = context.omosim
-            val n = omosim.grid.size
-            val tf = builder.model.tf
-            val shape: Operand<TInt32> = tf.constant(intArrayOf(n, n))
-            val vMatrix = mutableListOf<List<Operand<TFloat32>>>()
+        val omosim = context.omosim
+        val n = omosim.grid.size
+        val tf = builder.model.tf
+        val shape: Operand<TInt32> = tf.constant(intArrayOf(n, n))
+        val vMatrix = mutableListOf<List<Operand<TFloat32>>>()
 
-            val finder = omosim.destinationFinder as DestinationFinderDefault
-            val dcFunction = finder.locChoiceWeightFuns[mrep.vActivity]!!
-            val (_, nVars) = dcFunction.deterrenceFunctionAsTFTerm(1.0, builder)
+        val finder = omosim.destinationFinder as DestinationFinderDefault
+        val dcFunction = finder.locChoiceWeightFuns[mrep.vActivity]!!
+        val (_, nVars) = dcFunction.deterrenceFunctionAsTerm(1.0)
 
-            val arrDistance = Array<FloatArray>(n) { FloatArray(n) }
-            val arrAttraction = Array<FloatArray>(n) { FloatArray(n) }
-            for ((o, origin) in omosim.grid.withIndex()) {
-                val distances = omosim.routingCache.getDistances(origin, omosim.grid)
-                val attractions = finder.getWeightsNoOrigin(omosim.grid, activityType = mrep.vActivity)
+        val arrDistance = Array<FloatArray>(n) { FloatArray(n) }
+        val arrAttraction = Array<FloatArray>(n) { FloatArray(n) }
+        for ((o, origin) in omosim.grid.withIndex()) {
+            val distances = omosim.routingCache.getDistances(origin, omosim.grid)
+            val attractions = finder.getWeightsNoOrigin(omosim.grid, activityType = mrep.vActivity)
 
-                for (d in 0 until n) {
-                    val distanceAdj = if (distances[d].toDouble() <= 0.0) {
-                        0.01 // 10 Meters
-                    } else {
-                        distances[d].toDouble() / 1000
-                    }
-                    arrDistance[o][d] = distanceAdj.toFloat()
-                    arrAttraction[o][d] = ln(attractions[d]).toFloat() // TODO could be more compact
+            for (d in 0 until n) {
+                val distanceAdj = if (distances[d].toDouble() <= 0.0) {
+                    0.01 // 10 Meters
+                } else {
+                    distances[d].toDouble() / 1000
                 }
+                arrDistance[o][d] = distanceAdj.toFloat()
+                arrAttraction[o][d] = ln(attractions[d]).toFloat() // TODO could be more compact
             }
-            val mAttraction = TFloat32.tensorOf(StdArrays.ndCopyOf(arrAttraction))
-            builder.model.addTensor(mAttraction)
-            val oAttraction = tf.constant(mAttraction)
-            val oDeterrence = dcFunction.applyDeterrenceToTensor(arrDistance, builder)
-            val weightExponent = tf.math.add(oAttraction, oDeterrence)
-            val normalized = tf.nn.softmax(weightExponent)
-            return Pair(MatrixTF(tf, normalized), nVars)
         }
+        val mAttraction = TFloat32.tensorOf(StdArrays.ndCopyOf(arrAttraction))
+        builder.model.addTensor(mAttraction)
+        val oAttraction = tf.constant(mAttraction)
+        val oDeterrence = dcFunction.applyDeterrenceToTensor(arrDistance, builder)
+        val weightExponent = tf.math.add(oAttraction, oDeterrence)
+        val normalized = tf.nn.softmax(weightExponent)
+        return Pair(MatrixTF(tf, normalized), nVars)
     }
 
     /*

@@ -21,7 +21,7 @@ open class Matrix<T>(
 
 class MatrixTF(
     val tf: Ops,
-    val matrixT: Operand<TFloat32>
+    var matrixT: Operand<TFloat32>
 ) : Matrix<Operand<TFloat32>>(listOf()) {
     override fun get(r: Int, c: Int): Operand<TFloat32> {
         val indices = tf.constant(arrayOf(longArrayOf(r.toLong(), c.toLong())))
@@ -35,6 +35,10 @@ class MatrixTF(
         val nrows = dims[0].toInt()
         val ncols = dims[1].toInt()
         return Pair(nrows, ncols)
+    }
+
+    fun add(other: Operand<TFloat32>) {
+        matrixT = tf.math.add(matrixT, other)
     }
 }
 

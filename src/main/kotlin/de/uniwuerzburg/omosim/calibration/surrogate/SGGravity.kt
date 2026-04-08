@@ -4,6 +4,8 @@ import de.uniwuerzburg.omosim.calibration.*
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.MC_SAMPLES
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.*
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfTermBuilder
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfTermBuilderDummy
 import de.uniwuerzburg.omosim.core.ActivityGeneratorDefault
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.models.*
@@ -15,19 +17,20 @@ import org.jetbrains.kotlinx.multik.ndarray.data.D2Array
 import org.jetbrains.kotlinx.multik.ndarray.data.asDNArray
 import org.jetbrains.kotlinx.multik.ndarray.data.get
 import org.jetbrains.kotlinx.multik.ndarray.data.set
-import org.jetbrains.kotlinx.multik.ndarray.operations.expandDims
-import org.jetbrains.kotlinx.multik.ndarray.operations.plusAssign
-import org.jetbrains.kotlinx.multik.ndarray.operations.times
+import org.jetbrains.kotlinx.multik.ndarray.operations.*
 import org.locationtech.jts.geom.Coordinate
+import org.tensorflow.Operand
+import org.tensorflow.types.TFloat32
+import kotlin.reflect.typeOf
 
 /**
  * Surrogate model builder for the gravity model surrogate.
  *
  * @param context Calibration context to use. Includes a Simulator (OMoSim) and the traffic count data.
  */
-class SGGravity<T: CalibrationContext, M: DifferentiableModel, ACC, V> (
+class SGGravity<T: CalibrationContext, M: DifferentiableModel, ACC, V, MAT: Matrix<ACC>> (
     val context: T,
-    val objective: SGGravityObjective<T, M, ACC>,
+    val objective: SGGravityObjective<T, M, ACC, MAT>,
     val vMatrixBuilder: VMatrixBuilder<T, ACC, V>,
     val termBuilder: TermBuilder<ACC, V>,
     val mode: Mode? = Mode.CAR_DRIVER
@@ -465,28 +468,48 @@ class SGGravity<T: CalibrationContext, M: DifferentiableModel, ACC, V> (
         val tripStartDistr = monteCarloTripStartDistribution( MC_SAMPLES )
 
         // Create graph of the expected trips matrix: E(o, d | Car)
-        val expectedTrips = ActivityType.entries.associateWith {
-            Matrix(
-                List(n) {
+        val expectedTrips = if (termBuilder is TfTermBuilderDummy) {
+            val zeros = termBuilder.model.tf.zeros(termBuilder.model.tf.constant(intArrayOf(n, n)), TFloat32::class.java);
+            ActivityType.entries.associateWith {
+                MatrixTF(termBuilder.model.tf, zeros) as MAT
+            }
+        } else {
+            ActivityType.entries.associateWith {
+                Matrix(
                     List(n) {
-                        termBuilder.new(nVars)
+                        List(n) {
+                            termBuilder.new(nVars)
+                        }
                     }
-                }
-            )
+                ) as MAT
+            }
         }
 
         // Add expected trips for each destination activity
         for (activity in ActivityType.entries) {
-            addE(
-                termBuilder,
-                nVars,
-                mrep,
-                expectedTrips[activity]!!,
-                vMatrix,
-                relevantODs,
-                iThresh,
-                activity
-            )
+            if (expectedTrips[activity]!! is MatrixTF) {
+                addE(
+                    termBuilder,
+                    nVars,
+                    mrep,
+                    expectedTrips[activity]!! as MatrixTF,
+                    vMatrix as MatrixTF,
+                    relevantODs,
+                    iThresh,
+                    activity
+                )
+            } else {
+                addE(
+                    termBuilder,
+                    nVars,
+                    mrep,
+                    expectedTrips[activity]!! as Matrix<ACC>,
+                    vMatrix,
+                    relevantODs,
+                    iThresh,
+                    activity
+                )
+            }
         }
 
         // Objective
@@ -653,6 +676,161 @@ class SGGravity<T: CalibrationContext, M: DifferentiableModel, ACC, V> (
             }
         }
     }
+
+    fun <T, K> addE(
+        builder: TermBuilder<T, K>,
+        nVars: Int,
+        mrep: SGCompactMatrixRep,
+        expectedTrips: MatrixTF,
+        vMatrix : MatrixTF,
+        relevantODs: Set<Pair<Int, Int>>,
+        iThresh: Double,
+        activity: ActivityType
+    ) {
+        val builder = builder as TfTermBuilderDummy
+        val tf = builder.model.tf
+        val tActivity = if (activity == ActivityType.BUSINESS) {
+            ActivityType.OTHER // Edge case: Use other type transition matrix for business activity
+        } else {
+            activity
+        }
+
+        val n = context.omosim.grid.size
+        val pCar = mrep.pCar[tActivity]!!
+        val mPriorCnst = mrep.mPriorCnst[activity]!!
+        val mPriorVar = mrep.mPriorVar[activity]!!
+        val mPriorVarT = mPriorVar.transpose()
+
+        // In the case that the segment starts at vActivity
+        var vStart: Operand<TFloat32>? = null
+
+        // Transition matrix
+        val tMatrix = if (activity == ActivityType.HOME) {
+            mk.identity<Double>(n)
+        } else {
+            mrep.tMatrices[tActivity]!!
+        }
+
+        // Expected trip contribution unaffected by vActivity
+        val mFix = when (activity) {
+            in fixActivities -> mPriorCnst.transpose().dot(tMatrix) // F = (K^T)A
+            mrep.vActivity -> mk.zeros<Double>(n, n) // Not used
+            else -> {
+                // CASE: vActivity is flexible but not the destination
+                // F = diag(iK) A
+                val ones = mk.ones<Double>(1, n)
+                val left = ones.dot(mPriorCnst).diagonal()
+                left.dot(tMatrix)
+            }
+        }
+
+        val h = builder.model.addMatrix(mrep.h.toArray()) // TODO h should be row
+
+        val perm2dTranspose = tf.constant(
+            intArrayOf(1, 0)
+        )
+
+        // Expected trip contribution affected by vActivity
+        val mVar: Operand<TFloat32> = when (activity) {
+            in fixActivities -> {
+                when (mrep.vActivity) {
+                    activity -> {
+                        // For segments that started at vActivity: V = (vK)^T
+                        // Here we only build v (vStart)
+                        vStart = tf.linalg.matMul(h, vMatrix.matrixT)
+
+                        // For other segments: V = (K^T)X
+                        val left = builder.model.addMatrix(mPriorCnst.transpose().toArray())
+                        tf.linalg.matMul(left, vMatrix.matrixT)
+                    }
+
+                    in fixActivitiesNotHome -> {
+                        // V = ( ( diag(h)XK )^T ) A
+                        val left = builder.model.addMatrix(mPriorVarT.toArray())
+                        val right = builder.model.addMatrix(
+                            mrep.h.diagonal().transpose().dot(tMatrix).toArray()
+                        )
+                        val lm = tf.linalg.matMul(left, vMatrix.matrixT)
+                        val lmr = tf.linalg.matMul(lm, right)
+                        tf.linalg.transpose(lmr, perm2dTranspose)
+                    }
+
+                    ActivityType.HOME -> {
+                        throw NotImplementedError("Surrogate model dependent on home coefficients is not implemented!")
+                    }
+
+                    else -> {
+                        // V = ( ( KX )^T ) A
+                        val right = builder.model.addMatrix(mPriorVarT.dot(tMatrix).toArray())
+                        val mr = tf.linalg.matMul(vMatrix.matrixT, right)
+                        tf.linalg.transpose(mr, perm2dTranspose)
+                    }
+                }
+            }
+
+            in flexActivities -> {
+                when (mrep.vActivity) {
+                    activity -> {
+                        // V = diag(iK)X
+                        val ones = mk.ones<Double>(1, n)
+                        val left = builder.model.addMatrix(ones.dot(mPriorCnst).diagonal().toArray())
+                        tf.linalg.matMul(left, vMatrix.matrixT)
+                    }
+
+                    in fixActivitiesNotHome -> {
+                        // V = diag(hXK)A
+                        val left = h
+                        val right = builder.model.addMatrix(mPriorVar.toArray())
+                        val lm = tf.linalg.matMul(left, vMatrix.matrixT)
+                        tf.linalg.matMul(lm, right)
+                    }
+
+                    ActivityType.HOME -> {
+                        throw NotImplementedError("Surrogate model dependent on home coefficients is not implemented!")
+                    }
+
+                    else -> {
+                        // V = diag(KX)A
+                        val left = builder.model.addMatrix(mk.ones<Double>(1, n).dot(mPriorVar).toArray())
+                        tf.linalg.matMul(left, vMatrix.matrixT)
+                    }
+                }
+            }
+
+            else -> {
+                throw IllegalStateException("$activity neither fixed nor flexible")
+            }
+        }
+
+        // E += ( F + V ) odot pCar
+        val fix = builder.model.addMatrix(mFix.times(pCar).toArray())
+        val tMatrixCar = builder.model.addMatrix(tMatrix.times(pCar).toArray())
+        val mPriorVarTCar = builder.model.addMatrix(mPriorVarT.times(pCar).toArray())
+        val oCar = builder.model.addMatrix(pCar.toArray())
+
+        // F
+        if (mrep.vActivity != activity) {
+            expectedTrips.add(fix)
+        }
+
+        // V
+        val shape = mVar.asOutput().shape()
+        val dims = shape.asArray()
+        val nrows = dims[0].toInt()
+
+        if (nrows == 1) {
+            val dVar = tf.linalg.tensorDiag( tf.squeeze( mVar ) )
+            expectedTrips.add(tf.linalg.matMul(dVar, tMatrixCar))
+        } else {
+            expectedTrips.add(tf.math.mul(mVar, oCar))
+        }
+        if ((mrep.vActivity in fixActivities) and (mrep.vActivity == activity)) {
+            // For segments that started at vActivity: V = (diag(v)K)^T
+            val dStart = tf.linalg.tensorDiag( tf.squeeze( vStart ) )
+            expectedTrips.add(tf.linalg.matMul(dStart, mPriorVarTCar))
+        }
+    }
+
 }
 
 

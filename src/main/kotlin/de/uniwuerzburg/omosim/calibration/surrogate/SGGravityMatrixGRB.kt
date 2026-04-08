@@ -25,7 +25,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
  * Higher values -> Computes faster but is a rougher approximation of the markov chain representation.
  * @return Optimal transition matrix
  */
-fun SGGravity<TrafficCountCalibrationContext, DifferentiableModelUVBase, GRBVar, GRBLinExpr>.optimizeTMatrix(
+fun SGGravity<TrafficCountCalibrationContext, DifferentiableModelUVBase, GRBVar, GRBLinExpr, Matrix<GRBVar>>.optimizeTMatrix(
     activityType: ActivityType,
     iThresh: Double = 1e-4
 ) : D2Array<Double>? {

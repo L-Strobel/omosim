@@ -1,10 +1,12 @@
 package de.uniwuerzburg.omosim.calibration.differentiablemodel.tf
 
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUV
+import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
 import org.tensorflow.Graph
 import org.tensorflow.Operand
 import org.tensorflow.Session
 import org.tensorflow.ndarray.Shape
+import org.tensorflow.ndarray.StdArrays
 import org.tensorflow.ndarray.buffer.DataBuffers
 import org.tensorflow.ndarray.buffer.FloatDataBuffer
 import org.tensorflow.op.Ops
@@ -85,6 +87,15 @@ class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
         return tf.math.pow(base, tf.constant(power))
     }
 
+    fun addMatrix(data: Array<DoubleArray>) : Operand<TFloat32> {
+        val fData = data.map { dArray ->
+            dArray.map { it.toFloat() }.toFloatArray()
+        }.toTypedArray()
+        val tensor = TFloat32.tensorOf( StdArrays.ndCopyOf( fData ) )
+        this.addTensor(tensor)
+        return tf.constant(tensor)
+    }
+
     fun addTensor(tensor: TFloat32) {
         tensors.add(tensor)
     }
@@ -107,6 +118,8 @@ class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
         }
         inputTensor.copyFrom(ioBuffer)
     }
+
+    // TODO Optimize in TensorFlow
 
     override fun gradient(vals: DoubleArray, gradient: DoubleArray) : Double {
         fillInputTensor(vals) // Load input
