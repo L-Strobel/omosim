@@ -61,35 +61,35 @@ class DistanceFunctionMatchContext(
             model,
             base,
             mapOf(
-                "iterations" to "100",
+                "iterations" to "1",
                 "lr0" to "0.001",
                 "ub" to "10.0",
                 "lb" to "-100.0",
                 "lTol" to "0.00001",
-                "backTracking" to "false"
+                "backTracking" to "true"
             )
         )
 
-        //evaluate(base, calibrated, objective)
+        evaluate(base, calibrated, objective.mean, objective.m2, objective.activity)
         dcFunction.setDistanceParameters(calibrated)
         tfModel.close()
     }
 
-    fun evaluate(base: DoubleArray, calibrated: DoubleArray, objective: DFMatchSSE) {
+    fun evaluate(base: DoubleArray, calibrated: DoubleArray, mean: Double, m2: Double, activity: ActivityType) {
         val finder = omosim.destinationFinder as DestinationFinderDefault
-        val dcFunction = finder.locChoiceWeightFuns[objective.activity]!!
+        val dcFunction = finder.locChoiceWeightFuns[activity]!!
 
         dcFunction.setDistanceParameters(calibrated)
-        val (meanDistanceCal, m2DistanceCal) = getMomentsDistance(objective.activity)
+        val (meanDistanceCal, m2DistanceCal) = getMomentsDistance(activity)
 
         dcFunction.setDistanceParameters(base)
-        val (meanDistanceBase, m2DistanceBase) = getMomentsDistance(objective.activity)
+        val (meanDistanceBase, m2DistanceBase) = getMomentsDistance(activity)
 
-        println("Evaluate Distance Function Match (${objective.activity}):")
-        println("Mean trip distance Goal: %.3f km".format(objective.mean))
+        println("Evaluate Distance Function Match (${activity}):")
+        println("Mean trip distance Goal: %.3f km".format(mean))
         println("                   Base: %.3f km".format(meanDistanceBase))
         println("                   Calibrated: %.3f km".format(meanDistanceCal))
-        println("M2 trip distance   Goal: %.3f km".format(objective.m2))
+        println("M2 trip distance   Goal: %.3f km".format(m2))
         println("                   Base: %.3f km".format(m2DistanceBase))
         println("                   Calibrated: %.3f km".format(m2DistanceCal))
     }

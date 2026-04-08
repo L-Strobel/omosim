@@ -1,7 +1,6 @@
 package de.uniwuerzburg.omosim.calibration.differentiablemodel.tf
 
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUV
-import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
 import org.tensorflow.Graph
 import org.tensorflow.Operand
 import org.tensorflow.Session
@@ -17,7 +16,6 @@ import org.tensorflow.proto.GPUOptions
 import org.tensorflow.proto.GraphOptions
 import org.tensorflow.proto.OptimizerOptions
 import org.tensorflow.types.TFloat32
-
 
 class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
     val graph = Graph()
