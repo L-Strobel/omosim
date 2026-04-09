@@ -39,7 +39,7 @@ interface TermBuilder<ACC, V> {
      */
     fun fromMatrixMult( // TODO remove default value for transpose
         nVars: Int,
-        x: Matrix<V>,
+        x: List<List<V>>,
         left: D2Array<Double>,
         right: D2Array<Double>,
         transpose: Boolean = true,
@@ -86,9 +86,9 @@ interface TermBuilder<ACC, V> {
 
                         // Add to result
                         if (transpose) {
-                            this.addVar(activeEntry, x.get(i, j), coeff)
+                            this.addVar(activeEntry, x[i][j], coeff)
                         } else {
-                            this.addVar(activeEntry, x.get(j, i), coeff)
+                            this.addVar(activeEntry, x[j][i], coeff)
                         }
                     }
                 }

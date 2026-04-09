@@ -3,10 +3,7 @@ package de.uniwuerzburg.omosim.calibration
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.algorithms.*
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.*
-import de.uniwuerzburg.omosim.calibration.surrogate.GRBLinExprBuilder
-import de.uniwuerzburg.omosim.calibration.surrogate.SGGravity
-import de.uniwuerzburg.omosim.calibration.surrogate.TrafficCountVMatrixBuilder
-import de.uniwuerzburg.omosim.calibration.surrogate.optimizeTMatrix
+import de.uniwuerzburg.omosim.calibration.surrogate.*
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import de.uniwuerzburg.omosim.core.models.Cell
@@ -109,7 +106,7 @@ class Gravity(
             activities: List<ActivityType>, parameters: Map<String, String>? = null
         )  {
             for (activity in activities) {
-                val model = SGGravity(context, TrafficCountSSE(context), TrafficCountVMatrixBuilder(context), LinearTermBuilder)
+                val model = SGGravityNative(context, TrafficCountSSE(context), TrafficCountVMatrixBuilder(context), LinearTermBuilder)
                     .build(activity)
                 val x0 = DoubleArray(context.omosim.grid.size - 1) { 1.0 }
                 var d =  BFGS.run(model, x0, parameters=parameters)
@@ -123,7 +120,7 @@ class Gravity(
             activities: List<ActivityType>, parameters: Map<String, String>? = null
         ){
             for (activity in activities) {
-                val model = SGGravity(context, TrafficCountSSE(context), TrafficCountVMatrixBuilder(context), LinearTermBuilder)
+                val model = SGGravityNative(context, TrafficCountSSE(context), TrafficCountVMatrixBuilder(context), LinearTermBuilder)
                     .build(activity)
                 val x0 = DoubleArray(context.omosim.grid.size - 1) { 1.0 }
                 var d = GradientDescent.run(model, x0, parameters=parameters)
@@ -214,7 +211,7 @@ class Gravity(
             val measurements = context.sensors.map { it.measurements }.flatMap { it.toList() }
 
             for (activity in activities) {
-                val model = SGGravity(context, TrafficCountSeparate(context), TrafficCountVMatrixBuilder(context), LinearTermBuilder).build(activity)
+                val model = SGGravityNative(context, TrafficCountSeparate(context), TrafficCountVMatrixBuilder(context), LinearTermBuilder).build(activity)
                 val objective = o.surrogateObjWSPSA(model, context.sensors)
                 val x0 = DoubleArray(context.omosim.grid.size - 1) { 1.0 }
                 var d = WSPSA.run(
@@ -230,7 +227,7 @@ class Gravity(
             val measurements = context.sensors.map { it.measurements }.flatMap { it.toList() }
 
             for (activity in activities) {
-                val model = SGGravity(context, TrafficCountSeparate(context), TrafficCountVMatrixBuilder(context), LinearTermBuilder).build(activity)
+                val model = SGGravityNative(context, TrafficCountSeparate(context), TrafficCountVMatrixBuilder(context), LinearTermBuilder).build(activity)
                 val objective = o.batchObjWSPSA(activity)
                 val x0 = DoubleArray(context.omosim.grid.size - 1) { 1.0 }
                 var d = WSPSA.run(
@@ -264,7 +261,7 @@ class Gravity(
          * Sum of squares objective using the surrogate model.
          */
         fun surrogateObj(activity: ActivityType): (DoubleArray) -> Double {
-            val model = SGGravity(context, TrafficCountSSE(context), TrafficCountVMatrixBuilder(context), LinearTermBuilder).build(activity)
+            val model = SGGravityNative(context, TrafficCountSSE(context), TrafficCountVMatrixBuilder(context), LinearTermBuilder).build(activity)
             return { x: DoubleArray ->
                 model.evaluate(x)
             }

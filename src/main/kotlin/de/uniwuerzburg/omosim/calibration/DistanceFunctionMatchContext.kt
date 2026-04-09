@@ -1,13 +1,9 @@
 package de.uniwuerzburg.omosim.calibration
 
-import de.uniwuerzburg.omosim.calibration.algorithms.GradientDescent
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearTermBuilder
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfTermBuilder
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfTermBuilderDummy
-import de.uniwuerzburg.omosim.calibration.surrogate.DistanceFunctionVMatrixBuilder
 import de.uniwuerzburg.omosim.calibration.surrogate.DistanceFunctionVMatrixBuilderTFTensor
-import de.uniwuerzburg.omosim.calibration.surrogate.SGGravity
+import de.uniwuerzburg.omosim.calibration.surrogate.SGGravityTF
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.Omosim
 import de.uniwuerzburg.omosim.core.models.ActivityType
@@ -48,13 +44,13 @@ class DistanceFunctionMatchContext(
         val (_, nVars) = dcFunction.deterrenceFunctionAsTerm(1.0)
         val tfModel = TfModel(nVars)
         val objective = DFMatchSSETFTF(activity, mean, m2, tfModel, this)
-        val model = SGGravity(
+        val model = SGGravityTF(
             this,
             objective,
             DistanceFunctionVMatrixBuilderTFTensor(this),
             TfTermBuilderDummy(tfModel),
             null
-        ).build(activity)
+        ).build(tfModel, activity)
         val base  = dcFunction.getDistanceParameters()
 
 

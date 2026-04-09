@@ -3,8 +3,7 @@ package de.uniwuerzburg.omosim.core
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearTerm
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.Term
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.Variable
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfTermBuilder
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfTermBuilderDummy
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
 import de.uniwuerzburg.omosim.core.models.Landuse
 import de.uniwuerzburg.omosim.core.models.RealLocation
 import de.uniwuerzburg.omosim.io.geojson.property.BuildingProperties
@@ -76,11 +75,7 @@ sealed class LocationChoiceDCWeightFun {
         throw NotImplementedError()
     }
 
-    open fun applyDeterrenceToTensor(distances: Array<FloatArray>, builder: TfTermBuilderDummy): Operand<TFloat32> {
-        throw NotImplementedError()
-    }
-
-    open fun deterrenceFunctionAsTFTerm(distance: Double, builder: TfTermBuilder) : Pair<Operand<TFloat32>, Int> {
+    open fun applyDeterrenceToTensor(distances: Array<FloatArray>, model: TfModel): Operand<TFloat32> {
         throw NotImplementedError()
     }
 
@@ -308,26 +303,11 @@ class LogNormDCUtil (
         return Pair(term, nVars)
     }
 
-    override fun deterrenceFunctionAsTFTerm(distance: Double, builder: TfTermBuilder): Pair<Operand<TFloat32>, Int> {
-        val tf = builder.model.tf
-        val nVars = 2
+    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, model: TfModel): Operand<TFloat32> {
+        val tf = model.tf
 
-        val vA = builder.model.getVariable(0)
-        val vB = builder.model.getVariable(1)
-
-        val termA = tf.math.mul(vA, tf.constant((ln(distance) * ln(distance)).toFloat()))
-        val termB = tf.math.mul(vB, tf.constant(ln(distance).toFloat()))
-
-        val term = tf.math.add(termA, termB)
-
-        return Pair(term, nVars)
-    }
-
-    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, builder: TfTermBuilderDummy): Operand<TFloat32> {
-        val tf = builder.model.tf
-
-        val vA = builder.model.getVariable(0)
-        val vB = builder.model.getVariable(1)
+        val vA = model.getVariable(0)
+        val vB = model.getVariable(1)
 
         val lnDistance = Array(distances.size) {
             i -> FloatArray(distances[0].size) {
@@ -335,7 +315,7 @@ class LogNormDCUtil (
             }
         }
         val mLnDistance = TFloat32.tensorOf(StdArrays.ndCopyOf(lnDistance))
-        builder.model.addTensor(mLnDistance)
+        model.addTensor(mLnDistance)
         val oLnDistance = tf.constant(mLnDistance)
 
         val lnDistanceSquared = Array(distances.size) {
@@ -344,7 +324,7 @@ class LogNormDCUtil (
             }
         }
         val mLnDistanceSquared = TFloat32.tensorOf(StdArrays.ndCopyOf(lnDistanceSquared))
-        builder.model.addTensor(mLnDistanceSquared)
+        model.addTensor(mLnDistanceSquared)
         val oLnDistanceSquared = tf.constant(mLnDistanceSquared)
 
         val tA = tf.math.mul(vA, oLnDistanceSquared)
@@ -440,12 +420,12 @@ class LogNormPowerDCUtil (
         return Pair(term, nVars)
     }
 
-    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, builder: TfTermBuilderDummy): Operand<TFloat32> {
-        val tf = builder.model.tf
+    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, model: TfModel): Operand<TFloat32> {
+        val tf = model.tf
 
-        val vA = builder.model.getVariable(0)
-        val vB = builder.model.getVariable(1)
-        val vC = builder.model.getVariable(2)
+        val vA = model.getVariable(0)
+        val vB = model.getVariable(1)
+        val vC = model.getVariable(2)
 
         val lnDistance = Array(distances.size) {
             i -> FloatArray(distances[0].size) {
@@ -453,7 +433,7 @@ class LogNormPowerDCUtil (
             }
         }
         val mLnDistance = TFloat32.tensorOf(StdArrays.ndCopyOf(lnDistance))
-        builder.model.addTensor(mLnDistance)
+        model.addTensor(mLnDistance)
         val oLnDistance = tf.constant(mLnDistance)
 
         val lnDistanceSquared = Array(distances.size) {
@@ -462,11 +442,11 @@ class LogNormPowerDCUtil (
             }
         }
         val mLnDistanceSquared = TFloat32.tensorOf(StdArrays.ndCopyOf(lnDistanceSquared))
-        builder.model.addTensor(mLnDistanceSquared)
+        model.addTensor(mLnDistanceSquared)
         val oLnDistanceSquared = tf.constant(mLnDistanceSquared)
 
         val mDistance = TFloat32.tensorOf(StdArrays.ndCopyOf(distances))
-        builder.model.addTensor(mDistance)
+        model.addTensor(mDistance)
         val oDistance = tf.constant(mDistance)
 
         val tA = tf.math.mul(vA, oLnDistanceSquared)
@@ -550,11 +530,11 @@ data class CombinedDCUtil(
         return Pair(term, nVars)
     }
 
-    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, builder: TfTermBuilderDummy): Operand<TFloat32> {
-        val tf = builder.model.tf
+    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, model: TfModel): Operand<TFloat32> {
+        val tf = model.tf
 
-        val vA = builder.model.getVariable(0)
-        val vB = builder.model.getVariable(1)
+        val vA = model.getVariable(0)
+        val vB = model.getVariable(1)
 
         val lnDistance = Array(distances.size) {
             i -> FloatArray(distances[0].size) {
@@ -562,11 +542,11 @@ data class CombinedDCUtil(
             }
         }
         val mLnDistance = TFloat32.tensorOf(StdArrays.ndCopyOf(lnDistance))
-        builder.model.addTensor(mLnDistance)
+        model.addTensor(mLnDistance)
         val oLnDistance = tf.constant(mLnDistance)
 
         val mDistance = TFloat32.tensorOf(StdArrays.ndCopyOf(distances))
-        builder.model.addTensor(mDistance)
+        model.addTensor(mDistance)
         val oDistance = tf.constant(mDistance)
 
         val tA = tf.math.mul(vA, oDistance)
