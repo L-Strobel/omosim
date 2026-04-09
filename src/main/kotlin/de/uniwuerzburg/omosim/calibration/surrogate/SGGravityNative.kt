@@ -4,8 +4,8 @@ import de.uniwuerzburg.omosim.calibration.CalibrationConstants.MC_SAMPLES
 import de.uniwuerzburg.omosim.calibration.CalibrationContext
 import de.uniwuerzburg.omosim.calibration.SGGravityObjectiveNative
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModel
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearTermBuilder
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.TermBuilder
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearTerm
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.Term
 import de.uniwuerzburg.omosim.calibration.logger
 import de.uniwuerzburg.omosim.calibration.surrogate.SGGravityCore.SGCompactMatrixRep
 import de.uniwuerzburg.omosim.core.models.ActivityType
@@ -16,14 +16,12 @@ import org.jetbrains.kotlinx.multik.api.linalg.dot
 import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.ones
 import org.jetbrains.kotlinx.multik.api.zeros
-import org.jetbrains.kotlinx.multik.ndarray.data.get
 import org.jetbrains.kotlinx.multik.ndarray.operations.times
 
 class SGGravityNative<M: DifferentiableModel> (
     val context: CalibrationContext,
     val objective: SGGravityObjectiveNative<M>,
     val vMatrixBuilder: VMatrixBuilderNative,
-    val termBuilder: LinearTermBuilder,
     val mode: Mode? = Mode.CAR_DRIVER
 ) {
     val core = SGGravityCore(context, mode)
@@ -56,11 +54,13 @@ class SGGravityNative<M: DifferentiableModel> (
 
         logger.info("Number of variables: $nVars")
 
+        val demandBuilder = DemandBuilderNative(nVars)
+
         // Create graph of the expected trips matrix: E(o, d | Car)
         val expectedTrips = ActivityType.entries.associateWith {
             List(n) {
                 List(n) {
-                    termBuilder.new(nVars)
+                    demandBuilder.new()
                 }
             }
         }
@@ -68,7 +68,7 @@ class SGGravityNative<M: DifferentiableModel> (
         // Add expected trips for each destination activity
         for (activity in ActivityType.entries) {
             addE(
-                termBuilder,
+                demandBuilder,
                 nVars,
                 mrep,
                 expectedTrips[activity]!!,
@@ -93,7 +93,7 @@ class SGGravityNative<M: DifferentiableModel> (
     /**
      * Determine expected trips matrix with the given activity at the destination.
      *
-     * @param builder Term builder of the desired model
+     * @param demandBuilder Term builder of the desired model
      * @param nVars Number of variables in the problem
      * @param mrep Compact markov chain representation of original model.
      * @param expectedTrips Expected trips matrix model to which the new terms are added
@@ -102,12 +102,12 @@ class SGGravityNative<M: DifferentiableModel> (
      * @param iThresh Performance parameter. @see de.uniwuerzburg.omod.calibration.surrogate.SGGravity.buildDiffModel
      * @param activity Activity at the destination of the trip matrix
      */
-    fun <T, K> addE(
-        builder: TermBuilder<T, K>,
+    fun addE(
+        demandBuilder: DemandBuilderNative,
         nVars: Int,
         mrep: SGCompactMatrixRep,
-        expectedTrips: List<List<T>>,
-        vMatrix: List<List<K>>,
+        expectedTrips: List<List<LinearTerm>>,
+        vMatrix: List<List<Term>>,
         relevantODs: Set<Pair<Int, Int>>,
         iThresh: Double,
         activity: ActivityType
@@ -125,7 +125,7 @@ class SGGravityNative<M: DifferentiableModel> (
         val mPriorVarT  = mPriorVar.transpose()
 
         // In the case that the segment starts at vActivity
-        val vStart = List(n) { builder.new(nVars) }
+        var vStart: List<List<LinearTerm>>? = null
 
         // Transition matrix
         val tMatrix = if (activity == ActivityType.HOME) {
@@ -154,36 +154,31 @@ class SGGravityNative<M: DifferentiableModel> (
                     activity -> {
                         // For segments that started at vActivity: V = (vK)^T
                         // Here we only build v (vStart)
-                        val h = mrep.h.flatten()
-                        for (col in 0 until n) {
-                            for (row in 0 until n) {
-                                builder.addVar(vStart[col], vMatrix[row][col], h[row])
-                            }
-                        }
+                        vStart = demandBuilder.matrixMult(mrep.h, vMatrix, transpose=false, relevantRCs=null, cTol=0.0)
+
                         // For other segments: V = (K^T)X
                         val left  = mPriorCnst.transpose()
                         val right = mk.identity<Double>(n)
-                        builder.fromMatrixMult(
-                            nVars, vMatrix, left, right, transpose=false, relevantRCs=relevantODs, cTol=iThresh
+                        demandBuilder.matrixMult(
+                            left, vMatrix, right, transpose=false, relevantRCs=relevantODs, cTol=iThresh
                         )
-                        builder.fromMatrixMult(nVars, vMatrix, mk.zeros<Double>(n, n), mk.zeros<Double>(n, n), relevantRCs=relevantODs, cTol=iThresh) // TODO
+                        demandBuilder.matrixMult(mk.zeros<Double>(n, n), vMatrix, mk.zeros<Double>(n, n), transpose=false, relevantRCs=relevantODs, cTol=iThresh) // TODO
                     }
                     in core.fixActivitiesNotHome -> {
                         // V = ( ( diag(h)XK )^T ) A
                         val left  = mPriorVarT
                         val right = mrep.h.diagonal().transpose().dot(tMatrix)
-                        builder.fromMatrixMult(nVars, vMatrix, left, right, relevantRCs=relevantODs, cTol=iThresh)
-                        builder.fromMatrixMult(nVars, vMatrix, mk.zeros<Double>(n, n), mk.zeros<Double>(n, n), relevantRCs=relevantODs, cTol=iThresh) // TODO
+                        demandBuilder.matrixMult( left, vMatrix, right, transpose=true, relevantRCs=relevantODs, cTol=iThresh)
+                        demandBuilder.matrixMult(mk.zeros<Double>(n, n), vMatrix, mk.zeros<Double>(n, n), transpose=false, relevantRCs=relevantODs, cTol=iThresh) // TODO
                     }
                     ActivityType.HOME -> {
                         throw NotImplementedError("Surrogate model dependent on home coefficients is not implemented!")
                     }
                     else -> {
                         // V = ( ( KX )^T ) A
-                        val left  = mk.identity<Double>(n)
                         val right = mPriorVarT.dot(tMatrix)
-                        builder.fromMatrixMult(nVars, vMatrix, left, right, relevantRCs=relevantODs, cTol=iThresh)
-                        builder.fromMatrixMult(nVars, vMatrix, mk.zeros<Double>(n, n), mk.zeros<Double>(n, n), relevantRCs=relevantODs, cTol=iThresh) // TODO
+                        demandBuilder.matrixMult( vMatrix, right, transpose=true, relevantRCs=relevantODs, cTol=iThresh)
+                        demandBuilder.matrixMult(mk.zeros<Double>(n, n), vMatrix, mk.zeros<Double>(n, n), transpose=false, relevantRCs=relevantODs, cTol=iThresh) // TODO
                     }
                 }
             }
@@ -193,20 +188,15 @@ class SGGravityNative<M: DifferentiableModel> (
                         // V = diag(iK)X
                         val ones = mk.ones<Double>(1, n)
                         val left = ones.dot(mPriorCnst).diagonal()
-                        val right = mk.identity<Double>(n)
-                        builder.fromMatrixMult(
-                            nVars, vMatrix, left, right, transpose=false, relevantRCs=relevantODs, cTol=iThresh
-                        )
-                        builder.fromMatrixMult(nVars, vMatrix, mk.zeros<Double>(n, n), mk.zeros<Double>(n, n), relevantRCs=relevantODs, cTol=iThresh) // TODO
+                        demandBuilder.matrixMult( left, vMatrix, transpose=false, relevantRCs=relevantODs, cTol=iThresh)
+                        demandBuilder.matrixMult(mk.zeros<Double>(n, n), vMatrix, mk.zeros<Double>(n, n), transpose=false, relevantRCs=relevantODs, cTol=iThresh) // TODO
                     }
                     in core.fixActivitiesNotHome -> {
                         // V = diag(hXK)A
                         val left = mrep.h
                         val right = mPriorVar
-                        builder.fromMatrixMult(
-                            nVars, vMatrix, left, right, transpose=false, relevantRCs=relevantODs, cTol=iThresh
-                        )
-                        builder.fromMatrixMult(nVars, vMatrix, mk.zeros<Double>(n, n), mk.zeros<Double>(n, n), relevantRCs=relevantODs, cTol=iThresh) // TODO
+                        demandBuilder.matrixMult( left, vMatrix, right, transpose=false, relevantRCs=relevantODs, cTol=iThresh)
+                        demandBuilder.matrixMult(mk.zeros<Double>(n, n), vMatrix, mk.zeros<Double>(n, n), transpose=false, relevantRCs=relevantODs, cTol=iThresh) // TODO
                     }
                     ActivityType.HOME -> {
                         throw NotImplementedError("Surrogate model dependent on home coefficients is not implemented!")
@@ -215,10 +205,8 @@ class SGGravityNative<M: DifferentiableModel> (
                         // V = diag(KX)A
                         val left = mk.ones<Double>(1, n).dot(mPriorVar)
                         val right = mk.identity<Double>(n)
-                        builder.fromMatrixMult(
-                            nVars, vMatrix, left, right, transpose=false, relevantRCs=relevantODs, cTol=iThresh
-                        )
-                        builder.fromMatrixMult(nVars, vMatrix, mk.zeros<Double>(n, n), mk.zeros<Double>(n, n), relevantRCs=relevantODs, cTol=iThresh) // TODO
+                        demandBuilder.matrixMult( left, vMatrix, transpose=false, relevantRCs=relevantODs, cTol=iThresh)
+                        demandBuilder.matrixMult(mk.zeros<Double>(n, n), vMatrix, mk.zeros<Double>(n, n), transpose=false, relevantRCs=relevantODs, cTol=iThresh) // TODO
                     }
                 }
             }
@@ -229,25 +217,21 @@ class SGGravityNative<M: DifferentiableModel> (
         val fix = mFix.times(pCar)
         val tMatrixCar = tMatrix.times(pCar)
         val mPriorVarTCar = mPriorVarT.times(pCar)
-        for (o in 0 until n) {
-            for (d in 0 until n) {
-                if (Pair(o, d) !in relevantODs) { continue }
-                // F
-                //if (mrep.vActivity != activity) {
-                //    builder.addConstant(expectedTrips.get(o, d), fix[o, d])
-                //}
 
-                // V
-                if (mVar.shape().first == 1) {
-                    builder.addTerm(expectedTrips[o][d], mVar.get(0, o), tMatrixCar[o,d])
-                } else {
-                    builder.addTerm(expectedTrips[o][d], mVar.get(o, d), pCar[o, d])
-                }
-                if ((mrep.vActivity in core.fixActivities) and (mrep.vActivity == activity)){
-                    // For segments that started at vActivity: V = (diag(v)K)^T
-                    builder.addTerm(expectedTrips[o][d], vStart[o], mPriorVarTCar[o, d])
-                }
-            }
+        // F
+        if (mrep.vActivity != activity) {
+            demandBuilder.add(expectedTrips, fix, relevantODs)
+        }
+
+        // V
+        if (mVar.size == 1) {
+            demandBuilder.diagAndMult(expectedTrips, mVar, tMatrixCar, relevantODs)
+        } else {
+            demandBuilder.add(expectedTrips, mVar, pCar, relevantODs)
+        }
+        if ((mrep.vActivity in core.fixActivities) and (mrep.vActivity == activity)){
+            // For segments that started at vActivity: V = (diag(v)K)^T
+            demandBuilder.diagAndMult(expectedTrips, vStart!!, mPriorVarTCar, relevantODs)
         }
     }
 }
