@@ -90,7 +90,7 @@ interface SGGravityObjectiveNative <M: DifferentiableModel> {
 interface SGGravityObjectiveTF {
     fun build (
         nVars: Int,
-        expectedTrips: Map<ActivityType, MatrixTF>,
+        expectedTrips: Map<ActivityType, Operand<TFloat32>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ) : TfModel
 }
@@ -274,7 +274,7 @@ class DFMatchSSETFTF (
 ) : SGGravityObjectiveTF {
     override fun build(
         nVars: Int,
-        expectedTrips: Map<ActivityType, MatrixTF>,
+        expectedTrips: Map<ActivityType, Operand<TFloat32>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ): TfModel {
         val tf = model.tf
@@ -294,7 +294,7 @@ class DFMatchSSETFTF (
         val oDistanceSquared = model.addMatrix( arrDistanceSquared )
 
         val totalPopulation = tf.constant(context.totalPopulation.toFloat())
-        val expected = tf.math.addN(expectedTrips.values.map { it.matrixT }) // TODO
+        val expected = tf.math.addN(expectedTrips.values.map { it }) // TODO
         //val expectedTripsScaled = tf.math.mul(expectedTrips[activity]!!.matrixT, totalPopulation)
         val expectedTripsScaled = tf.math.mul(expected, totalPopulation)
         val expectedDistance = tf.math.mul(expectedTripsScaled, oDistance)

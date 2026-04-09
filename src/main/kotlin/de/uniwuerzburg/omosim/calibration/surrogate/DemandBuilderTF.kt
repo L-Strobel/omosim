@@ -1,0 +1,114 @@
+package de.uniwuerzburg.omosim.calibration.surrogate
+
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
+import de.uniwuerzburg.omosim.utils.diagonal
+import org.jetbrains.kotlinx.multik.api.linalg.dot
+import org.jetbrains.kotlinx.multik.ndarray.data.D2
+import org.jetbrains.kotlinx.multik.ndarray.data.D2Array
+import org.jetbrains.kotlinx.multik.ndarray.data.NDArray
+import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
+import org.tensorflow.Operand
+import org.tensorflow.types.TFloat32
+
+class DemandBuilderTF(
+    val model: TfModel
+) : DemandBuilder<Operand<TFloat32>, Operand<TFloat32>> {
+    val tf = model.tf
+
+    // Flip rows and columns. I.e., normal transpose
+    val perm2dTranspose = tf.constant(
+        intArrayOf(1, 0)
+    )
+
+    override fun add(
+        accMatrix: Operand<TFloat32>,
+        other: NDArray<Double, D2>,
+        relevantRCs: Set<Pair<Int, Int>>?
+    ): Operand<TFloat32> {
+        val other = model.addMatrix( other.toArray() )
+        return tf.math.add(accMatrix, other)
+    }
+
+    override fun add(
+        accMatrix: Operand<TFloat32>,
+        other: Operand<TFloat32>,
+        mCoeff: NDArray<Double, D2>,
+        relevantRCs: Set<Pair<Int, Int>>?
+    ): Operand<TFloat32> {
+        val mCoeff = model.addMatrix( mCoeff.toArray() )
+        val otherMult = tf.math.mul(other, mCoeff)
+        return tf.math.add(accMatrix, otherMult)
+    }
+
+    override fun diagAndMult(
+        accMatrix: Operand<TFloat32>,
+        v: Operand<TFloat32>,
+        mCoeff: NDArray<Double, D2>,
+        relevantRCs: Set<Pair<Int, Int>>?
+    ): Operand<TFloat32> {
+        val vDiag = tf.linalg.tensorDiag( tf.squeeze( v ) )
+        return tf.linalg.matMul(vDiag, accMatrix)
+    }
+
+    override fun matrixMult(
+        left: D2Array<Double>,
+        vMatrix: Operand<TFloat32>,
+        transpose: Boolean,
+        relevantRCs: Set<Pair<Int, Int>>?,
+        cTol: Double
+    ): Operand<TFloat32> {
+        val x = if (transpose) {
+            tf.linalg.transpose(vMatrix, perm2dTranspose)
+        } else {
+            vMatrix
+        }
+        val left = model.addMatrix( left.toArray() )
+
+        return tf.linalg.matMul(left, x)
+    }
+
+    override fun matrixMult(
+        vMatrix: Operand<TFloat32>,
+        right: D2Array<Double>,
+        transpose: Boolean,
+        relevantRCs: Set<Pair<Int, Int>>?,
+        cTol: Double
+    ): Operand<TFloat32> {
+        val x = if (transpose) {
+            tf.linalg.transpose(vMatrix, perm2dTranspose)
+        } else {
+            vMatrix
+        }
+        val right = model.addMatrix( right.toArray() )
+
+        return tf.linalg.matMul(x, right)
+    }
+
+    override fun matrixMult(
+        left: D2Array<Double>,
+        x: Operand<TFloat32>,
+        right: D2Array<Double>,
+        transpose: Boolean,
+        relevantRCs: Set<Pair<Int, Int>>?,
+        cTol: Double
+    ): Operand<TFloat32> {
+        val x = if (transpose) {
+            tf.linalg.transpose(x, perm2dTranspose)
+        } else {
+            x
+        }
+        val left  = model.addMatrix( left.toArray() )
+        val right = model.addMatrix( right.toArray() )
+
+        val lm = tf.linalg.matMul(left, x)
+        return tf.linalg.matMul(lm, right)
+    }
+
+    override fun shape(m: Operand<TFloat32>): Pair<Int, Int> {
+        val shape = m.asOutput().shape()
+        val dims = shape.asArray()
+        val nrows = dims[0].toInt()
+        val ncols = dims[1].toInt()
+        return nrows to ncols
+    }
+}

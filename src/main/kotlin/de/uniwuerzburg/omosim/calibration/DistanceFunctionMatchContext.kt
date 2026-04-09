@@ -23,11 +23,12 @@ class DistanceFunctionMatchContext(
         val dcFunction = finder.locChoiceWeightFuns[activity]!!
 
         // Calibrate
+        /*
         val objective = DFMatchSSE(activity, mean, m2, this)
         val model = SGGravityNative(
             this, objective, DistanceFunctionVMatrixBuilder(this), null
         ).build(activity, iThresh = 0.0)
-        val base  = dcFunction.getDistanceParameters()
+        val base  = dcFunction.getDistanceParameters()*/
 
         /*
         // Test
@@ -43,7 +44,7 @@ class DistanceFunctionMatchContext(
         */
 
         // Calibrate
-        /*val (_, nVars) = dcFunction.deterrenceFunctionAsTerm(1.0)
+        val (_, nVars) = dcFunction.deterrenceFunctionAsTerm(1.0)
         val tfModel = TfModel(nVars)
         val objective = DFMatchSSETFTF(activity, mean, m2, tfModel, this)
         val model = SGGravityTF(
@@ -53,11 +54,10 @@ class DistanceFunctionMatchContext(
             TfTermBuilderDummy(tfModel),
             null
         ).build(tfModel, activity)
-        val base  = dcFunction.getDistanceParameters()*/
-
+        val base  = dcFunction.getDistanceParameters()
 
         println( model.evaluate(base) )
-        //tfModel.close()
+        tfModel.close()
 
         /*val calibrated = GradientDescent.run(
             model,

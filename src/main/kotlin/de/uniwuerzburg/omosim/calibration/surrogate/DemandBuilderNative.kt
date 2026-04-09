@@ -179,4 +179,10 @@ class DemandBuilderNative(
         }
         return result
     }
+
+    override fun shape(m: List<List<LinearTerm>>): Pair<Int, Int> {
+        var nrows = m.size
+        var ncols = if (nrows == 0) 0 else m[0].size
+        return nrows to ncols
+    }
 }

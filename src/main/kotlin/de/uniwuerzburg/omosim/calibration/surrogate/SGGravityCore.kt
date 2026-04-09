@@ -2,6 +2,8 @@ package de.uniwuerzburg.omosim.calibration.surrogate
 
 import de.uniwuerzburg.omosim.calibration.*
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearTerm
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.Term
 import de.uniwuerzburg.omosim.core.ActivityGeneratorDefault
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.models.*
@@ -428,6 +430,153 @@ class SGGravityCore (
             }
         }
         return relevantODs
+    }
+
+    /**
+     * Determine expected trips matrix with the given activity at the destination.
+     *
+     * @param demandBuilder Term builder of the desired model
+     * @param nVars Number of variables in the problem
+     * @param mrep Compact markov chain representation of original model.
+     * @param expectedTrips Expected trips matrix model to which the new terms are added
+     * @param vMatrix Transition matrix containing variable terms
+     * @param relevantODs ActivityType for which the gravity model will be variable
+     * @param iThresh Performance parameter. @see de.uniwuerzburg.omod.calibration.surrogate.SGGravity.buildDiffModel
+     * @param activity Activity at the destination of the trip matrix
+     */
+    fun <M_IN, M_OUT> addE(
+        demandBuilder: DemandBuilder<M_IN, M_OUT>,
+        mrep: SGCompactMatrixRep,
+        expectedTrips: M_OUT,
+        vMatrix: M_IN,
+        relevantODs: Set<Pair<Int, Int>>,
+        iThresh: Double,
+        activity: ActivityType
+    ) : M_OUT {
+        var expectedTrips = expectedTrips
+
+        val tActivity = if (activity == ActivityType.BUSINESS) {
+            ActivityType.OTHER // Edge case: Use other type transition matrix for business activity
+        } else {
+            activity
+        }
+
+        val n = omosim.grid.size
+        val pCar = mrep.pCar[tActivity]!!
+        val mPriorCnst  = mrep.mPriorCnst[activity]!!
+        val mPriorVar   = mrep.mPriorVar[activity]!!
+        val mPriorVarT  = mPriorVar.transpose()
+
+        // In the case that the segment starts at vActivity
+        var vStart: M_OUT? = null
+
+        // Transition matrix
+        val tMatrix = if (activity == ActivityType.HOME) {
+            mk.identity<Double>(n)
+        } else {
+            mrep.tMatrices[tActivity]!!
+        }
+
+        // Expected trip contribution unaffected by vActivity
+        val mFix = when(activity) {
+            in fixActivities -> mPriorCnst.transpose().dot(tMatrix) // F = (K^T)A
+            mrep.vActivity -> mk.zeros<Double>(n, n) // Not used
+            else -> {
+                // CASE: vActivity is flexible but not the destination
+                // F = diag(iK) A
+                val ones = mk.ones<Double>(1, n)
+                val left = ones.dot(mPriorCnst).diagonal()
+                left.dot(tMatrix)
+            }
+        }
+
+        // Expected trip contribution affected by vActivity
+        val mVar = when(activity) {
+            in fixActivities -> {
+                when (mrep.vActivity) {
+                    activity -> {
+                        // For segments that started at vActivity: V = (vK)^T
+                        // Here we only build v (vStart)
+                        vStart = demandBuilder.matrixMult(mrep.h, vMatrix, transpose=false, relevantRCs=null, cTol=0.0)
+
+                        // For other segments: V = (K^T)X
+                        val left  = mPriorCnst.transpose()
+                        val right = mk.identity<Double>(n)
+                        demandBuilder.matrixMult(
+                            left, vMatrix, right, transpose=false, relevantRCs=relevantODs, cTol=iThresh
+                        )
+                        demandBuilder.matrixMult(mk.zeros<Double>(n, n), vMatrix, mk.zeros<Double>(n, n), transpose=false, relevantRCs=relevantODs, cTol=iThresh) // TODO
+                    }
+                    in fixActivitiesNotHome -> {
+                        // V = ( ( diag(h)XK )^T ) A
+                        val left  = mPriorVarT
+                        val right = mrep.h.diagonal().transpose().dot(tMatrix)
+                        demandBuilder.matrixMult( left, vMatrix, right, transpose=true, relevantRCs=relevantODs, cTol=iThresh)
+                        demandBuilder.matrixMult(mk.zeros<Double>(n, n), vMatrix, mk.zeros<Double>(n, n), transpose=false, relevantRCs=relevantODs, cTol=iThresh) // TODO
+                    }
+                    ActivityType.HOME -> {
+                        throw NotImplementedError("Surrogate model dependent on home coefficients is not implemented!")
+                    }
+                    else -> {
+                        // V = ( ( KX )^T ) A
+                        val right = mPriorVarT.dot(tMatrix)
+                        demandBuilder.matrixMult( vMatrix, right, transpose=true, relevantRCs=relevantODs, cTol=iThresh)
+                        demandBuilder.matrixMult(mk.zeros<Double>(n, n), vMatrix, mk.zeros<Double>(n, n), transpose=false, relevantRCs=relevantODs, cTol=iThresh) // TODO
+                    }
+                }
+            }
+            in flexActivities -> {
+                when (mrep.vActivity) {
+                    activity -> {
+                        // V = diag(iK)X
+                        val ones = mk.ones<Double>(1, n)
+                        val left = ones.dot(mPriorCnst).diagonal()
+                        demandBuilder.matrixMult( left, vMatrix, transpose=false, relevantRCs=relevantODs, cTol=iThresh)
+                        demandBuilder.matrixMult(mk.zeros<Double>(n, n), vMatrix, mk.zeros<Double>(n, n), transpose=false, relevantRCs=relevantODs, cTol=iThresh) // TODO
+                    }
+                    in fixActivitiesNotHome -> {
+                        // V = diag(hXK)A
+                        val left = mrep.h
+                        val right = mPriorVar
+                        demandBuilder.matrixMult( left, vMatrix, right, transpose=false, relevantRCs=relevantODs, cTol=iThresh)
+                        demandBuilder.matrixMult(mk.zeros<Double>(n, n), vMatrix, mk.zeros<Double>(n, n), transpose=false, relevantRCs=relevantODs, cTol=iThresh) // TODO
+                    }
+                    ActivityType.HOME -> {
+                        throw NotImplementedError("Surrogate model dependent on home coefficients is not implemented!")
+                    }
+                    else -> {
+                        // V = diag(KX)A
+                        val left = mk.ones<Double>(1, n).dot(mPriorVar)
+                        val right = mk.identity<Double>(n)
+                        demandBuilder.matrixMult( left, vMatrix, transpose=false, relevantRCs=relevantODs, cTol=iThresh)
+                        demandBuilder.matrixMult(mk.zeros<Double>(n, n), vMatrix, mk.zeros<Double>(n, n), transpose=false, relevantRCs=relevantODs, cTol=iThresh) // TODO
+                    }
+                }
+            }
+            else -> { throw IllegalStateException("$activity neither fixed nor flexible") }
+        }
+
+        // E += ( F + V ) odot pCar
+        val fix = mFix.times(pCar)
+        val tMatrixCar = tMatrix.times(pCar)
+        val mPriorVarTCar = mPriorVarT.times(pCar)
+
+        // F
+        if (mrep.vActivity != activity) {
+            expectedTrips = demandBuilder.add(expectedTrips, fix, relevantODs)
+        }
+
+        // V
+        /*if (demandBuilder.shape(mVar).first == 1) {
+            expectedTrips = demandBuilder.diagAndMult(expectedTrips, mVar, tMatrixCar, relevantODs)
+        } else {
+            expectedTrips = demandBuilder.add(expectedTrips, mVar, pCar, relevantODs)
+        }
+        if ((mrep.vActivity in fixActivities) and (mrep.vActivity == activity)){
+            // For segments that started at vActivity: V = (diag(v)K)^T
+            expectedTrips = demandBuilder.diagAndMult(expectedTrips, vStart!!, mPriorVarTCar, relevantODs)
+        }*/
+        return expectedTrips
     }
 }
 
