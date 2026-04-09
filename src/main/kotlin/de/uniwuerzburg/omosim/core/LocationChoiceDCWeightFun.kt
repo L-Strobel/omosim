@@ -440,6 +440,43 @@ class LogNormPowerDCUtil (
         return Pair(term, nVars)
     }
 
+    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, builder: TfTermBuilderDummy): Operand<TFloat32> {
+        val tf = builder.model.tf
+
+        val vA = builder.model.getVariable(0)
+        val vB = builder.model.getVariable(1)
+        val vC = builder.model.getVariable(2)
+
+        val lnDistance = Array(distances.size) {
+            i -> FloatArray(distances[0].size) {
+                j -> ln(distances[i][j])
+            }
+        }
+        val mLnDistance = TFloat32.tensorOf(StdArrays.ndCopyOf(lnDistance))
+        builder.model.addTensor(mLnDistance)
+        val oLnDistance = tf.constant(mLnDistance)
+
+        val lnDistanceSquared = Array(distances.size) {
+                i -> FloatArray(distances[0].size) {
+                    j -> ln(distances[i][j]) * ln(distances[i][j])
+            }
+        }
+        val mLnDistanceSquared = TFloat32.tensorOf(StdArrays.ndCopyOf(lnDistanceSquared))
+        builder.model.addTensor(mLnDistanceSquared)
+        val oLnDistanceSquared = tf.constant(mLnDistanceSquared)
+
+        val mDistance = TFloat32.tensorOf(StdArrays.ndCopyOf(distances))
+        builder.model.addTensor(mDistance)
+        val oDistance = tf.constant(mDistance)
+
+        val tA = tf.math.mul(vA, oLnDistanceSquared)
+        val tB = tf.math.mul(vB, oLnDistance)
+        val tC = tf.math.mul(vC, oDistance)
+
+        val term = tf.math.addN( listOf(tA, tB, tC) )
+        return term
+    }
+
     override fun getDistanceParameters(): DoubleArray {
         return doubleArrayOf(coeff0, coeff1, coeff2)
     }
@@ -511,6 +548,32 @@ data class CombinedDCUtil(
         term.addTerm(termB, 1.0)
 
         return Pair(term, nVars)
+    }
+
+    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, builder: TfTermBuilderDummy): Operand<TFloat32> {
+        val tf = builder.model.tf
+
+        val vA = builder.model.getVariable(0)
+        val vB = builder.model.getVariable(1)
+
+        val lnDistance = Array(distances.size) {
+            i -> FloatArray(distances[0].size) {
+                j -> ln(distances[i][j])
+            }
+        }
+        val mLnDistance = TFloat32.tensorOf(StdArrays.ndCopyOf(lnDistance))
+        builder.model.addTensor(mLnDistance)
+        val oLnDistance = tf.constant(mLnDistance)
+
+        val mDistance = TFloat32.tensorOf(StdArrays.ndCopyOf(distances))
+        builder.model.addTensor(mDistance)
+        val oDistance = tf.constant(mDistance)
+
+        val tA = tf.math.mul(vA, oDistance)
+        val tB = tf.math.mul(vB, oLnDistance)
+
+        val term = tf.math.add(tA, tB)
+        return term
     }
 
     override fun getDistanceParameters(): DoubleArray {
