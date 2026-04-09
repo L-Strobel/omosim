@@ -32,7 +32,7 @@ interface TermBuilder<ACC, V> {
      * @param x matrix filled with variable terms
      * @param left L
      * @param right R
-     * @param transpose if true computes: (L * X * R)^T useful for the LIVE=EVIL rule. // TODO only transposes X
+     * @param transpose if true computes: L * X^T * R useful for the LIVE=EVIL rule.
      * @param relevantRCs if not null specifies which rows and columns of the result are relevant.
      * Not included columns are ignored.
      * @param cTol All terms with coefficients below this value will be ignored and not added to the result.

@@ -228,10 +228,10 @@ class Run : CliktCommand() {
 
         // TODO Set real values and test in large test
         val dfmcontext = DistanceFunctionMatchContext(omosim)
-        //dfmcontext.calibrate(12.29, 423.92, ActivityType.WORK)
-        //dfmcontext.calibrate(10.70, 352.39, ActivityType.SCHOOL)
+        dfmcontext.calibrate(12.29, 423.92, ActivityType.WORK)
+        dfmcontext.calibrate(10.70, 352.39, ActivityType.SCHOOL)
         dfmcontext.calibrate(4.83,  155.42, ActivityType.OTHER)
-        //dfmcontext.calibrate(2.21, 44.60, ActivityType.SHOPPING)
+        dfmcontext.calibrate(2.21, 44.60, ActivityType.SHOPPING)
 
         // TODO fix BEELINE
 

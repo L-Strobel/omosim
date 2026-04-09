@@ -100,7 +100,7 @@ class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
 
     fun finalize(root: Operand<TFloat32>) {
         this.root = root
-        this.dx = tf.gradients(root, listOf(x)).dy(0)
+        //this.dx = tf.gradients(root, listOf(x)).dy(0) // TODO
         this.session = Session(graph, config)
     }
 

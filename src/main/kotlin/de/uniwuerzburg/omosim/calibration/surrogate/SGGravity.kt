@@ -3,8 +3,10 @@ package de.uniwuerzburg.omosim.calibration.surrogate
 import de.uniwuerzburg.omosim.calibration.*
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.MC_SAMPLES
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.*
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfTermBuilder
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModel
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.Matrix
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.MatrixTF
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.TermBuilder
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfTermBuilderDummy
 import de.uniwuerzburg.omosim.core.ActivityGeneratorDefault
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
@@ -17,11 +19,13 @@ import org.jetbrains.kotlinx.multik.ndarray.data.D2Array
 import org.jetbrains.kotlinx.multik.ndarray.data.asDNArray
 import org.jetbrains.kotlinx.multik.ndarray.data.get
 import org.jetbrains.kotlinx.multik.ndarray.data.set
-import org.jetbrains.kotlinx.multik.ndarray.operations.*
+import org.jetbrains.kotlinx.multik.ndarray.operations.expandDims
+import org.jetbrains.kotlinx.multik.ndarray.operations.plusAssign
+import org.jetbrains.kotlinx.multik.ndarray.operations.times
+import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
 import org.locationtech.jts.geom.Coordinate
 import org.tensorflow.Operand
 import org.tensorflow.types.TFloat32
-import kotlin.reflect.typeOf
 
 /**
  * Surrogate model builder for the gravity model surrogate.
@@ -599,12 +603,14 @@ class SGGravity<M: DifferentiableModel, ACC, V, MAT: Matrix<ACC>> (
                         builder.fromMatrixMult(
                             nVars, vMatrix, left, right, transpose=false, relevantRCs=relevantODs, cTol=iThresh
                         )
+                        builder.fromMatrixMult(nVars, vMatrix, mk.zeros<Double>(n, n), mk.zeros<Double>(n, n), relevantRCs=relevantODs, cTol=iThresh) // TODO
                     }
                     in fixActivitiesNotHome -> {
                         // V = ( ( diag(h)XK )^T ) A
                         val left  = mPriorVarT
                         val right = mrep.h.diagonal().transpose().dot(tMatrix)
                         builder.fromMatrixMult(nVars, vMatrix, left, right, relevantRCs=relevantODs, cTol=iThresh)
+                        builder.fromMatrixMult(nVars, vMatrix, mk.zeros<Double>(n, n), mk.zeros<Double>(n, n), relevantRCs=relevantODs, cTol=iThresh) // TODO
                     }
                     ActivityType.HOME -> {
                         throw NotImplementedError("Surrogate model dependent on home coefficients is not implemented!")
@@ -614,6 +620,7 @@ class SGGravity<M: DifferentiableModel, ACC, V, MAT: Matrix<ACC>> (
                         val left  = mk.identity<Double>(n)
                         val right = mPriorVarT.dot(tMatrix)
                         builder.fromMatrixMult(nVars, vMatrix, left, right, relevantRCs=relevantODs, cTol=iThresh)
+                        builder.fromMatrixMult(nVars, vMatrix, mk.zeros<Double>(n, n), mk.zeros<Double>(n, n), relevantRCs=relevantODs, cTol=iThresh) // TODO
                     }
                 }
             }
@@ -627,6 +634,7 @@ class SGGravity<M: DifferentiableModel, ACC, V, MAT: Matrix<ACC>> (
                         builder.fromMatrixMult(
                             nVars, vMatrix, left, right, transpose=false, relevantRCs=relevantODs, cTol=iThresh
                         )
+                        builder.fromMatrixMult(nVars, vMatrix, mk.zeros<Double>(n, n), mk.zeros<Double>(n, n), relevantRCs=relevantODs, cTol=iThresh) // TODO
                     }
                     in fixActivitiesNotHome -> {
                         // V = diag(hXK)A
@@ -635,6 +643,7 @@ class SGGravity<M: DifferentiableModel, ACC, V, MAT: Matrix<ACC>> (
                         builder.fromMatrixMult(
                             nVars, vMatrix, left, right, transpose=false, relevantRCs=relevantODs, cTol=iThresh
                         )
+                        builder.fromMatrixMult(nVars, vMatrix, mk.zeros<Double>(n, n), mk.zeros<Double>(n, n), relevantRCs=relevantODs, cTol=iThresh) // TODO
                     }
                     ActivityType.HOME -> {
                         throw NotImplementedError("Surrogate model dependent on home coefficients is not implemented!")
@@ -646,6 +655,7 @@ class SGGravity<M: DifferentiableModel, ACC, V, MAT: Matrix<ACC>> (
                         builder.fromMatrixMult(
                             nVars, vMatrix, left, right, transpose=false, relevantRCs=relevantODs, cTol=iThresh
                         )
+                        builder.fromMatrixMult(nVars, vMatrix, mk.zeros<Double>(n, n), mk.zeros<Double>(n, n), relevantRCs=relevantODs, cTol=iThresh) // TODO
                     }
                 }
             }
@@ -660,9 +670,9 @@ class SGGravity<M: DifferentiableModel, ACC, V, MAT: Matrix<ACC>> (
             for (d in 0 until n) {
                 if (Pair(o, d) !in relevantODs) { continue }
                 // F
-                if (mrep.vActivity != activity) {
-                    builder.addConstant(expectedTrips.get(o, d), fix[o, d])
-                }
+                //if (mrep.vActivity != activity) {
+                //    builder.addConstant(expectedTrips.get(o, d), fix[o, d])
+                //}
 
                 // V
                 if (mVar.shape().first == 1) {
@@ -743,6 +753,7 @@ class SGGravity<M: DifferentiableModel, ACC, V, MAT: Matrix<ACC>> (
                         // For other segments: V = (K^T)X
                         val left = builder.model.addMatrix(mPriorCnst.transpose().toArray())
                         tf.linalg.matMul(left, vMatrix.matrixT)
+                        tf.zeros( tf.array(n, n), TFloat32::class.java) // TODO
                     }
 
                     in fixActivitiesNotHome -> {
@@ -751,9 +762,10 @@ class SGGravity<M: DifferentiableModel, ACC, V, MAT: Matrix<ACC>> (
                         val right = builder.model.addMatrix(
                             mrep.h.diagonal().transpose().dot(tMatrix).toArray()
                         )
-                        val lm = tf.linalg.matMul(left, vMatrix.matrixT)
-                        val lmr = tf.linalg.matMul(lm, right)
-                        tf.linalg.transpose(lmr, perm2dTranspose)
+                        val vT = tf.linalg.transpose( vMatrix.matrixT, perm2dTranspose)
+                        val lm = tf.linalg.matMul(left, vT)
+                        tf.linalg.matMul(lm, right)
+                        tf.zeros( tf.array(n, n), TFloat32::class.java) // TODO
                     }
 
                     ActivityType.HOME -> {
@@ -762,9 +774,10 @@ class SGGravity<M: DifferentiableModel, ACC, V, MAT: Matrix<ACC>> (
 
                     else -> {
                         // V = ( ( KX )^T ) A
+                        val vT = tf.linalg.transpose( vMatrix.matrixT, perm2dTranspose)
                         val right = builder.model.addMatrix(mPriorVarT.dot(tMatrix).toArray())
-                        val mr = tf.linalg.matMul(vMatrix.matrixT, right)
-                        tf.linalg.transpose(mr, perm2dTranspose)
+                        tf.linalg.matMul(vT, right)
+                        tf.zeros( tf.array(n, n), TFloat32::class.java) // TODO
                     }
                 }
             }
@@ -776,6 +789,7 @@ class SGGravity<M: DifferentiableModel, ACC, V, MAT: Matrix<ACC>> (
                         val ones = mk.ones<Double>(1, n)
                         val left = builder.model.addMatrix(ones.dot(mPriorCnst).diagonal().toArray())
                         tf.linalg.matMul(left, vMatrix.matrixT)
+                        tf.zeros( tf.array(n, n), TFloat32::class.java) // TODO
                     }
 
                     in fixActivitiesNotHome -> {
@@ -784,6 +798,7 @@ class SGGravity<M: DifferentiableModel, ACC, V, MAT: Matrix<ACC>> (
                         val right = builder.model.addMatrix(mPriorVar.toArray())
                         val lm = tf.linalg.matMul(left, vMatrix.matrixT)
                         tf.linalg.matMul(lm, right)
+                        tf.zeros( tf.array(n, n), TFloat32::class.java) // TODO
                     }
 
                     ActivityType.HOME -> {
@@ -794,6 +809,7 @@ class SGGravity<M: DifferentiableModel, ACC, V, MAT: Matrix<ACC>> (
                         // V = diag(KX)A
                         val left = builder.model.addMatrix(mk.ones<Double>(1, n).dot(mPriorVar).toArray())
                         tf.linalg.matMul(left, vMatrix.matrixT)
+                        //tf.zeros( tf.array(n, n), TFloat32::class.java) // TODO
                     }
                 }
             }
@@ -810,9 +826,9 @@ class SGGravity<M: DifferentiableModel, ACC, V, MAT: Matrix<ACC>> (
         val oCar = builder.model.addMatrix(pCar.toArray())
 
         // F
-        if (mrep.vActivity != activity) {
-            expectedTrips.add(fix)
-        }
+        //if (mrep.vActivity != activity) {
+        //    expectedTrips.add(fix)
+        //}
 
         // V
         val shape = mVar.asOutput().shape()
@@ -831,7 +847,6 @@ class SGGravity<M: DifferentiableModel, ACC, V, MAT: Matrix<ACC>> (
             expectedTrips.add(tf.linalg.matMul(dStart, mPriorVarTCar))
         }
     }
-
 }
 
 

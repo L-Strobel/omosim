@@ -7,9 +7,8 @@ import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfAccumulatingT
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import org.tensorflow.Operand
-import org.tensorflow.ndarray.StdArrays
+import org.tensorflow.Session
 import org.tensorflow.types.TFloat32
-import kotlin.math.ln
 
 /**
  * Objective: sum(m-s)^2
@@ -190,10 +189,12 @@ class DFMatchSSE (
 
             for (d in 0 until n) {
                 val expectedTripCount = LinearTerm(nVars)
-                expectedTripCount.addTerm(
-                    expectedTrips[activity]!!.get(o, d),
-                    context.totalPopulation
-                )
+                for (k in expectedTrips.keys) { // TODO
+                    expectedTripCount.addTerm(
+                        expectedTrips[k]!!.get(o, d),
+                        context.totalPopulation
+                    )
+                }
                 expectedODCount[Pair(o,d)] = expectedTripCount
 
                 expectedTotalDistance.addTerm(
@@ -240,6 +241,14 @@ class DFMatchSSE (
             //objMoment2, 1.0
             PowerTerm(nVars, objMoment2, 0.5), 1.0
         )
+
+        val x = DoubleArray(nVars) { 1.0 }
+        println(expectedODCount[Pair(0,1)]!!.evaluate(x))
+        println(expectedODCount[Pair(0,2)]!!.evaluate(x))
+        println(expectedODCount[Pair(0,3)]!!.evaluate(x))
+        println(expectedODCount[Pair(1,1)]!!.evaluate(x))
+        println(expectedODCount[Pair(2,1)]!!.evaluate(x))
+        println(expectedODCount[Pair(3,1)]!!.evaluate(x))
 
         val model = DifferentiableModelUVBase(nVars)
         model.setRootTerm(obj)
@@ -348,7 +357,9 @@ class DFMatchSSETFTF (
         val oDistanceSquared = model.addMatrix( arrDistanceSquared )
 
         val totalPopulation = tf.constant(context.totalPopulation.toFloat())
-        val expectedTripsScaled = tf.math.mul(expectedTrips[activity]!!.matrixT, totalPopulation)
+        val expected = tf.math.addN(expectedTrips.values.map { it.matrixT }) // TODO
+        //val expectedTripsScaled = tf.math.mul(expectedTrips[activity]!!.matrixT, totalPopulation)
+        val expectedTripsScaled = tf.math.mul(expected, totalPopulation)
         val expectedDistance = tf.math.mul(expectedTripsScaled, oDistance)
         val expectedDistanceSquared = tf.math.mul(expectedTripsScaled, oDistanceSquared)
 
@@ -367,6 +378,24 @@ class DFMatchSSETFTF (
             tf.constant(intArrayOf(0, 1))
         )
 
+        // TEST
+        model.session = Session(model.graph, model.config)
+        model.fillInputTensor(DoubleArray(nVars) {1.0})
+
+        model.session.runner()
+            .feed(model.x, model.inputTensor)
+            .fetch(expectedTripsScaled)
+            .run().use { result ->
+                val output = result[0] as TFloat32
+                println( output.getFloat(0,1) )
+                println( output.getFloat(0,2) )
+                println( output.getFloat(0,3) )
+                println( output.getFloat(1,1) )
+                println( output.getFloat(2,1) )
+                println( output.getFloat(3,1) )
+            }
+        // TEST
+
         val expectedMean = tf.math.div(expectedTotalDistance, expectedTotalTrips)
         val moment2      = tf.math.div(expectedSumOfSquare, expectedTotalTrips)
 
@@ -378,6 +407,7 @@ class DFMatchSSETFTF (
         val t2 = tf.math.sqrt( tf.math.square( diff2 ) )
 
         val obj = tf.math.add(t1, t2)
+
 
         // (m - s)^2 = m^2 - 2ms + s^2
         /*val a1 = tf.constant((mean * mean * 10).toFloat())
