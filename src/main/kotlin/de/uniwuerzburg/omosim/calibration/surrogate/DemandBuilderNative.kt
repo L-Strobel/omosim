@@ -1,7 +1,7 @@
 package de.uniwuerzburg.omosim.calibration.surrogate
 
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearTerm
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.Term
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.LinearTerm
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.Term
 import org.jetbrains.kotlinx.multik.api.identity
 import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.ndarray.data.D2

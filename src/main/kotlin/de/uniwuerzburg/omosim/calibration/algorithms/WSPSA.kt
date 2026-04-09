@@ -1,6 +1,6 @@
 package de.uniwuerzburg.omosim.calibration.algorithms
 
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelMV
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.DifferentiableModelMV
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.pow

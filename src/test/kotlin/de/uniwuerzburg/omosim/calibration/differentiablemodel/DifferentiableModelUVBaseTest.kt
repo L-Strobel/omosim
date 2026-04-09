@@ -1,5 +1,6 @@
 package de.uniwuerzburg.omosim.calibration.differentiablemodel
 
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.*
 import org.junit.jupiter.api.Test
 import kotlin.math.abs
 

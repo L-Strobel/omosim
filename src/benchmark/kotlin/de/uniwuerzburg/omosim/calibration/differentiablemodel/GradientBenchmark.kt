@@ -1,6 +1,7 @@
 package de.uniwuerzburg.omosim.calibration.differentiablemodel
 
 
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.*
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
 import kotlinx.benchmark.Blackhole
 import kotlinx.benchmark.Scope

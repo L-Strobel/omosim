@@ -2,7 +2,7 @@ package de.uniwuerzburg.omosim.calibration
 
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.algorithms.BFGS
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.*
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.*
 import de.uniwuerzburg.omosim.core.ModeChoiceFast
 import de.uniwuerzburg.omosim.core.ModeUtility
 import de.uniwuerzburg.omosim.core.models.*

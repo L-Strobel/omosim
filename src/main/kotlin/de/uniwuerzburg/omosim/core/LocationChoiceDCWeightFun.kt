@@ -1,8 +1,8 @@
 package de.uniwuerzburg.omosim.core
 
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearTerm
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.Term
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.Variable
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.LinearTerm
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.Term
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.Variable
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
 import de.uniwuerzburg.omosim.core.models.Landuse
 import de.uniwuerzburg.omosim.core.models.RealLocation

@@ -1,6 +1,6 @@
 package de.uniwuerzburg.omosim.calibration.algorithms
 
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.*
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.*
 
 object TestObjectives {
     fun diffModel() : Pair<(DoubleArray) -> Double, DifferentiableModelUVBase> {

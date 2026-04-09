@@ -1,25 +1,22 @@
-package de.uniwuerzburg.omosim.calibration.differentiablemodel
+package de.uniwuerzburg.omosim.calibration.differentiablemodel.nat
 
 /**
- * Leaf Term. Variable value.
+ * Leaf Term. Constant Value.
  */
-class Variable(
+class Constant(
     override val nVars: Int,
-    val id: Int,
-    private val coefficient: Double
+    private val value: Double = 0.0
 ) : Term {
     override var visited = ThreadLocal<Boolean>()
 
-    override fun gradientReverse(vals: DoubleArray, partials: DoubleArray, seed: Double) {
-        partials[id] += seed * coefficient
-    }
+    override fun gradientReverse(vals: DoubleArray, partials: DoubleArray, seed: Double) { }
 
     override fun gradientForward(variable: Int, vals: DoubleArray) : Double {
-        return coefficient
+        return 0.0
     }
 
     override fun evaluate(vals: DoubleArray) : Double {
-        return coefficient * vals[id]
+        return value
     }
 
     override fun clearEvalCache() { }

@@ -1,4 +1,4 @@
-package de.uniwuerzburg.omosim.calibration.differentiablemodel
+package de.uniwuerzburg.omosim.calibration.differentiablemodel.nat
 
 abstract class BranchTerm(
     override val nVars: Int

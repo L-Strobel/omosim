@@ -1,6 +1,6 @@
 package de.uniwuerzburg.omosim.calibration.differentiablemodel.tf
 
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUV
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.DifferentiableModelUV
 import org.tensorflow.Graph
 import org.tensorflow.Operand
 import org.tensorflow.Session

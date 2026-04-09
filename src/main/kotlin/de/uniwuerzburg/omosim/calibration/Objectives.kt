@@ -2,8 +2,7 @@ package de.uniwuerzburg.omosim.calibration
 
 import com.gurobi.gurobi.*
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.*
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfAccumulatingTerm
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.*
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import org.tensorflow.Operand

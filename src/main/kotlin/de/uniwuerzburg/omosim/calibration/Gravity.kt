@@ -2,12 +2,9 @@ package de.uniwuerzburg.omosim.calibration
 
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.algorithms.*
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.*
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.DifferentiableModelMV
 import de.uniwuerzburg.omosim.calibration.surrogate.*
-import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.models.ActivityType
-import de.uniwuerzburg.omosim.core.models.Cell
-import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
 
 /**
  * Calibrate OMoSim output by adjusting the gravity model.

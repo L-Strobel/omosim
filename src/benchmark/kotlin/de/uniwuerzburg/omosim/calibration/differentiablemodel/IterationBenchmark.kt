@@ -2,6 +2,7 @@ package de.uniwuerzburg.omosim.calibration.differentiablemodel
 
 
 import de.uniwuerzburg.omosim.calibration.algorithms.PSO
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.DifferentiableModelUV
 import kotlinx.benchmark.Blackhole
 import org.openjdk.jmh.annotations.*
 import java.util.concurrent.TimeUnit

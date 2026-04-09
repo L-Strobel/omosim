@@ -1,4 +1,4 @@
-package de.uniwuerzburg.omosim.calibration.differentiablemodel
+package de.uniwuerzburg.omosim.calibration.differentiablemodel.nat
 
 class LinearTerm(
     nVars: Int

@@ -1,7 +1,6 @@
 package de.uniwuerzburg.omosim.calibration
 
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfTermBuilderDummy
 import de.uniwuerzburg.omosim.calibration.surrogate.DistanceFunctionVMatrixBuilder
 import de.uniwuerzburg.omosim.calibration.surrogate.DistanceFunctionVMatrixBuilderTFTensor
 import de.uniwuerzburg.omosim.calibration.surrogate.SGGravityNative
@@ -51,7 +50,6 @@ class DistanceFunctionMatchContext(
             this,
             objective,
             DistanceFunctionVMatrixBuilderTFTensor(this),
-            TfTermBuilderDummy(tfModel),
             null
         ).build(tfModel, activity)
         val base  = dcFunction.getDistanceParameters()

@@ -1,4 +1,4 @@
-package de.uniwuerzburg.omosim.calibration.differentiablemodel
+package de.uniwuerzburg.omosim.calibration.differentiablemodel.nat
 
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit
  */
 class DifferentiableModelMV (
     val nVars: Int
-) : DifferentiableModel{
+) : DifferentiableModel {
     private var roots: List<Term> = listOf()
 
     fun setRootTerms(terms: List<Term>) {

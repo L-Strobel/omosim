@@ -3,22 +3,10 @@ package de.uniwuerzburg.omosim.calibration.surrogate
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.MC_SAMPLES
 import de.uniwuerzburg.omosim.calibration.CalibrationContext
 import de.uniwuerzburg.omosim.calibration.SGGravityObjectiveTF
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.MatrixTF
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.TermBuilder
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfTermBuilderDummy
 import de.uniwuerzburg.omosim.calibration.logger
-import de.uniwuerzburg.omosim.calibration.surrogate.SGGravityCore.SGCompactMatrixRep
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import de.uniwuerzburg.omosim.core.models.Mode
-import de.uniwuerzburg.omosim.utils.diagonal
-import org.jetbrains.kotlinx.multik.api.identity
-import org.jetbrains.kotlinx.multik.api.linalg.dot
-import org.jetbrains.kotlinx.multik.api.mk
-import org.jetbrains.kotlinx.multik.api.ones
-import org.jetbrains.kotlinx.multik.api.zeros
-import org.jetbrains.kotlinx.multik.ndarray.operations.times
-import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
 import org.tensorflow.Operand
 import org.tensorflow.types.TFloat32
 
@@ -26,7 +14,6 @@ class SGGravityTF(
     val context: CalibrationContext,
     val objective: SGGravityObjectiveTF,
     val vMatrixBuilder: VMatrixBuilderTF,
-    val termBuilder: TfTermBuilderDummy,
     val mode: Mode? = Mode.CAR_DRIVER
 ) {
     val core = SGGravityCore(context, mode)
@@ -71,7 +58,7 @@ class SGGravityTF(
                 DemandBuilderTF(model),
                 mrep,
                 expectedTrips[activity]!!,
-                vMatrix.matrixT,
+                vMatrix,
                 relevantODs,
                 iThresh,
                 activity

@@ -2,16 +2,6 @@ package de.uniwuerzburg.omosim.calibration.surrogate
 
 import com.gurobi.gurobi.*
 import de.uniwuerzburg.omosim.calibration.*
-import de.uniwuerzburg.omosim.calibration.CalibrationConstants.MC_SAMPLES
-import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUVBase
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.Matrix
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.TermBuilder
-import de.uniwuerzburg.omosim.core.models.ActivityType
-import org.jetbrains.kotlinx.multik.api.mk
-import org.jetbrains.kotlinx.multik.api.ones
-import org.jetbrains.kotlinx.multik.ndarray.data.D2Array
-import org.jetbrains.kotlinx.multik.ndarray.data.set
 
 /**
  * Optimize the transition matrix of one activity directly with the gurobi solver

@@ -2,7 +2,7 @@ package de.uniwuerzburg.omosim.calibration.surrogate
 
 import de.uniwuerzburg.omosim.calibration.DistanceFunctionMatchContext
 import de.uniwuerzburg.omosim.calibration.TrafficCountCalibrationContext
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.*
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.*
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import org.jetbrains.kotlinx.multik.ndarray.data.get
@@ -18,7 +18,7 @@ interface VMatrixBuilderNative {
 }
 
 interface VMatrixBuilderTF {
-    fun build(model: TfModel, mrep: SGGravityCore.SGCompactMatrixRep) : Pair<MatrixTF, Int>
+    fun build(model: TfModel, mrep: SGGravityCore.SGCompactMatrixRep) : Pair<Operand<TFloat32>, Int>
 }
 
 class TrafficCountVMatrixBuilder(
@@ -114,7 +114,7 @@ class DistanceFunctionVMatrixBuilderTFTensor(
     override fun build(
         model: TfModel,
         mrep: SGGravityCore.SGCompactMatrixRep,
-    ): Pair<MatrixTF, Int> {
+    ): Pair<Operand<TFloat32>, Int> {
         val omosim = context.omosim
         val n = omosim.grid.size
         val tf = model.tf
@@ -147,6 +147,6 @@ class DistanceFunctionVMatrixBuilderTFTensor(
         val oDeterrence = dcFunction.applyDeterrenceToTensor(arrDistance, model)
         val weightExponent = tf.math.add(oAttraction, oDeterrence)
         val normalized = tf.nn.softmax(weightExponent)
-        return Pair(MatrixTF(tf, normalized), nVars)
+        return Pair(normalized, nVars)
     }
 }

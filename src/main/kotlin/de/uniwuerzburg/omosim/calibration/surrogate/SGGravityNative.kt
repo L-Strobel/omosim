@@ -3,20 +3,10 @@ package de.uniwuerzburg.omosim.calibration.surrogate
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.MC_SAMPLES
 import de.uniwuerzburg.omosim.calibration.CalibrationContext
 import de.uniwuerzburg.omosim.calibration.SGGravityObjectiveNative
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModel
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.LinearTerm
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.Term
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.DifferentiableModel
 import de.uniwuerzburg.omosim.calibration.logger
-import de.uniwuerzburg.omosim.calibration.surrogate.SGGravityCore.SGCompactMatrixRep
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import de.uniwuerzburg.omosim.core.models.Mode
-import de.uniwuerzburg.omosim.utils.diagonal
-import org.jetbrains.kotlinx.multik.api.identity
-import org.jetbrains.kotlinx.multik.api.linalg.dot
-import org.jetbrains.kotlinx.multik.api.mk
-import org.jetbrains.kotlinx.multik.api.ones
-import org.jetbrains.kotlinx.multik.api.zeros
-import org.jetbrains.kotlinx.multik.ndarray.operations.times
 
 class SGGravityNative<M: DifferentiableModel> (
     val context: CalibrationContext,
