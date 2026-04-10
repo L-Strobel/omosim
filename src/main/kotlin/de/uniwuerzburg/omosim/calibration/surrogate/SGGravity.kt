@@ -1,7 +1,10 @@
 package de.uniwuerzburg.omosim.calibration.surrogate
 
 import de.uniwuerzburg.omosim.calibration.*
+import de.uniwuerzburg.omosim.calibration.CalibrationConstants.MC_SAMPLES
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.DifferentiableModel
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
 import de.uniwuerzburg.omosim.core.ActivityGeneratorDefault
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.models.*
@@ -16,13 +19,15 @@ import org.jetbrains.kotlinx.multik.ndarray.operations.expandDims
 import org.jetbrains.kotlinx.multik.ndarray.operations.plusAssign
 import org.jetbrains.kotlinx.multik.ndarray.operations.times
 import org.locationtech.jts.geom.Coordinate
+import org.tensorflow.Operand
+import org.tensorflow.types.TFloat32
 
 /**
  * Surrogate model builder for the gravity model surrogate.
  *
  * @param context Calibration context to use. Includes a Simulator (OMoSim) and the traffic count data.
  */
-class SGGravityCore (
+class SGGravity (
     val context: CalibrationContext,
     val mode: Mode? = Mode.CAR_DRIVER
 ) {
@@ -575,6 +580,118 @@ class SGGravityCore (
             expectedTrips = demandBuilder.diagAndMult(expectedTrips, vStart!!, mPriorVarTCar, relevantODs)
         }*/
         return expectedTrips
+    }
+
+    /**
+     * @param vActivity ActivityType for which the gravity model will be variable
+     * @param iThresh Performance parameter.
+     * All terms with coefficients below this value will be ignored and not added to the result.
+     * Higher values -> Computes faster but is a rougher approximation of the markov chain representation.
+     *
+     * @return surrogate model
+     */
+    fun <M: DifferentiableModel> buildNative(
+        vActivity: ActivityType,
+        objective: SGGravityObjectiveNative<M>,
+        vMatrixBuilder: VMatrixBuilderNative,
+        iThresh: Double = 1e-4
+    ) : M {
+        logger.info("Surrogate (Native): Building native model for activity $vActivity")
+
+        // Core work
+        val n = context.omosim.grid.size
+        val mrep = generateMarkovChainRep(vActivity) // Compact matrix representation
+        val relevantODs = context.getRelevantODs() // Relevant origin-destination pairs for measurements
+        val tripStartDistr = monteCarloTripStartDistribution( MC_SAMPLES ) // Temporal trip distribution
+
+        // Transition matrix containing variable terms
+        val (vMatrix, nVars) = vMatrixBuilder.build(mrep)
+
+        logger.info("Surrogate (Native): Number of variables: $nVars")
+
+        val demandBuilder = DemandBuilderNative(nVars)
+
+        // Create graph of the expected trips matrix: E(o, d | Car)
+        val expectedTrips = ActivityType.entries.associateWith {
+            List(n) {
+                List(n) {
+                    demandBuilder.new()
+                }
+            }
+        }.toMutableMap()
+
+        // Add expected trips for each destination activity
+        for (activity in ActivityType.entries) {
+            expectedTrips[activity] = addE(
+                demandBuilder,
+                mrep,
+                expectedTrips[activity]!!,
+                vMatrix,
+                relevantODs,
+                iThresh,
+                activity
+            )
+        }
+
+        // Objective
+        val model = objective.build(nVars, expectedTrips, tripStartDistr)
+
+        // Logging
+        val terms = model.getSize()
+        logger.info("Surrogate (Native): Build complete. Number of terms: $terms")
+
+        return model
+    }
+
+    /**
+     * @return surrogate model
+     */
+    fun buildTF(
+        vActivity: ActivityType,
+        objective: SGGravityObjectiveTF,
+        vMatrixBuilder: VMatrixBuilderTF
+    ) : TfModel {
+        logger.info("Surrogate (TF): building tensor flow model for activity $vActivity")
+
+        // Core work
+        val n = context.omosim.grid.size
+        val mrep = generateMarkovChainRep(vActivity) // Compact matrix representation
+        val relevantODs = context.getRelevantODs() // Relevant origin-destination pairs for measurements
+        val tripStartDistr = monteCarloTripStartDistribution( MC_SAMPLES ) // Temporal trip distribution
+
+        // Transition matrix containing variable terms
+        val bReturn = vMatrixBuilder.build(mrep)
+        val vMatrix = bReturn.first
+        var model = bReturn.second
+
+        logger.info("Surrogate (TF): Number of variables: ${model.nVars}")
+
+        // Create graph of the expected trips matrix: E(o, d | Car)
+        val expectedTrips: MutableMap<ActivityType, Operand<TFloat32>> = ActivityType.entries.associateWith {
+            model.tf.zeros(model.tf.constant(intArrayOf(n, n)), TFloat32::class.java);
+        }.toMutableMap()
+
+        // Add expected trips for each destination activity
+        for (activity in ActivityType.entries) {
+            expectedTrips[activity] = addE(
+                DemandBuilderTF(model),
+                mrep,
+                expectedTrips[activity]!!,
+                vMatrix,
+                relevantODs,
+                0.0,
+                activity
+            )
+        }
+
+        // Objective
+        model = objective.build(model, expectedTrips, tripStartDistr)
+
+        // Logging
+        val ops = model.getSize()
+        logger.info("Surrogate (TF): Build complete. Number of operations: $ops")
+
+        return model
     }
 }
 

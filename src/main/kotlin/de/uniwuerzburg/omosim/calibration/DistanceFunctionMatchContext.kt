@@ -1,10 +1,7 @@
 package de.uniwuerzburg.omosim.calibration
 
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
-import de.uniwuerzburg.omosim.calibration.surrogate.DistanceFunctionVMatrixBuilder
-import de.uniwuerzburg.omosim.calibration.surrogate.DistanceFunctionVMatrixBuilderTFTensor
-import de.uniwuerzburg.omosim.calibration.surrogate.SGGravityNative
-import de.uniwuerzburg.omosim.calibration.surrogate.SGGravityTF
+import de.uniwuerzburg.omosim.calibration.surrogate.*
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.Omosim
 import de.uniwuerzburg.omosim.core.models.ActivityType
@@ -24,9 +21,9 @@ class DistanceFunctionMatchContext(
         // Calibrate
         /*
         val objective = DFMatchSSE(activity, mean, m2, this)
-        val model = SGGravityNative(
-            this, objective, DistanceFunctionVMatrixBuilder(this), null
-        ).build(activity, iThresh = 0.0)
+        val model = SGGravity(
+            this, null
+        ).buildNative(activity, objective, DistanceFunctionVMatrixBuilder(this), iThresh = 0.0)
         val base  = dcFunction.getDistanceParameters()*/
 
         /*
@@ -43,19 +40,15 @@ class DistanceFunctionMatchContext(
         */
 
         // Calibrate
-        val (_, nVars) = dcFunction.deterrenceFunctionAsTerm(1.0)
-        val tfModel = TfModel(nVars)
-        val objective = DFMatchSSETFTF(activity, mean, m2, tfModel, this)
-        val model = SGGravityTF(
+        val objective = DFMatchSSETFTF(activity, mean, m2, this)
+        val model = SGGravity(
             this,
-            objective,
-            DistanceFunctionVMatrixBuilderTFTensor(this),
             null
-        ).build(tfModel, activity)
+        ).buildTF(activity, objective, DistanceFunctionVMatrixBuilderTFTensor(this))
         val base  = dcFunction.getDistanceParameters()
 
         println( model.evaluate(base) )
-        tfModel.close()
+        model.close()
 
         /*val calibrated = GradientDescent.run(
             model,

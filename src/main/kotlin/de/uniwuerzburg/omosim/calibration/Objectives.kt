@@ -88,7 +88,7 @@ interface SGGravityObjectiveNative <M: DifferentiableModel> {
 
 interface SGGravityObjectiveTF {
     fun build (
-        nVars: Int,
+        model: TfModel,
         expectedTrips: Map<ActivityType, Operand<TFloat32>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ) : TfModel
@@ -268,11 +268,10 @@ class DFMatchSSETFTF (
     val activity: ActivityType,
     val mean: Double,
     val m2: Double,
-    val model: TfModel,
     val context: DistanceFunctionMatchContext
 ) : SGGravityObjectiveTF {
     override fun build(
-        nVars: Int,
+        model: TfModel,
         expectedTrips: Map<ActivityType, Operand<TFloat32>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ): TfModel {
@@ -316,7 +315,7 @@ class DFMatchSSETFTF (
 
         // TEST
         model.session = Session(model.graph, model.config)
-        model.fillInputTensor(DoubleArray(nVars) {1.0})
+        model.fillInputTensor(DoubleArray(model.nVars) {1.0})
 
         model.session.runner()
             .feed(model.x, model.inputTensor)

@@ -14,18 +14,18 @@ import kotlin.math.ln
 
 
 interface VMatrixBuilderNative {
-    fun build(mrep: SGGravityCore.SGCompactMatrixRep) : Pair<List<List<Term>>, Int>
+    fun build(mrep: SGGravity.SGCompactMatrixRep) : Pair<List<List<Term>>, Int>
 }
 
 interface VMatrixBuilderTF {
-    fun build(model: TfModel, mrep: SGGravityCore.SGCompactMatrixRep) : Pair<Operand<TFloat32>, Int>
+    fun build(mrep: SGGravity.SGCompactMatrixRep) : Pair<Operand<TFloat32>, TfModel>
 }
 
 class TrafficCountVMatrixBuilder(
     val context: TrafficCountCalibrationContext
 ) : VMatrixBuilderNative {
     override fun build(
-        mrep: SGGravityCore.SGCompactMatrixRep
+        mrep: SGGravity.SGCompactMatrixRep
     ): Pair<List<List<Term>>, Int> {
         val n = context.omosim.grid.size
         val nVars = context.omosim.grid.size - 1
@@ -62,7 +62,7 @@ class DistanceFunctionVMatrixBuilder(
     val context: DistanceFunctionMatchContext
 ) : VMatrixBuilderNative {
     override fun build(
-        mrep: SGGravityCore.SGCompactMatrixRep,
+        mrep: SGGravity.SGCompactMatrixRep,
     ): Pair<List<List<Term>>, Int> {
         val vMatrix = mutableListOf<List<Term>>()
 
@@ -112,18 +112,16 @@ class DistanceFunctionVMatrixBuilderTFTensor(
     val context: DistanceFunctionMatchContext
 ): VMatrixBuilderTF {
     override fun build(
-        model: TfModel,
-        mrep: SGGravityCore.SGCompactMatrixRep,
-    ): Pair<Operand<TFloat32>, Int> {
+        mrep: SGGravity.SGCompactMatrixRep,
+    ): Pair<Operand<TFloat32>, TfModel> {
         val omosim = context.omosim
         val n = omosim.grid.size
-        val tf = model.tf
-        val shape: Operand<TInt32> = tf.constant(intArrayOf(n, n))
-        val vMatrix = mutableListOf<List<Operand<TFloat32>>>()
-
         val finder = omosim.destinationFinder as DestinationFinderDefault
         val dcFunction = finder.locChoiceWeightFuns[mrep.vActivity]!!
         val (_, nVars) = dcFunction.deterrenceFunctionAsTerm(1.0)
+
+        val model = TfModel(nVars)
+        val tf = model.tf
 
         val arrDistance = Array<FloatArray>(n) { FloatArray(n) }
         val arrAttraction = Array<FloatArray>(n) { FloatArray(n) }
@@ -147,6 +145,6 @@ class DistanceFunctionVMatrixBuilderTFTensor(
         val oDeterrence = dcFunction.applyDeterrenceToTensor(arrDistance, model)
         val weightExponent = tf.math.add(oAttraction, oDeterrence)
         val normalized = tf.nn.softmax(weightExponent)
-        return Pair(normalized, nVars)
+        return Pair(normalized, model)
     }
 }
