@@ -60,12 +60,6 @@ benchmark {
     targets {
         register("benchmark")
     }
-
-    configurations {
-        getByName("main") {
-            include(".*GradientBenchmark.tfBench")
-        }
-    }
 }
 
 tasks.test {

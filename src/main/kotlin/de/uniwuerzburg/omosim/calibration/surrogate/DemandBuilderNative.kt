@@ -112,7 +112,6 @@ class DemandBuilderNative(
      * X: matrix filled with variable terms
      * R: right constant matrix
      *
-     * @param nVars Number of variables in the problem
      * @param x matrix filled with variable terms
      * @param left L
      * @param right R
@@ -181,8 +180,8 @@ class DemandBuilderNative(
     }
 
     override fun shape(m: List<List<LinearTerm>>): Pair<Int, Int> {
-        var nrows = m.size
-        var ncols = if (nrows == 0) 0 else m[0].size
+        val nrows = m.size
+        val ncols = if (nrows == 0) 0 else m[0].size
         return nrows to ncols
     }
 }

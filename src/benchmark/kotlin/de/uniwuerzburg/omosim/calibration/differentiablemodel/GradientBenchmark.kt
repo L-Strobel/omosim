@@ -24,28 +24,28 @@ class GradientBenchmark {
         @Suppress("SameParameterValue")
         fun buildLargeTestModelTF(nVars: Int) : TfModel {
             val model = TfModel(nVars)
-
+            val tf = model.tf
             val terms = mutableListOf<Operand<TFloat32>>()
             for (i in 0 until nVars) {
-                val c = model.createConstant(1.3f)
-                val m = model.createMultiplication(model.getVariable(i), model.createConstant(3.3f))
+                val c = tf.constant(1.3f)
+                val m = tf.math.mul(model.getVariable(i), tf.constant(3.3f))
                 terms.add(c)
                 terms.add(m)
             }
-            val lTerm1 = model.createLinearTerm(terms)
+            val lTerm1 = tf.math.addN(terms)
 
-            val c1 = model.createConstant(2.2f)
-            val m1 = model.createMultiplication(model.getVariable(0), model.createConstant(1.1f))
-            val p1 = model.createLinearTerm(c1, m1)
+            val c1 = tf.constant(2.2f)
+            val m1 = tf.math.mul(model.getVariable(0), tf.constant(1.1f))
+            val p1 = tf.math.add(c1, m1)
 
-            val c2 = model.createConstant(2.2f)
-            val m2 = model.createMultiplication(model.getVariable(1), model.createConstant(1.1f))
-            val p2 = model.createLinearTerm(c2, m2)
+            val c2 = tf.constant(2.2f)
+            val m2 = tf.math.mul(model.getVariable(1), tf.constant(1.1f))
+            val p2 = tf.math.add(c2, m2)
 
-            val mult = model.createMultiplication(p1, p2)
-            val top = model.createMultiplication(mult, model.createConstant(-1.1f))
+            val mult = tf.math.mul(p1, p2)
+            val top  = tf.math.mul(mult, tf.constant(-1.1f))
 
-            val dTerm = model.createDivision(lTerm1, top)
+            val dTerm = tf.math.div(lTerm1, top)
             model.finalize(dTerm)
             return model
         }

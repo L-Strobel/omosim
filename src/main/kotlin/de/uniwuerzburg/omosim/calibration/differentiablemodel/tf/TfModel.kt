@@ -53,38 +53,6 @@ class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
         return tf.gather(x, tf.constant(i), tf.constant(0))
     }
 
-    fun createConstant(value: Float) : Constant<TFloat32> {
-        return tf.constant(value)
-    }
-
-    fun createLinearTerm() : Operand<TFloat32> {
-        return tf.constant(0f)
-    }
-
-    fun createLinearTerm(x: Operand<TFloat32>, y: Operand<TFloat32>) : Operand<TFloat32> {
-        return tf.math.add(x, y)
-    }
-
-    fun createLinearTerm(terms: List<Operand<TFloat32>>) : Operand<TFloat32> {
-        return tf.math.addN(terms)
-    }
-
-    fun createMultiplication(x: Operand<TFloat32>, y: Operand<TFloat32>) : Operand<TFloat32> {
-        return tf.math.mul(x, y)
-    }
-
-    fun createDivision(dividend: Operand<TFloat32>, divisor: Operand<TFloat32>) : Operand<TFloat32> {
-        return tf.math.div(dividend, divisor)
-    }
-
-    fun createExponentiation(exponent: Operand<TFloat32>) : Operand<TFloat32> {
-        return tf.math.exp(exponent)
-    }
-
-    fun createPower(base: Operand<TFloat32>, power: Float) : Operand<TFloat32> {
-        return tf.math.pow(base, tf.constant(power))
-    }
-
     fun addMatrix(data: Array<DoubleArray>) : Operand<TFloat32> {
         val fData = data.map { dArray ->
             dArray.map { it.toFloat() }.toFloatArray()
@@ -100,13 +68,13 @@ class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
         return tf.constant(tensor)
     }
 
-    fun addTensor(tensor: TFloat32) {
+    private fun addTensor(tensor: TFloat32) {
         tensors.add(tensor)
     }
 
     fun finalize(root: Operand<TFloat32>) {
         this.root = root
-        //this.dx = tf.gradients(root, listOf(x)).dy(0) // TODO
+        this.dx = tf.gradients(root, listOf(x)).dy(0) // TODO
         this.session = Session(graph, config)
     }
 
@@ -123,13 +91,11 @@ class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
         inputTensor.copyFrom(ioBuffer)
     }
 
-    // TODO Optimize in TensorFlow
-
     override fun gradient(vals: DoubleArray, gradient: DoubleArray) : Double {
         fillInputTensor(vals) // Load input
 
         // Compute
-        var y: Double? = null
+        var y: Double?
         session.runner()
             .feed(x, inputTensor)
             .fetch(root)
@@ -156,7 +122,7 @@ class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
         fillInputTensor(vals) // Load input
 
         // Compute
-        var y: Double? = null
+        var y: Double?
         session.runner()
             .feed(x, inputTensor)
             .fetch(root)
