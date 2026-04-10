@@ -6,6 +6,7 @@ import de.uniwuerzburg.omosim.core.models.ActivityType
 import org.tensorflow.Operand
 import org.tensorflow.Session
 import org.tensorflow.types.TFloat32
+import smile.stat.Hypothesis.F
 
 
 class DFMatchSSETensorFlow (
@@ -23,13 +24,13 @@ class DFMatchSSETensorFlow (
         val omosim = context.omosim
         val n = context.omosim.grid.size
 
-        val arrDistance = Array<DoubleArray>(n) { DoubleArray(n) }
-        val arrDistanceSquared = Array<DoubleArray>(n) { DoubleArray(n) }
+        val arrDistance = Array(n) { FloatArray(n) }
+        val arrDistanceSquared = Array(n) { FloatArray(n) }
         for ((o, origin) in omosim.grid.withIndex()) {
             val distances = omosim.routingCache.getDistances(origin, omosim.grid)
             for (d in 0 until n) {
-                arrDistance[o][d] = (distances[d] / 1000.0)
-                arrDistanceSquared[o][d] = (distances[d] / 1000.0) * (distances[d] / 1000.0)
+                arrDistance[o][d] = (distances[d] / 1000f)
+                arrDistanceSquared[o][d] = (distances[d] / 1000f) * (distances[d] / 1000f)
             }
         }
         val oDistance        = model.addMatrix( arrDistance )

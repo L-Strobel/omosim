@@ -44,7 +44,7 @@ class DistanceFunctionMatchContext(
         val model = SGGravity(
             this,
             null
-        ).buildTF(activity, objective, DistanceFunctionVMatrixBuilderTFTensor(this))
+        ).buildTF(activity, objective, DistanceFunctionVMatrixBuilderTF(this))
         val base  = dcFunction.getDistanceParameters()
 
         println( model.evaluate(base) )

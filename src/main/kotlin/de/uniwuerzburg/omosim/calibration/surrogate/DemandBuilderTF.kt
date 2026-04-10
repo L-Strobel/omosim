@@ -25,8 +25,8 @@ class DemandBuilderTF(
         other: NDArray<Double, D2>,
         relevantRCs: Set<Pair<Int, Int>>?
     ): Operand<TFloat32> {
-        val other = model.addMatrix( other.toArray() )
-        return tf.math.add(accMatrix, other)
+        val otherTF = model.addMatrix( other.toArray() )
+        return tf.math.add(accMatrix, otherTF)
     }
 
     override fun add(
@@ -35,8 +35,8 @@ class DemandBuilderTF(
         mCoeff: NDArray<Double, D2>,
         relevantRCs: Set<Pair<Int, Int>>?
     ): Operand<TFloat32> {
-        val mCoeff = model.addMatrix( mCoeff.toArray() )
-        val otherMult = tf.math.mul(other, mCoeff)
+        val mCoeffTF = model.addMatrix( mCoeff.toArray() )
+        val otherMult = tf.math.mul(other, mCoeffTF)
         return tf.math.add(accMatrix, otherMult)
     }
 
@@ -62,9 +62,9 @@ class DemandBuilderTF(
         } else {
             vMatrix
         }
-        val left = model.addMatrix( left.toArray() )
+        val leftTF = model.addMatrix( left.toArray() )
 
-        return tf.linalg.matMul(left, x)
+        return tf.linalg.matMul(leftTF, x)
     }
 
     override fun matrixMult(
@@ -79,9 +79,9 @@ class DemandBuilderTF(
         } else {
             vMatrix
         }
-        val right = model.addMatrix( right.toArray() )
+        val rightTF = model.addMatrix( right.toArray() )
 
-        return tf.linalg.matMul(x, right)
+        return tf.linalg.matMul(x, rightTF)
     }
 
     override fun matrixMult(
@@ -92,16 +92,16 @@ class DemandBuilderTF(
         relevantRCs: Set<Pair<Int, Int>>?,
         cTol: Double
     ): Operand<TFloat32> {
-        val x = if (transpose) {
+        val xT = if (transpose) {
             tf.linalg.transpose(x, perm2dTranspose)
         } else {
             x
         }
-        val left  = model.addMatrix( left.toArray() )
-        val right = model.addMatrix( right.toArray() )
+        val leftTF  = model.addMatrix( left.toArray() )
+        val rightTF = model.addMatrix( right.toArray() )
 
-        val lm = tf.linalg.matMul(left, x)
-        return tf.linalg.matMul(lm, right)
+        val lm = tf.linalg.matMul(leftTF, xT)
+        return tf.linalg.matMul(lm, rightTF)
     }
 
     override fun shape(m: Operand<TFloat32>): Pair<Int, Int> {
