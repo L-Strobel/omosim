@@ -7,7 +7,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.NDArray
 interface DemandBuilder<M_IN, M_OUT> {
     fun add(accMatrix: M_OUT, other: NDArray<Double, D2>, relevantRCs: Set<Pair<Int, Int>>?) : M_OUT
     fun add(accMatrix: M_OUT, other: M_OUT, mCoeff: NDArray<Double, D2>, relevantRCs: Set<Pair<Int, Int>>?) : M_OUT
-    fun diagAndMult(accMatrix: M_OUT, v: M_OUT, mCoeff: NDArray<Double, D2>, relevantRCs: Set<Pair<Int, Int>>?) : M_OUT
+    fun diagMultAdd(accMatrix: M_OUT, v: M_OUT, mCoeff: NDArray<Double, D2>, relevantRCs: Set<Pair<Int, Int>>?) : M_OUT
     fun shape(m: M_OUT): Pair<Int, Int>
 
     fun matrixMult(

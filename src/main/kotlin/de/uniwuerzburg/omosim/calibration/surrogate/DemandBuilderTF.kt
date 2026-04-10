@@ -40,14 +40,16 @@ class DemandBuilderTF(
         return tf.math.add(accMatrix, otherMult)
     }
 
-    override fun diagAndMult(
+    override fun diagMultAdd(
         accMatrix: Operand<TFloat32>,
         v: Operand<TFloat32>,
         mCoeff: NDArray<Double, D2>,
         relevantRCs: Set<Pair<Int, Int>>?
     ): Operand<TFloat32> {
+        val mCoeffTF = model.addMatrix( mCoeff.toArray() )
         val vDiag = tf.linalg.tensorDiag( tf.squeeze( v ) )
-        return tf.linalg.matMul(vDiag, accMatrix)
+        val diagMult = tf.linalg.matMul(vDiag, mCoeffTF)
+        return tf.math.add(accMatrix, diagMult)
     }
 
     override fun matrixMult(

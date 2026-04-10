@@ -428,8 +428,8 @@ class LogNormPowerDCUtil (
         val vB = model.getVariable(1)
         val vC = model.getVariable(2)
 
-        val oLnDistance = model.addMatrix( lnDistances(distances) )
         val oLnDistanceSquared = model.addMatrix( lnDistancesSquared(distances) )
+        val oLnDistance = model.addMatrix( lnDistances(distances) )
         val oDistance   = model.addMatrix(distances)
 
         val tA = tf.math.mul(vA, oLnDistanceSquared)
@@ -519,8 +519,8 @@ data class CombinedDCUtil(
         val vA = model.getVariable(0)
         val vB = model.getVariable(1)
 
-        val oLnDistance = model.addMatrix( lnDistances(distances) )
         val oDistance   = model.addMatrix(distances)
+        val oLnDistance = model.addMatrix( lnDistances(distances) )
 
         val tA = tf.math.mul(vA, oDistance)
         val tB = tf.math.mul(vB, oLnDistance)

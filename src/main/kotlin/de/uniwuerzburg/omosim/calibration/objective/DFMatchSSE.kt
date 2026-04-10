@@ -26,12 +26,10 @@ class DFMatchSSE (
 
             for (d in 0 until n) {
                 val expectedTripCount = LinearTerm(nVars)
-                for (k in expectedTrips.keys) { // TODO
-                    expectedTripCount.addTerm(
-                        expectedTrips[k]!![o][d],
-                        context.totalPopulation
-                    )
-                }
+                expectedTripCount.addTerm(
+                    expectedTrips[activity]!![o][d],
+                    context.totalPopulation
+                )
                 expectedODCount[Pair(o,d)] = expectedTripCount
 
                 expectedTotalDistance.addTerm(
@@ -75,17 +73,8 @@ class DFMatchSSE (
         objMoment2.addTerm(qTermVar, 1.0)
 
         obj.addTerm(
-            //objMoment2, 1.0
             PowerTerm(nVars, objMoment2, 0.5), 1.0
         )
-
-        val x = DoubleArray(nVars) { 1.0 }
-        println(expectedODCount[Pair(0,1)]!!.evaluate(x))
-        println(expectedODCount[Pair(0,2)]!!.evaluate(x))
-        println(expectedODCount[Pair(0,3)]!!.evaluate(x))
-        println(expectedODCount[Pair(1,1)]!!.evaluate(x))
-        println(expectedODCount[Pair(2,1)]!!.evaluate(x))
-        println(expectedODCount[Pair(3,1)]!!.evaluate(x))
 
         val model = DifferentiableModelUVBase(nVars)
         model.setRootTerm(obj)

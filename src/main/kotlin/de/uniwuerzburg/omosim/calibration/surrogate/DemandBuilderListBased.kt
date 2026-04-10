@@ -49,7 +49,7 @@ abstract class DemandBuilderListBased<V, ACC>: DemandBuilder<List<List<V>>, List
         return accMatrix
     }
 
-    override fun diagAndMult(
+    override fun diagMultAdd(
         accMatrix: List<List<ACC>>,
         v: List<List<ACC>>,
         mCoeff: NDArray<Double, D2>,

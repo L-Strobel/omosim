@@ -1,8 +1,11 @@
 package de.uniwuerzburg.omosim.calibration
 
-import de.uniwuerzburg.omosim.calibration.objective.DFMatchSSE
+import de.uniwuerzburg.omosim.calibration.algorithms.GradientDescent
 import de.uniwuerzburg.omosim.calibration.objective.DFMatchSSETensorFlow
-import de.uniwuerzburg.omosim.calibration.surrogate.*
+import de.uniwuerzburg.omosim.calibration.objective.DFMatchSSE
+import de.uniwuerzburg.omosim.calibration.surrogate.DistanceFunctionVMatrixBuilderTF
+import de.uniwuerzburg.omosim.calibration.surrogate.DistanceFunctionVMatrixBuilder
+import de.uniwuerzburg.omosim.calibration.surrogate.SGGravity
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.Omosim
 import de.uniwuerzburg.omosim.core.models.ActivityType
@@ -20,41 +23,23 @@ class DistanceFunctionMatchContext(
         val dcFunction = finder.locChoiceWeightFuns[activity]!!
 
         // Calibrate
-        val objective = DFMatchSSE(activity, mean, m2, this)
+        /*val objective = DFMatchSSE(activity, mean, m2, this)
         val model = SGGravity(
             this, null
-        ).buildNative(activity, objective, DistanceFunctionVMatrixBuilder(this), iThresh = 0.0)
-        val base  = dcFunction.getDistanceParameters()
+        ).buildNative(activity, objective, DistanceFunctionVMatrixBuilder(this))
+        val base  = dcFunction.getDistanceParameters()*/
 
-        /*
-        // Test
-        println("Test Start")
-        DistanceFunctionVMatrixBuilder.TFTestBuilder(
-            TfTermBuilder(tfModel),
-            this,
-            ActivityType.OTHER
-        )
-        println("Test Stop")
-        throw AssertionError("Done")
-        //
-        */
-/*
         // Calibrate
         val objective = DFMatchSSETensorFlow(activity, mean, m2, this)
-        val model = SGGravity(
-            this,
-            null
-        ).buildTF(activity, objective, DistanceFunctionVMatrixBuilderTF(this))
+        val model = SGGravity(this, null).buildTF(activity, objective, DistanceFunctionVMatrixBuilderTF(this))
         val base  = dcFunction.getDistanceParameters()
-*/
         println( model.evaluate(base) )
-        //model.close()
 
-        /*val calibrated = GradientDescent.run(
+        val calibrated = GradientDescent.run(
             model,
             base,
             mapOf(
-                "iterations" to "1",
+                "iterations" to "1000",
                 "lr0" to "0.001",
                 "ub" to "10.0",
                 "lb" to "-100.0",
@@ -63,8 +48,9 @@ class DistanceFunctionMatchContext(
             )
         )
 
-        evaluate(base, calibrated, objective.mean, objective.m2, objective.activity)
-        dcFunction.setDistanceParameters(calibrated)*/
+        evaluate(base, calibrated, mean, m2, activity)
+        dcFunction.setDistanceParameters(calibrated)
+        model.close()
     }
 
     fun evaluate(base: DoubleArray, calibrated: DoubleArray, mean: Double, m2: Double, activity: ActivityType) {

@@ -9,7 +9,6 @@ import org.tensorflow.ndarray.StdArrays
 import org.tensorflow.ndarray.buffer.DataBuffers
 import org.tensorflow.ndarray.buffer.FloatDataBuffer
 import org.tensorflow.op.Ops
-import org.tensorflow.op.core.Constant
 import org.tensorflow.op.core.Variable
 import org.tensorflow.proto.ConfigProto
 import org.tensorflow.proto.GPUOptions
@@ -74,7 +73,7 @@ class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
 
     fun finalize(root: Operand<TFloat32>) {
         this.root = root
-        this.dx = tf.gradients(root, listOf(x)).dy(0) // TODO
+        this.dx = tf.gradients(root, listOf(x)).dy(0)
         this.session = Session(graph, config)
     }
 
