@@ -3,6 +3,8 @@ package de.uniwuerzburg.omosim.calibration
 import com.gurobi.gurobi.*
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.*
+import de.uniwuerzburg.omosim.calibration.objective.sseObjectiveGRB
+import de.uniwuerzburg.omosim.calibration.objective.sseObjective
 import de.uniwuerzburg.omosim.core.models.*
 import java.time.LocalTime
 
@@ -127,7 +129,7 @@ class RouteChoice(
             }
 
             // Objective
-            val obj = grbSseObjective(model, context.sensors, simCount)
+            val obj = sseObjectiveGRB(model, context.sensors, simCount)
             model.setObjective(obj, GRB.MINIMIZE)
 
             // Solve

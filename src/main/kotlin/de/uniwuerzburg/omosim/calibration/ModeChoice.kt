@@ -3,22 +3,14 @@ package de.uniwuerzburg.omosim.calibration
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.algorithms.BFGS
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.*
+import de.uniwuerzburg.omosim.calibration.objective.ModeChoiceCalibrationObjective
+import de.uniwuerzburg.omosim.calibration.objective.sseObjective
 import de.uniwuerzburg.omosim.core.ModeChoiceFast
 import de.uniwuerzburg.omosim.core.ModeUtility
 import de.uniwuerzburg.omosim.core.models.*
 import java.util.*
 import kotlin.math.exp
 import kotlin.math.ln
-
-/**
- * Objectives for mode choice calibration
- *
- * FitTotalCarTrips: Calibrate the total number of car trips across all measurements: minimize (sum(M) - sum(S))^2
- * FitIndividualMeasurements: Calibrate each measurement individually (normal case): minimize (sum(m - s))^2
- */
-enum class ModeChoiceCalibrationObjective {
-    FitTotalCarTrips, FitIndividualMeasurements
-}
 
 /**
  * Calibrate OMoSim output by adjusting mode choice.

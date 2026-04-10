@@ -3,6 +3,8 @@ package de.uniwuerzburg.omosim.calibration
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.algorithms.*
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.DifferentiableModelMV
+import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSSE
+import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSeparate
 import de.uniwuerzburg.omosim.calibration.surrogate.*
 import de.uniwuerzburg.omosim.core.models.ActivityType
 
@@ -208,7 +210,8 @@ class Gravity(
             val measurements = context.sensors.map { it.measurements }.flatMap { it.toList() }
 
             for (activity in activities) {
-                val model = SGGravity(context).buildNative(activity,TrafficCountSeparate(context), TrafficCountVMatrixBuilder(context))
+                val model = SGGravity(context).buildNative(activity,
+                    TrafficCountSeparate(context), TrafficCountVMatrixBuilder(context))
                 val objective = o.surrogateObjWSPSA(model, context.sensors)
                 val x0 = DoubleArray(context.omosim.grid.size - 1) { 1.0 }
                 var d = WSPSA.run(

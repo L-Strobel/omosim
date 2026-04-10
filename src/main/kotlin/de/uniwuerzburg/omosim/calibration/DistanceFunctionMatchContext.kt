@@ -1,6 +1,6 @@
 package de.uniwuerzburg.omosim.calibration
 
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
+import de.uniwuerzburg.omosim.calibration.objective.DFMatchSSETensorFlow
 import de.uniwuerzburg.omosim.calibration.surrogate.*
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.Omosim
@@ -40,7 +40,7 @@ class DistanceFunctionMatchContext(
         */
 
         // Calibrate
-        val objective = DFMatchSSETFTF(activity, mean, m2, this)
+        val objective = DFMatchSSETensorFlow(activity, mean, m2, this)
         val model = SGGravity(
             this,
             null
