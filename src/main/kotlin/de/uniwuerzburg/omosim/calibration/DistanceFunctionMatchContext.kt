@@ -1,5 +1,6 @@
 package de.uniwuerzburg.omosim.calibration
 
+import de.uniwuerzburg.omosim.calibration.objective.DFMatchSSE
 import de.uniwuerzburg.omosim.calibration.objective.DFMatchSSETensorFlow
 import de.uniwuerzburg.omosim.calibration.surrogate.*
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
@@ -19,12 +20,11 @@ class DistanceFunctionMatchContext(
         val dcFunction = finder.locChoiceWeightFuns[activity]!!
 
         // Calibrate
-        /*
         val objective = DFMatchSSE(activity, mean, m2, this)
         val model = SGGravity(
             this, null
         ).buildNative(activity, objective, DistanceFunctionVMatrixBuilder(this), iThresh = 0.0)
-        val base  = dcFunction.getDistanceParameters()*/
+        val base  = dcFunction.getDistanceParameters()
 
         /*
         // Test
@@ -38,7 +38,7 @@ class DistanceFunctionMatchContext(
         throw AssertionError("Done")
         //
         */
-
+/*
         // Calibrate
         val objective = DFMatchSSETensorFlow(activity, mean, m2, this)
         val model = SGGravity(
@@ -46,9 +46,9 @@ class DistanceFunctionMatchContext(
             null
         ).buildTF(activity, objective, DistanceFunctionVMatrixBuilderTF(this))
         val base  = dcFunction.getDistanceParameters()
-
+*/
         println( model.evaluate(base) )
-        model.close()
+        //model.close()
 
         /*val calibrated = GradientDescent.run(
             model,

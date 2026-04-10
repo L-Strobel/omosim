@@ -6,7 +6,10 @@ import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.Differentiable
 import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSSE
 import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSeparate
 import de.uniwuerzburg.omosim.calibration.surrogate.*
+import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.models.ActivityType
+import de.uniwuerzburg.omosim.core.models.Cell
+import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
 
 /**
  * Calibrate OMoSim output by adjusting the gravity model.
@@ -52,9 +55,8 @@ class Gravity(
             CalibrationAlgorithm.SPSA_AO   -> rw.calibrateSPSAAllAtOnce(activities, parameters)
             CalibrationAlgorithm.SM_WSPSA  -> rw.calibrateWSPSASM(activities, parameters)
             CalibrationAlgorithm.WSPSA     -> rw.calibrateWSPSA(activities, parameters)
-            //CalibrationAlgorithm.SM_MATRIX -> rw.calibrateMatrix(activities) // TODO
+            CalibrationAlgorithm.SM_MATRIX -> rw.calibrateMatrix(activities)
             null -> throw IllegalArgumentException("Algorithm can't be null for Gravity model calibration!")
-            else -> throw IllegalArgumentException("Not Implemented") // TODO Remove
         }
     }
 
@@ -238,9 +240,9 @@ class Gravity(
             }
         }
 
-        /*fun calibrateMatrix(activities: List<ActivityType>) {
+        fun calibrateMatrix(activities: List<ActivityType>) {
             for (activity in activities) {
-                val model = SGGravity(context, TrafficCountSSE, TrafficCountVMatrixBuilder, GRBLinExprBuilder)
+                val model = SGGravity(context)
                 val wm = model.optimizeTMatrix(activity)
 
                 val finder = context.omosim.destinationFinder as DestinationFinderDefault
@@ -250,7 +252,7 @@ class Gravity(
                 }
                 finder.forcedTransitionMatrix[activity] = force
             }
-        }*/
+        }
     }
 
     /**
