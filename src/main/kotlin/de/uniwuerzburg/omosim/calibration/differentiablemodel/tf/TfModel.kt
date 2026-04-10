@@ -94,6 +94,12 @@ class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
         return tf.constant(tensor)
     }
 
+    fun addMatrix(data: Array<FloatArray>) : Operand<TFloat32> {
+        val tensor = TFloat32.tensorOf( StdArrays.ndCopyOf( data ) )
+        this.addTensor(tensor)
+        return tf.constant(tensor)
+    }
+
     fun addTensor(tensor: TFloat32) {
         tensors.add(tensor)
     }

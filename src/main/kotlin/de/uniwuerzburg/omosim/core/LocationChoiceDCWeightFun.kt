@@ -87,6 +87,22 @@ sealed class LocationChoiceDCWeightFun {
         throw NotImplementedError()
     }
 
+    fun lnDistances(distances: Array<FloatArray>): Array<FloatArray> {
+        return Array(distances.size) { i ->
+            FloatArray(distances[0].size) { j ->
+                ln(distances[i][j])
+            }
+        }
+    }
+
+    fun lnDistancesSquared(distances: Array<FloatArray>): Array<FloatArray> {
+        return Array(distances.size) { i ->
+            FloatArray(distances[0].size) { j ->
+                ln(distances[i][j]) * ln(distances[i][j])
+            }
+        }
+    }
+
     /**
      * Calculates the probabilistic weight of a destination given the distance from the origin.
      *
@@ -309,23 +325,8 @@ class LogNormDCUtil (
         val vA = model.getVariable(0)
         val vB = model.getVariable(1)
 
-        val lnDistance = Array(distances.size) {
-            i -> FloatArray(distances[0].size) {
-                j -> ln(distances[i][j])
-            }
-        }
-        val mLnDistance = TFloat32.tensorOf(StdArrays.ndCopyOf(lnDistance))
-        model.addTensor(mLnDistance)
-        val oLnDistance = tf.constant(mLnDistance)
-
-        val lnDistanceSquared = Array(distances.size) {
-            i -> FloatArray(distances[0].size) {
-                j -> ln(distances[i][j]) * ln(distances[i][j])
-            }
-        }
-        val mLnDistanceSquared = TFloat32.tensorOf(StdArrays.ndCopyOf(lnDistanceSquared))
-        model.addTensor(mLnDistanceSquared)
-        val oLnDistanceSquared = tf.constant(mLnDistanceSquared)
+        val oLnDistance = model.addMatrix( lnDistances(distances) )
+        val oLnDistanceSquared = model.addMatrix( lnDistancesSquared(distances) )
 
         val tA = tf.math.mul(vA, oLnDistanceSquared)
         val tB = tf.math.mul(vB, oLnDistance)
@@ -427,27 +428,9 @@ class LogNormPowerDCUtil (
         val vB = model.getVariable(1)
         val vC = model.getVariable(2)
 
-        val lnDistance = Array(distances.size) {
-            i -> FloatArray(distances[0].size) {
-                j -> ln(distances[i][j])
-            }
-        }
-        val mLnDistance = TFloat32.tensorOf(StdArrays.ndCopyOf(lnDistance))
-        model.addTensor(mLnDistance)
-        val oLnDistance = tf.constant(mLnDistance)
-
-        val lnDistanceSquared = Array(distances.size) {
-                i -> FloatArray(distances[0].size) {
-                    j -> ln(distances[i][j]) * ln(distances[i][j])
-            }
-        }
-        val mLnDistanceSquared = TFloat32.tensorOf(StdArrays.ndCopyOf(lnDistanceSquared))
-        model.addTensor(mLnDistanceSquared)
-        val oLnDistanceSquared = tf.constant(mLnDistanceSquared)
-
-        val mDistance = TFloat32.tensorOf(StdArrays.ndCopyOf(distances))
-        model.addTensor(mDistance)
-        val oDistance = tf.constant(mDistance)
+        val oLnDistance = model.addMatrix( lnDistances(distances) )
+        val oLnDistanceSquared = model.addMatrix( lnDistancesSquared(distances) )
+        val oDistance   = model.addMatrix(distances)
 
         val tA = tf.math.mul(vA, oLnDistanceSquared)
         val tB = tf.math.mul(vB, oLnDistance)
@@ -536,18 +519,8 @@ data class CombinedDCUtil(
         val vA = model.getVariable(0)
         val vB = model.getVariable(1)
 
-        val lnDistance = Array(distances.size) {
-            i -> FloatArray(distances[0].size) {
-                j -> ln(distances[i][j])
-            }
-        }
-        val mLnDistance = TFloat32.tensorOf(StdArrays.ndCopyOf(lnDistance))
-        model.addTensor(mLnDistance)
-        val oLnDistance = tf.constant(mLnDistance)
-
-        val mDistance = TFloat32.tensorOf(StdArrays.ndCopyOf(distances))
-        model.addTensor(mDistance)
-        val oDistance = tf.constant(mDistance)
+        val oLnDistance = model.addMatrix( lnDistances(distances) )
+        val oDistance   = model.addMatrix(distances)
 
         val tA = tf.math.mul(vA, oDistance)
         val tB = tf.math.mul(vB, oLnDistance)
