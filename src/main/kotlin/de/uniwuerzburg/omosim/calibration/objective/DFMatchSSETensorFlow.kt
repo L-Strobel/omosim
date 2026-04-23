@@ -7,12 +7,12 @@ import org.tensorflow.Operand
 import org.tensorflow.Session
 import org.tensorflow.types.TFloat32
 import smile.stat.Hypothesis.F
+import kotlin.math.pow
 
 
 class DFMatchSSETensorFlow (
     val activity: ActivityType,
-    private val mean: Double,
-    private val m2: Double,
+    private val moments: List<Double>,
     val context: DistanceFunctionMatchContext
 ) : SGGravityObjectiveTF {
     override fun build(
@@ -24,48 +24,41 @@ class DFMatchSSETensorFlow (
         val omosim = context.omosim
         val n = context.omosim.grid.size
 
-        val arrDistance = Array(n) { FloatArray(n) }
-        val arrDistanceSquared = Array(n) { FloatArray(n) }
-        for ((o, origin) in omosim.grid.withIndex()) {
-            val distances = omosim.routingCache.getDistances(origin, omosim.grid)
-            for (d in 0 until n) {
-                arrDistance[o][d] = (distances[d] / 1000f)
-                arrDistanceSquared[o][d] = (distances[d] / 1000f) * (distances[d] / 1000f)
-            }
-        }
-        val oDistance        = model.addMatrix( arrDistance )
-        val oDistanceSquared = model.addMatrix( arrDistanceSquared )
-
         val totalPopulation = tf.constant(context.totalPopulation.toFloat())
         val expectedTripsScaled = tf.math.mul(expectedTrips[activity]!!, totalPopulation)
-        val expectedDistance = tf.math.mul(expectedTripsScaled, oDistance)
-        val expectedDistanceSquared = tf.math.mul(expectedTripsScaled, oDistanceSquared)
-
         val expectedTotalTrips = tf.reduceSum(
             expectedTripsScaled,
             tf.constant(intArrayOf(0, 1))
         )
 
-        val expectedTotalDistance = tf.reduceSum(
-            expectedDistance,
-            tf.constant(intArrayOf(0, 1))
-        )
+        val oTerms = mutableListOf<Operand<TFloat32>>()
+        for ((i, m) in moments.withIndex()) {
+            // Expected Moment
+            val fArrayDistance = Array(n) { FloatArray(n) }
+            for ((o, origin) in omosim.grid.withIndex()) {
+                val distances = omosim.routingCache.getDistances(origin, omosim.grid)
+                for (d in 0 until n) {
+                    fArrayDistance[o][d] = (distances[d] / 1000f).pow(i+1)
+                }
+            }
+            val oDistance = model.addMatrix( fArrayDistance )
+            val odMomentValues = tf.math.mul(expectedTripsScaled, oDistance)
+            val expectedMomentSum = tf.reduceSum(odMomentValues, tf.constant(intArrayOf(0, 1)))
+            val expectedMoment = tf.math.div(expectedMomentSum, expectedTotalTrips)
 
-        val expectedSumOfSquare = tf.reduceSum(
-            expectedDistanceSquared,
-            tf.constant(intArrayOf(0, 1))
-        )
+            // Objective Term
+            val diff = tf.math.sub(expectedMoment, tf.constant(m.toFloat()))
+            val sqrDiff = tf.math.square(diff)
+            val r = 1/(i+1).toFloat()
+            val oTerm = if (r != 1f) {
+                tf.math.pow(sqrDiff, tf.constant(r))
+            } else {
+                tf.math.mul(sqrDiff, tf.constant(10f))
+            }
+            oTerms.add(oTerm)
+        }
 
-        val expectedMean = tf.math.div(expectedTotalDistance, expectedTotalTrips)
-        val moment2      = tf.math.div(expectedSumOfSquare, expectedTotalTrips)
-
-        val diff1 = tf.math.sub(expectedMean, tf.constant( mean.toFloat() ))
-        val t1 = tf.math.mul( tf.math.square( diff1 ), tf.constant(10f) )
-
-        val diff2 = tf.math.sub(moment2, tf.constant( m2.toFloat() ))
-        val t2 = tf.math.sqrt( tf.math.square( diff2 ) )
-
-        val obj = tf.math.add(t1, t2)
+        val obj = tf.math.addN(oTerms)
 
         model.finalize(obj)
         return model
