@@ -11,10 +11,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import org.tensorflow.Operand
-import org.tensorflow.ndarray.StdArrays
 import org.tensorflow.types.TFloat32
 import kotlin.math.exp
 import kotlin.math.ln
+import kotlin.math.pow
 
 /**
  * Return unique IDs used for the destination choice functions.
@@ -99,6 +99,14 @@ sealed class LocationChoiceDCWeightFun {
         return Array(distances.size) { i ->
             FloatArray(distances[0].size) { j ->
                 ln(distances[i][j]) * ln(distances[i][j])
+            }
+        }
+    }
+
+    fun distancesPow(distances: Array<FloatArray>, pow: Int): Array<FloatArray> {
+        return Array(distances.size) { i ->
+            FloatArray(distances[0].size) { j ->
+                distances[i][j].pow(pow)
             }
         }
     }
@@ -536,5 +544,94 @@ data class CombinedDCUtil(
     override fun setDistanceParameters(parameters: DoubleArray) {
         coeff0 = parameters[0]
         coeff1 = parameters[1]
+    }
+}
+
+@Serializable
+@SerialName("Test")
+@Suppress("unused")
+class Test (
+    override val coeffResidentialArea: Double,
+    override val coeffCommercialArea: Double,
+    override val coeffRetailArea: Double,
+    override val coeffIndustrialArea: Double,
+    override val coeffOfficeArea: Double,
+    override val coeffShopArea: Double,
+    override val coeffSchoolArea: Double,
+    override val coeffUniversityArea: Double,
+    override val coeffOtherArea: Double,
+    override val coeffOfficeUnits: Double,
+    override val coeffShopUnits: Double,
+    override val coeffSchoolUnits: Double,
+    override val coeffUniUnits: Double,
+    override val coeffPlaceOfWorshipUnits: Double,
+    override val coeffCafeUnits: Double,
+    override val coeffFastFoodUnits: Double,
+    override val coeffKinderGartenUnits: Double,
+    override val coeffTourismUnits: Double,
+    override val coeffBuildingUnits: Double,
+    override val coeffResidentialUnits: Double,
+    override val coeffCommercialUnits: Double,
+    override val coeffRetailUnits: Double,
+    override val coeffIndustrialUnits: Double,
+    // For deterrence function
+    private var coeff0: Double,
+    private var coeff1: Double,
+    private var coeff2: Double,
+    private var coeff3: Double
+) : LocationChoiceDCWeightFun( ) {
+    override fun deterrenceFunction(distance: Double) : Double {
+        val y = coeff0 * distance + coeff1 * distance.pow(2) + coeff2 * ln(distance) +
+                coeff3 * ln(distance).pow(2)
+        return y
+    }
+
+    override fun deterrenceFunctionAsTerm(distance: Double): Pair<Term, Int> {
+        val nVars = 4
+        val termA = Variable(nVars, 0, distance)
+        val termB = Variable(nVars, 1, distance.pow(2))
+        val termC = Variable(nVars, 2, ln(distance))
+        val termD = Variable(nVars, 3, ln(distance).pow(2))
+
+        val term = LinearTerm(nVars)
+        term.addTerm(termA, 1.0)
+        term.addTerm(termB, 1.0)
+        term.addTerm(termC, 1.0)
+        term.addTerm(termD, 1.0)
+
+        return Pair(term, nVars)
+    }
+
+    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, model: TfModel): Operand<TFloat32> {
+        val tf = model.tf
+
+        val vA = model.getVariable(0)
+        val vB = model.getVariable(1)
+        val vC = model.getVariable(2)
+        val vD = model.getVariable(3)
+
+        val oDistance   = model.addMatrix( distances )
+        val oDistanceP2 = model.addMatrix( distancesPow(distances, 2) )
+        val oDistanceP3 = model.addMatrix( lnDistances(distances) )
+        val oDistanceP4 = model.addMatrix( lnDistancesSquared(distances) )
+
+        val tA = tf.math.mul(vA, oDistance)
+        val tB = tf.math.mul(vB, oDistanceP2)
+        val tC = tf.math.mul(vC, oDistanceP3)
+        val tD = tf.math.mul(vD, oDistanceP4)
+
+        val term = tf.math.addN( listOf(tA, tB, tC, tD) )
+        return term
+    }
+
+    override fun getDistanceParameters(): DoubleArray {
+        return doubleArrayOf(coeff0, coeff1, coeff2, coeff3)
+    }
+
+    override fun setDistanceParameters(parameters: DoubleArray) {
+        coeff0 = parameters[0]
+        coeff1 = parameters[1]
+        coeff2 = parameters[2]
+        coeff3 = parameters[3]
     }
 }

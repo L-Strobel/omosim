@@ -2,9 +2,7 @@ package de.uniwuerzburg.omosim.calibration
 
 import de.uniwuerzburg.omosim.calibration.algorithms.GradientDescent
 import de.uniwuerzburg.omosim.calibration.objective.DFMatchSSETensorFlow
-import de.uniwuerzburg.omosim.calibration.objective.DFMatchSSE
 import de.uniwuerzburg.omosim.calibration.surrogate.DistanceFunctionVMatrixBuilderTF
-import de.uniwuerzburg.omosim.calibration.surrogate.DistanceFunctionVMatrixBuilder
 import de.uniwuerzburg.omosim.calibration.surrogate.SGGravity
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.Omosim
@@ -47,6 +45,7 @@ class DistanceFunctionMatchContext(
                 "backTracking" to "true"
             )
         )
+        println(calibrated.toList())
 
         evaluate(base, calibrated, moments, activity)
         dcFunction.setDistanceParameters(calibrated)
@@ -58,14 +57,18 @@ class DistanceFunctionMatchContext(
         val dcFunction = finder.locChoiceWeightFuns[activity]!!
 
         dcFunction.setDistanceParameters(calibrated)
-        val (momentsCal, cntCal) = getMomentsDistance(activity, moments.size)
+        val (momentsCal, pCal) = getMomentsDistance(activity, moments.size)
 
         dcFunction.setDistanceParameters(base)
-        val (momentsBase, cntBase) = getMomentsDistance(activity, moments.size)
+        val (momentsBase, pBase) = getMomentsDistance(activity, moments.size)
 
         println("Evaluate Distance Function Match (${activity}):")
-        println("Count Below 500    Base: $cntBase")
-        println("                   Calibrated: $cntCal")
+        println("Count Below 0.5    Base: %.3f".format(pBase[0]))
+        println("                   Calibrated: %.3f".format(pCal[0]))
+        println("Count Below 0.5-1  Base: %.3f".format(pBase[1]))
+        println("                   Calibrated: %.3f".format(pCal[1]))
+        println("Count Below 1-5    Base: %.3f".format(pBase[2]))
+        println("                   Calibrated: %.3f".format(pCal[2]))
         for (i in moments.indices) {
             println("M${i+1} trip distance Goal: %.3f km".format(moments[i]))
             println("                   Base: %.3f km".format(momentsBase[i]))
@@ -73,11 +76,11 @@ class DistanceFunctionMatchContext(
         }
     }
 
-    private fun getMomentsDistance(activity: ActivityType, nMoments: Int) : Pair<List<Double>, Int> {
-        val agents = runBatchAgents(0.1)
+    private fun getMomentsDistance(activity: ActivityType, nMoments: Int) : Pair<List<Double>, List<Double>> {
+        val agents = runBatchAgents(0.03)
 
         // Trip Distances
-        var countBelow = 0
+        var counts = DoubleArray(3) { 0.0 }
         val tripLengths = mutableListOf<Double>()
         for (agent in agents) {
             val activities = agent.mobilityDemand.first().activities
@@ -90,7 +93,11 @@ class DistanceFunctionMatchContext(
                     tripLengths.add(trip.distance!!)
 
                     if (trip.distance!! <= 0.5) {
-                        countBelow += 10
+                        counts[0] += 1.0
+                    } else if (trip.distance!! <= 1.0) {
+                        counts[1] += 1.0
+                    } else if (trip.distance!! <= 5.0) {
+                        counts[2] += 1.0
                     }
                 }
             }
@@ -103,7 +110,7 @@ class DistanceFunctionMatchContext(
                 tripLengths.sumOf { it.pow(i) } / tripLengths.size
             )
         }
-        return Pair(moments, countBelow)
+        return Pair(moments, counts.map { it / tripLengths.size.toDouble() })
     }
 
     /**
