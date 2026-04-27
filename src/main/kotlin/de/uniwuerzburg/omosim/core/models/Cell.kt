@@ -18,8 +18,12 @@ data class Cell (
     override val latlonCoord: Coordinate,
     val buildings: List<Building>,
 ) : RealLocation, AggLocation {
-    // Approximation: average distance between to random points on a disc
-    override val avgDistanceToSelf = (buildings.maxOfOrNull { it.coord.distance(coord) } ?: 0.0) * 2 * 64 / (45 * PI)
+    // TODO last test simply: 100
+    override val avgDistanceToSelf = buildings.map { a ->
+        buildings.map { b ->
+            a.coord.distance(b.coord)
+        }
+    }.flatten().sum() / (buildings.size * buildings.size)
 
     // Most common taz (Normally null at initialization)
     override var odZone = buildings.groupingBy { it.odZone }.eachCount().maxByOrNull { it.value }!!.key
