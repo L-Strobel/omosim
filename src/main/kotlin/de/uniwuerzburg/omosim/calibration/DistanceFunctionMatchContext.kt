@@ -63,12 +63,12 @@ class DistanceFunctionMatchContext(
         val (momentsBase, pBase) = getMomentsDistance(activity, moments.size)
 
         println("Evaluate Distance Function Match (${activity}):")
-        println("Count Below 0.5    Base: %.3f".format(pBase[0]))
-        println("                   Calibrated: %.3f".format(pCal[0]))
-        println("Count Below 0.5-1  Base: %.3f".format(pBase[1]))
-        println("                   Calibrated: %.3f".format(pCal[1]))
-        println("Count Below 1-5    Base: %.3f".format(pBase[2]))
-        println("                   Calibrated: %.3f".format(pCal[2]))
+        println("Count Below 0.5    Base: %.5f".format(pBase[0]))
+        println("                   Calibrated: %.5f".format(pCal[0]))
+        println("Count Below 0.5-2  Base: %.5f".format(pBase[1]))
+        println("                   Calibrated: %.5f".format(pCal[1]))
+        println("Count Below 2-5    Base: %.5f".format(pBase[2]))
+        println("                   Calibrated: %.5f".format(pCal[2]))
         for (i in moments.indices) {
             println("M${i+1} trip distance Goal: %.3f km".format(moments[i]))
             println("                   Base: %.3f km".format(momentsBase[i]))
@@ -80,21 +80,21 @@ class DistanceFunctionMatchContext(
         val agents = runBatchAgents(0.03)
 
         // Trip Distances
-        var counts = DoubleArray(3) { 0.0 }
+        val counts = DoubleArray(3) { 0.0 }
         val tripLengths = mutableListOf<Double>()
         for (agent in agents) {
             val activities = agent.mobilityDemand.first().activities
             val trips = agent.mobilityDemand.first().trips
             for (i in trips.indices) {
                 val trip = trips[i]
-                val nextActivity = activities[i+1]
+                val nextActivity = activities[i + 1]
 
                 if (nextActivity.type == activity) {
                     tripLengths.add(trip.distance!!)
 
                     if (trip.distance!! <= 0.5) {
                         counts[0] += 1.0
-                    } else if (trip.distance!! <= 1.0) {
+                    } else if (trip.distance!! <= 2.0) {
                         counts[1] += 1.0
                     } else if (trip.distance!! <= 5.0) {
                         counts[2] += 1.0
