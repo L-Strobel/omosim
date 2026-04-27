@@ -143,7 +143,7 @@ sealed class LocationChoiceDCWeightFun {
         return destination.attractions[id]!!
     }
 
-    open fun calcAttraction(properties: BuildingProperties, useLevels: Boolean = false) : Double {
+    open fun calcAttraction(properties: BuildingProperties, useLevels: Boolean = true) : Double {
         val area = if(useLevels) {
             properties.area * properties.levels
         } else {
