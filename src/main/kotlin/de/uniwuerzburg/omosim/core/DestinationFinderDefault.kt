@@ -193,7 +193,15 @@ class DestinationFinderDefault(
 
         // Get fine-grained location
         val destination = if (aggZone is Cell) {
-            val buildingsCumDist = getDistr(origin, aggZone.buildings, activityType, forceBeeline = true) // Beeline for speed up
+            val buildingsCumDist = if (
+                ((origin is Building) and aggZone.buildings.contains(origin)) or
+                (origin == aggZone)
+                )
+            {
+                getDistr(origin, aggZone.buildings, activityType, forceBeeline = true) // Beeline for speed up
+            } else {
+                getDistrNoOrigin(aggZone.buildings, activityType)
+            }
             aggZone.buildings[sampleCumDist(buildingsCumDist, rng)]
         } else {
             aggZone
