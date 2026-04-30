@@ -194,7 +194,7 @@ class RoutingCache(
     ) : FloatArray {
         when {
             (mode == RoutingMode.BEELINE) or forceBeeline -> {
-                return destinations.map { calcDistance(origin, it).toFloat() }.toFloatArray()
+                return destinations.map { calcDistance(origin, it, forceBeeline).toFloat() }.toFloatArray()
             }
             mode == RoutingMode.GRAPHHOPPER -> {
                 if (origin !is RealLocation) {
@@ -222,13 +222,17 @@ class RoutingCache(
      * @param destination Destination
      * @return Distance (Unit: meter)
      */
-    private fun calcDistance(origin: LocationOption, destination: LocationOption) : Double {
+    private fun calcDistance(
+        origin: LocationOption,
+        destination: LocationOption,
+        forceBeeline: Boolean = false
+    ) : Double {
         if (origin == destination) {
             return origin.avgDistanceToSelf // 0.0 for Buildings
         }
-        when (mode) {
-            RoutingMode.BEELINE -> return calcDistanceBeeline(origin, destination)
-            RoutingMode.GRAPHHOPPER -> {
+        when {
+            (mode == RoutingMode.BEELINE) or forceBeeline -> return calcDistanceBeeline(origin, destination)
+            mode == RoutingMode.GRAPHHOPPER -> {
                 // Check if possible
                 if (origin in unRoutableLocs) { return calcDistanceBeeline(origin, destination) }
                 if (destination in unRoutableLocs) { return calcDistanceBeeline(origin, destination) }
@@ -259,6 +263,7 @@ class RoutingCache(
                     return rsp.best.distance
                 }
             }
+            else -> throw IllegalStateException("Routing mode ${mode.name} is unknown.")
         }
     }
 
