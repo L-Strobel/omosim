@@ -187,10 +187,16 @@ class RoutingCache(
      * @param destinations All destinations for which the distance should be determined
      * @return Array of distances (Unit: meter)
      */
-    fun getDistances(origin: LocationOption, destinations: List<LocationOption>) : FloatArray {
-        when (mode) {
-            RoutingMode.BEELINE -> return destinations.map { calcDistance(origin, it).toFloat() }.toFloatArray()
-            RoutingMode.GRAPHHOPPER -> {
+    fun getDistances(
+        origin: LocationOption,
+        destinations: List<LocationOption>,
+        forceBeeline: Boolean = false
+    ) : FloatArray {
+        when {
+            (mode == RoutingMode.BEELINE) or forceBeeline -> {
+                return destinations.map { calcDistance(origin, it).toFloat() }.toFloatArray()
+            }
+            mode == RoutingMode.GRAPHHOPPER -> {
                 if (origin !is RealLocation) {
                     return destinations.map { calcDistanceBeeline(origin, it).toFloat() }.toFloatArray()
                 }
@@ -206,6 +212,7 @@ class RoutingCache(
                     }
                 }
             }
+            else -> throw IllegalStateException("Routing mode ${mode.name} is unknown.")
         }
     }
 

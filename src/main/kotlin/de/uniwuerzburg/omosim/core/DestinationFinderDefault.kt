@@ -2,6 +2,7 @@ package de.uniwuerzburg.omosim.core
 
 import de.uniwuerzburg.omosim.core.models.*
 import de.uniwuerzburg.omosim.routing.RoutingCache
+import de.uniwuerzburg.omosim.routing.calcDistanceBeeline
 import de.uniwuerzburg.omosim.utils.createCumDist
 import de.uniwuerzburg.omosim.utils.sampleCumDist
 import java.util.*
@@ -29,7 +30,11 @@ class DestinationFinderDefault(
      * @param activityType Activity type conducted at the destination.
      * @return Probabilistic weights
      */
-    override fun getWeights(origin: LocationOption, destinations: List<LocationOption>, activityType: ActivityType
+    override fun getWeights(
+        origin: LocationOption,
+        destinations: List<LocationOption>,
+        activityType: ActivityType,
+        forceBeeline: Boolean
     ): List<Double> {
         require(activityType != ActivityType.HOME) { "For HOME activities call getWeightsNoOrigin()!" }
 
@@ -40,17 +45,26 @@ class DestinationFinderDefault(
             }
         }
 
-        val distances = routingCache.getDistances(origin, destinations)
+        val distances = routingCache.getDistances(origin, destinations, forceBeeline)
         val weightFunction = locChoiceWeightFuns[activityType]!!
 
         val weights = destinations.mapIndexed { i, destination ->
-            when(destination) {
-                is DummyLocation -> {
+            when {
+                destination is DummyLocation -> {
                     if (activityType !in destination.transferActivities) {
                         0.0
                     } else {
                         1.0
                     }
+                }
+                // Model the transition within a cell with more detail
+                (destination is Cell) && (origin is Cell) && (destination == origin) -> {
+                    var weight = 0.0
+                    for (building in destination.buildings) {
+                        val distance = calcDistanceBeeline(origin, building) // Using beeline for speed
+                        weight += weightFunction.calcFor(building, distance)
+                    }
+                    weight
                 }
                 else -> {
                     destination as RealLocation
@@ -127,9 +141,13 @@ class DestinationFinderDefault(
     * @param activityType Activity type conducted at the destination.
     * @return Cumulative distribution of the destination probabilities
     */
-    private fun getDistr(origin: LocationOption, destinations: List<LocationOption>, activityType: ActivityType
+    private fun getDistr(
+        origin: LocationOption,
+        destinations: List<LocationOption>,
+        activityType: ActivityType,
+        forceBeeline: Boolean = false
     ) : DoubleArray {
-        val weights = getWeights(origin, destinations, activityType)
+        val weights = getWeights(origin, destinations, activityType, forceBeeline)
         return createCumDist(weights.toDoubleArray())
     }
 
@@ -158,25 +176,25 @@ class DestinationFinderDefault(
      * @return destination
      */
     override fun getLocation(
-        origin: AggLocation, destinations: List<AggLocation>,
+        origin: LocationOption, destinations: List<AggLocation>,
         activityType: ActivityType, rng: Random
     ) : LocationOption {
         // Get agg zone (might be cell or dummy is node)
         val fMatrix = forcedTransitionMatrix[activityType]
         val aggZone = if ((fMatrix != null) && (destinations.size == fMatrix.size)) {
             // Use forced transition matrix
-            val distr = createCumDist(fMatrix[origin]!!)
+            val distr = createCumDist(fMatrix[origin.getAggLoc()]!!)
             destinations[sampleCumDist(distr, rng)]
         } else {
             // Normal case
-            val aggCumDist = getDistr(origin, destinations, activityType)
+            val aggCumDist = getDistr(origin.getAggLoc()!!, destinations, activityType)
             destinations[sampleCumDist(aggCumDist, rng)]
         }
 
         // Get fine-grained location
         val destination = if (aggZone is Cell) {
-            val workBuildingsCumDist = getDistrNoOrigin(aggZone.buildings, activityType) // No origin for speed up
-            aggZone.buildings[sampleCumDist(workBuildingsCumDist, rng)]
+            val buildingsCumDist = getDistr(origin, aggZone.buildings, activityType, forceBeeline = true) // Beeline for speed up
+            aggZone.buildings[sampleCumDist(buildingsCumDist, rng)]
         } else {
             aggZone
         }

@@ -28,7 +28,7 @@ class DistanceFunctionVMatrixBuilderTF(
         val arrLnAttraction = Array(n) { FloatArray(n) }
         for ((o, origin) in omosim.grid.withIndex()) {
             val distances = omosim.routingCache.getDistances(origin, omosim.grid)
-            val attractions = finder.getWeightsNoOrigin(omosim.grid, activityType = mrep.vActivity)
+            val attractions = finder.getWeightsNoOrigin(omosim.grid, activityType = mrep.vActivity) // TODO fix for internal cell connection
 
             for (d in 0 until n) {
                 val distanceAdj = if (distances[d].toDouble() <= 0.0) {

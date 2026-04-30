@@ -2,7 +2,6 @@ package de.uniwuerzburg.omosim.core.models
 
 import de.uniwuerzburg.omosim.core.LocationChoiceDCWeightFun
 import org.locationtech.jts.geom.Coordinate
-import kotlin.math.PI
 
 /**
  * Routing cell. Group of buildings used to faster calculate the approximate distance by car.
@@ -18,7 +17,6 @@ data class Cell (
     override val latlonCoord: Coordinate,
     val buildings: List<Building>,
 ) : RealLocation, AggLocation {
-    // TODO last test simply: 100
     override val avgDistanceToSelf = buildings.map { a ->
         buildings.map { b ->
             a.coord.distance(b.coord)
@@ -55,7 +53,6 @@ data class Cell (
         if (coord != other.coord) return false
         if (latlonCoord != other.latlonCoord) return false
         if (buildings != other.buildings) return false
-        if (avgDistanceToSelf != other.avgDistanceToSelf) return false
         if (odZone != other.odZone) return false
         if (inFocusArea != other.inFocusArea) return false
         if (attractions != other.attractions) return false

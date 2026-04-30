@@ -4,6 +4,7 @@ import de.uniwuerzburg.omosim.core.models.ActivityType
 import de.uniwuerzburg.omosim.core.models.AggLocation
 import de.uniwuerzburg.omosim.core.models.LocationOption
 import de.uniwuerzburg.omosim.core.models.ODZone
+import de.uniwuerzburg.omosim.routing.RoutingMode
 import java.util.*
 
 /**
@@ -28,7 +29,12 @@ interface DestinationFinder {
      * @param activityType Activity type conducted at the destination.
      * @return Probabilistic weights
      */
-    fun getWeights(origin: LocationOption, destinations: List<LocationOption>, activityType: ActivityType ): List<Double>
+    fun getWeights(
+        origin: LocationOption,
+        destinations: List<LocationOption>,
+        activityType: ActivityType,
+        forceBeeline: Boolean = false
+    ): List<Double>
 
     /**
      * Determine activity location.
@@ -42,7 +48,7 @@ interface DestinationFinder {
      * @return destination
      */
     fun getLocation(
-        origin: AggLocation, destinations: List<AggLocation>,
+        origin: LocationOption, destinations: List<AggLocation>,
         activityType: ActivityType, rng: Random
     ) : LocationOption
 

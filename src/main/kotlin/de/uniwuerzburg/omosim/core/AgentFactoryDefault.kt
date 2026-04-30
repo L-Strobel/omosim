@@ -179,8 +179,8 @@ class AgentFactoryDefault (
         val featureSet = stratum.sampleSocDemFeatures(rng)
 
         // Fixed locations
-        val work = destinationFinder.getLocation(homeZone, zones, ActivityType.WORK, rng)
-        val school = destinationFinder.getLocation(homeZone, zones, ActivityType.SCHOOL, rng)
+        val work = destinationFinder.getLocation(home, zones, ActivityType.WORK, rng)
+        val school = destinationFinder.getLocation(home, zones, ActivityType.SCHOOL, rng)
 
         val agent = MobiAgent(
             id, featureSet.hom, featureSet.mob, featureSet.age, home, work, school, featureSet.sex

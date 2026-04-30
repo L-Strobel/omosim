@@ -23,7 +23,7 @@ class DistanceFunctionVMatrixBuilder(
 
         for ((o, origin) in omosim.grid.withIndex()) {
             val distances = omosim.routingCache.getDistances(origin, omosim.grid)
-            val attractions = finder.getWeightsNoOrigin(omosim.grid, activityType = mrep.vActivity)
+            val attractions = finder.getWeightsNoOrigin(omosim.grid, activityType = mrep.vActivity) // TODO fix for internal cell connection
 
             val weights = mutableListOf<Term>()
             val sum = LinearTerm(nVars)

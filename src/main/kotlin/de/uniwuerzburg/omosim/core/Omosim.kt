@@ -403,10 +403,10 @@ class Omosim (
                     ActivityType.WORK -> agent.work
                     ActivityType.SCHOOL -> agent.school
                     ActivityType.SHOPPING -> {
-                        destinationFinder.getLocation(locations[i-1].getAggLoc()!!, zones, ActivityType.SHOPPING, rng)
+                        destinationFinder.getLocation(locations[i-1], zones, ActivityType.SHOPPING, rng)
                     }
                     else -> {
-                        destinationFinder.getLocation(locations[i-1].getAggLoc()!!, zones, ActivityType.OTHER, rng)
+                        destinationFinder.getLocation(locations[i-1], zones, ActivityType.OTHER, rng)
                     }
                 }
             locations.add(location)

@@ -5,6 +5,7 @@ import de.uniwuerzburg.omosim.io.json.readJson
 import de.uniwuerzburg.omosim.io.json.readJsonFromResource
 import de.uniwuerzburg.omosim.routing.Route
 import de.uniwuerzburg.omosim.routing.RoutingCache
+import de.uniwuerzburg.omosim.routing.calcDistanceBeeline
 import de.uniwuerzburg.omosim.utils.ProgressBar
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -110,11 +111,18 @@ class ModeChoiceFast(
                 // IF trip is from fixed location to same fixed location. Impute a randomly sampled Round-trip.
                 rtDistances[originActivity.type]!!
             } else {
-                val origin = originActivity.location.getAggLoc()!!
-                val destination = destinationActivity.location.getAggLoc()!!
-                routingCache.getDistances(
-                    origin, listOf(destination)
-                ).first().toDouble() / 1000
+                val origin = originActivity.location
+                val destination = destinationActivity.location
+                val originCell = origin.getAggLoc()!!
+                val destinationCell = destination.getAggLoc()!!
+
+                if (originCell == destinationCell) {
+                    calcDistanceBeeline(origin, destination) / 1000
+                } else {
+                    routingCache.getDistances(
+                        originCell, listOf(destinationCell)
+                    ).first().toDouble() / 1000
+                }
             }
 
             val tripFeatures = ModeChoiceGTFS.TripMCFeatures(
