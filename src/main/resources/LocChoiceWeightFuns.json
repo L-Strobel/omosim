@@ -23,7 +23,8 @@
         "coeffResidentialUnits" : 0.0,
         "coeffCommercialUnits" :  0.0,
         "coeffRetailUnits" : 0.0,
-        "coeffIndustrialUnits" :  0.0
+        "coeffIndustrialUnits" :  0.0,
+        "limitShopUnits": 30.0
     },
     "WORK": {
         "type": "CombinedPowerExpon",
@@ -50,6 +51,7 @@
         "coeffCommercialUnits": 0.0,
         "coeffRetailUnits": 0.0,
         "coeffIndustrialUnits": 0.0,
+        "limitShopUnits": 30.0,
         "coeff0": -0.03512838,
         "coeff1": -0.91865327
     },
@@ -78,6 +80,7 @@
         "coeffCommercialUnits":  0.0,
         "coeffRetailUnits": 0.0,
         "coeffIndustrialUnits": 0.0,
+        "limitShopUnits": 30.0,
         "coeff0": -0.2345691,
         "coeff1": -1.17594614,
         "coeff2": 0.00525657
@@ -107,6 +110,7 @@
         "coeffCommercialUnits":  0.0,
         "coeffRetailUnits": 0.0,
         "coeffIndustrialUnits":  0.0,
+        "limitShopUnits": 30.0,
         "coeff0": -9.898e-02,
         "coeff1": -1.701e+00
     },
@@ -135,6 +139,7 @@
         "coeffCommercialUnits" : 0.0,
         "coeffRetailUnits": 0.0,
         "coeffIndustrialUnits": 0.0,
+        "limitShopUnits": 30.0,
         "coeff0": 0.0,
         "coeff1": 0.0,
         "coeff2": -1.225e+00,

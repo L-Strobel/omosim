@@ -14,6 +14,7 @@ import org.tensorflow.Operand
 import org.tensorflow.types.TFloat32
 import kotlin.math.exp
 import kotlin.math.ln
+import kotlin.math.max
 import kotlin.math.pow
 
 /**
@@ -59,6 +60,20 @@ sealed class LocationChoiceDCWeightFun {
     abstract val coeffCommercialUnits: Double
     abstract val coeffRetailUnits: Double
     abstract val coeffIndustrialUnits: Double
+    abstract val limitOfficeUnits: Double?
+    abstract val limitShopUnits: Double?
+    abstract val limitSchoolUnits: Double?
+    abstract val limitUniUnits: Double?
+    abstract val limitPlaceOfWorshipUnits: Double?
+    abstract val limitCafeUnits: Double?
+    abstract val limitFastFoodUnits: Double?
+    abstract val limitKinderGartenUnits: Double?
+    abstract val limitTourismUnits: Double?
+    abstract val limitBuildingUnits: Double?
+    abstract val limitResidentialUnits: Double?
+    abstract val limitCommercialUnits: Double?
+    abstract val limitRetailUnits: Double?
+    abstract val limitIndustrialUnits: Double?
 
     @Transient
     val id: Int = IDDispenser.next()
@@ -172,21 +187,68 @@ sealed class LocationChoiceDCWeightFun {
             }
         }
 
+        // Clip number of POI per building
+        val nOffices = if (limitOfficeUnits != null) {
+            max(limitOfficeUnits!!, properties.number_offices)
+        } else {
+            properties.number_offices
+        }
+        val nShops = if (limitShopUnits != null) {
+            max(limitShopUnits!!, properties.number_shops)
+        } else {
+            properties.number_shops
+        }
+        val nSchools = if (limitSchoolUnits != null) {
+            max(limitSchoolUnits!!, properties.number_schools)
+        } else {
+            properties.number_schools
+        }
+        val nUnis = if (limitUniUnits != null) {
+            max(limitUniUnits!!, properties.number_universities)
+        } else {
+            properties.number_universities
+        }
+        val nPOW = if (limitPlaceOfWorshipUnits != null) {
+            max(limitPlaceOfWorshipUnits!!, properties.number_place_of_worship)
+        } else {
+            properties.number_place_of_worship
+        }
+        val nCafe = if (limitCafeUnits != null) {
+            max(limitCafeUnits!!, properties.number_cafe)
+        } else {
+            properties.number_cafe
+        }
+        val nFastFood = if (limitFastFoodUnits != null) {
+            max(limitFastFoodUnits!!, properties.number_fast_food)
+        } else {
+            properties.number_fast_food
+        }
+        val nKinderGarten = if (limitKinderGartenUnits != null) {
+            max(limitKinderGartenUnits!!, properties.number_kindergarten)
+        } else {
+            properties.number_kindergarten
+        }
+        val nTourism = if (limitTourismUnits != null) {
+            max(limitTourismUnits!!, properties.number_tourism)
+        } else {
+            properties.number_tourism
+        }
+
         return  1.0 +
                 attractionLanduse +
                 coeffOfficeArea * areaOffice +
                 coeffShopArea * areaShop +
                 coeffSchoolArea * areaSchool +
                 coeffUniversityArea * areaUniversity +
-                coeffOfficeUnits * properties.number_offices +
-                coeffShopUnits * properties.number_shops +
-                coeffSchoolUnits * properties.number_schools +
-                coeffUniUnits * properties.number_universities +
-                coeffPlaceOfWorshipUnits * properties.number_place_of_worship +
-                coeffCafeUnits * properties.number_cafe +
-                coeffFastFoodUnits * properties.number_fast_food +
-                coeffKinderGartenUnits * properties.number_kindergarten +
-                coeffTourismUnits * properties.number_tourism +
+                coeffOfficeUnits * nOffices +
+                coeffShopUnits * nShops +
+                coeffSchoolUnits * nSchools +
+                coeffUniUnits * nUnis +
+                coeffPlaceOfWorshipUnits * nPOW +
+                coeffCafeUnits * nCafe +
+                coeffFastFoodUnits * nFastFood +
+                coeffKinderGartenUnits * nKinderGarten +
+                coeffTourismUnits * nTourism +
                 coeffBuildingUnits * 1
     }
 }
@@ -218,6 +280,20 @@ object ByPopulation: LocationChoiceDCWeightFun () {
     override val coeffCommercialUnits: Double get() { throw NotImplementedError() }
     override val coeffRetailUnits: Double get() { throw NotImplementedError() }
     override val coeffIndustrialUnits: Double get() { throw NotImplementedError() }
+    override val limitOfficeUnits: Double? get() { throw NotImplementedError() }
+    override val limitShopUnits: Double? get() { throw NotImplementedError() }
+    override val limitSchoolUnits: Double? get() { throw NotImplementedError() }
+    override val limitUniUnits: Double? get() { throw NotImplementedError() }
+    override val limitPlaceOfWorshipUnits: Double? get() { throw NotImplementedError() }
+    override val limitCafeUnits: Double? get() { throw NotImplementedError() }
+    override val limitFastFoodUnits: Double? get() { throw NotImplementedError() }
+    override val limitKinderGartenUnits: Double? get() { throw NotImplementedError() }
+    override val limitTourismUnits: Double? get() { throw NotImplementedError() }
+    override val limitBuildingUnits: Double? get() { throw NotImplementedError() }
+    override val limitResidentialUnits: Double? get() { throw NotImplementedError() }
+    override val limitCommercialUnits: Double? get() { throw NotImplementedError() }
+    override val limitRetailUnits: Double? get() { throw NotImplementedError() }
+    override val limitIndustrialUnits: Double? get() { throw NotImplementedError() }
 
     override fun calcAttraction(properties: BuildingProperties, useLevels: Boolean): Double {
         return properties.population ?: 0.0
@@ -262,6 +338,20 @@ class PureAttraction (
     override val coeffCommercialUnits: Double,
     override val coeffRetailUnits: Double,
     override val coeffIndustrialUnits: Double,
+    override val limitOfficeUnits: Double? = null,
+    override val limitShopUnits: Double? = null,
+    override val limitSchoolUnits: Double? = null,
+    override val limitUniUnits: Double? = null,
+    override val limitPlaceOfWorshipUnits: Double? = null,
+    override val limitCafeUnits: Double? = null,
+    override val limitFastFoodUnits: Double? = null,
+    override val limitKinderGartenUnits: Double? = null,
+    override val limitTourismUnits: Double? = null,
+    override val limitBuildingUnits: Double? = null,
+    override val limitResidentialUnits: Double? = null,
+    override val limitCommercialUnits: Double? = null,
+    override val limitRetailUnits: Double? = null,
+    override val limitIndustrialUnits: Double? = null
     ) : LocationChoiceDCWeightFun( ) {
 
     override fun deterrenceFunction(distance: Double): Double {
@@ -306,6 +396,20 @@ class LogNormDCUtil (
     override val coeffCommercialUnits: Double,
     override val coeffRetailUnits: Double,
     override val coeffIndustrialUnits: Double,
+    override val limitOfficeUnits: Double? = null,
+    override val limitShopUnits: Double? = null,
+    override val limitSchoolUnits: Double? = null,
+    override val limitUniUnits: Double? = null,
+    override val limitPlaceOfWorshipUnits: Double? = null,
+    override val limitCafeUnits: Double? = null,
+    override val limitFastFoodUnits: Double? = null,
+    override val limitKinderGartenUnits: Double? = null,
+    override val limitTourismUnits: Double? = null,
+    override val limitBuildingUnits: Double? = null,
+    override val limitResidentialUnits: Double? = null,
+    override val limitCommercialUnits: Double? = null,
+    override val limitRetailUnits: Double? = null,
+    override val limitIndustrialUnits: Double? = null,
     // For deterrence function
     private var coeff0: Double,
     private var coeff1: Double,
@@ -386,6 +490,20 @@ class LogNormPowerDCUtil (
     override val coeffCommercialUnits: Double,
     override val coeffRetailUnits: Double,
     override val coeffIndustrialUnits: Double,
+    override val limitOfficeUnits: Double? = null,
+    override val limitShopUnits: Double? = null,
+    override val limitSchoolUnits: Double? = null,
+    override val limitUniUnits: Double? = null,
+    override val limitPlaceOfWorshipUnits: Double? = null,
+    override val limitCafeUnits: Double? = null,
+    override val limitFastFoodUnits: Double? = null,
+    override val limitKinderGartenUnits: Double? = null,
+    override val limitTourismUnits: Double? = null,
+    override val limitBuildingUnits: Double? = null,
+    override val limitResidentialUnits: Double? = null,
+    override val limitCommercialUnits: Double? = null,
+    override val limitRetailUnits: Double? = null,
+    override val limitIndustrialUnits: Double? = null,
     // For deterrence function
     private var coeff0: Double,
     private var coeff1: Double,
@@ -500,6 +618,20 @@ data class CombinedDCUtil(
     override val coeffCommercialUnits: Double,
     override val coeffRetailUnits: Double,
     override val coeffIndustrialUnits: Double,
+    override val limitOfficeUnits: Double? = null,
+    override val limitShopUnits: Double? = null,
+    override val limitSchoolUnits: Double? = null,
+    override val limitUniUnits: Double? = null,
+    override val limitPlaceOfWorshipUnits: Double? = null,
+    override val limitCafeUnits: Double? = null,
+    override val limitFastFoodUnits: Double? = null,
+    override val limitKinderGartenUnits: Double? = null,
+    override val limitTourismUnits: Double? = null,
+    override val limitBuildingUnits: Double? = null,
+    override val limitResidentialUnits: Double? = null,
+    override val limitCommercialUnits: Double? = null,
+    override val limitRetailUnits: Double? = null,
+    override val limitIndustrialUnits: Double? = null,
     // For deterrence function
     private var coeff0: Double,
     private var coeff1: Double,
@@ -574,6 +706,20 @@ class Test (
     override val coeffCommercialUnits: Double,
     override val coeffRetailUnits: Double,
     override val coeffIndustrialUnits: Double,
+    override val limitOfficeUnits: Double? = null,
+    override val limitShopUnits: Double? = null,
+    override val limitSchoolUnits: Double? = null,
+    override val limitUniUnits: Double? = null,
+    override val limitPlaceOfWorshipUnits: Double? = null,
+    override val limitCafeUnits: Double? = null,
+    override val limitFastFoodUnits: Double? = null,
+    override val limitKinderGartenUnits: Double? = null,
+    override val limitTourismUnits: Double? = null,
+    override val limitBuildingUnits: Double? = null,
+    override val limitResidentialUnits: Double? = null,
+    override val limitCommercialUnits: Double? = null,
+    override val limitRetailUnits: Double? = null,
+    override val limitIndustrialUnits: Double? = null,
     // For deterrence function
     private var coeff0: Double,
     private var coeff1: Double,
