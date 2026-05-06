@@ -28,7 +28,7 @@ class DistanceFunctionMatchContext(
         val base  = dcFunction.getDistanceParameters()*/
 
         // Calibrate
-        val objective = DFMatchSSETensorFlow(activity, moments, this)
+        /*val objective = DFMatchSSETensorFlow(activity, moments, this)
         val model = SGGravity(this, null).buildTF(activity, objective, DistanceFunctionVMatrixBuilderTF(this))
         val base  = dcFunction.getDistanceParameters()
         println( model.evaluate(base) )
@@ -45,11 +45,12 @@ class DistanceFunctionMatchContext(
                 "backTracking" to "true"
             )
         )
-        println(calibrated.toList())
-
+        println(calibrated.toList())*/
+        val base  = dcFunction.getDistanceParameters()
+        val calibrated  = dcFunction.getDistanceParameters()
         evaluate(base, calibrated, moments, activity)
         dcFunction.setDistanceParameters(calibrated)
-        model.close()
+        //model.close()
     }
 
     fun evaluate(base: DoubleArray, calibrated: DoubleArray, moments: List<Double>, activity: ActivityType) {
@@ -69,6 +70,12 @@ class DistanceFunctionMatchContext(
         println("                   Calibrated: %.5f".format(pCal[1]))
         println("Count Below 2-5    Base: %.5f".format(pBase[2]))
         println("                   Calibrated: %.5f".format(pCal[2]))
+        println("Count Below 5-10   Base: %.5f".format(pBase[3]))
+        println("                   Calibrated: %.5f".format(pCal[3]))
+        println("Count Below 10-50  Base: %.5f".format(pBase[4]))
+        println("                   Calibrated: %.5f".format(pCal[4]))
+        println("Count Below 50-100 Base: %.5f".format(pBase[5]))
+        println("                   Calibrated: %.5f".format(pCal[5]))
         for (i in moments.indices) {
             println("M${i+1} trip distance Goal: %.3f km".format(moments[i]))
             println("                   Base: %.3f km".format(momentsBase[i]))
@@ -80,7 +87,7 @@ class DistanceFunctionMatchContext(
         val agents = runBatchAgents(0.03)
 
         // Trip Distances
-        val counts = DoubleArray(3) { 0.0 }
+        val counts = DoubleArray(6) { 0.0 }
         val tripLengths = mutableListOf<Double>()
         for (agent in agents) {
             val activities = agent.mobilityDemand.first().activities
@@ -98,6 +105,12 @@ class DistanceFunctionMatchContext(
                         counts[1] += 1.0
                     } else if (trip.distance!! <= 5.0) {
                         counts[2] += 1.0
+                    } else if (trip.distance!! <= 10.0) {
+                        counts[3] += 1.0
+                    } else if (trip.distance!! <= 50.0) {
+                        counts[4] += 1.0
+                    } else if (trip.distance!! <= 100.0) {
+                        counts[5] += 1.0
                     }
                 }
             }
