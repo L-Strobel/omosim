@@ -115,7 +115,7 @@
         "coeff1": -1.701e+00
     },
     "OTHER": {
-        "type": "Test",
+        "type": "LogNorm",
         "coeffResidentialArea": 0.014524091111075915,
         "coeffCommercialArea": 0.0,
         "coeffRetailArea":  0.0,
@@ -140,9 +140,8 @@
         "coeffRetailUnits": 0.0,
         "coeffIndustrialUnits": 0.0,
         "limitShopUnits": 30.0,
-        "coeff0": 0.0,
-        "coeff1": 0.0,
-        "coeff2": -1.225e+00,
-        "coeff3": -1.384e-01
+        "limitOfficeUnits": 30.0,
+        "coeff0": -4.0e-01,
+        "coeff1": -1.5e+00
     }
 }
