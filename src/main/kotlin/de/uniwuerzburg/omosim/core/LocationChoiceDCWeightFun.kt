@@ -118,6 +118,14 @@ sealed class LocationChoiceDCWeightFun {
         }
     }
 
+    fun lnDistancesCubed(distances: Array<FloatArray>): Array<FloatArray> {
+        return Array(distances.size) { i ->
+            FloatArray(distances[0].size) { j ->
+                ln(distances[i][j]) * ln(distances[i][j]) * ln(distances[i][j])
+            }
+        }
+    }
+
     fun distancesPow(distances: Array<FloatArray>, pow: Int): Array<FloatArray> {
         return Array(distances.size) { i ->
             FloatArray(distances[0].size) { j ->
@@ -680,9 +688,9 @@ data class CombinedDCUtil(
 }
 
 @Serializable
-@SerialName("Test")
+@SerialName("Ln3")
 @Suppress("unused")
-class Test (
+class Ln3 (
     override val coeffResidentialArea: Double,
     override val coeffCommercialArea: Double,
     override val coeffRetailArea: Double,
@@ -723,27 +731,22 @@ class Test (
     // For deterrence function
     private var coeff0: Double,
     private var coeff1: Double,
-    private var coeff2: Double,
-    private var coeff3: Double
+    private var coeff2: Double
 ) : LocationChoiceDCWeightFun( ) {
     override fun deterrenceFunction(distance: Double) : Double {
-        val y = coeff0 * distance + coeff1 * distance.pow(2) + coeff2 * ln(distance) +
-                coeff3 * ln(distance).pow(2)
-        return y
+        return coeff0 * ln(distance) * ln(distance) + coeff1 * ln(distance) + coeff2 * ln(distance) * ln(distance) * ln(distance)
     }
 
     override fun deterrenceFunctionAsTerm(distance: Double): Pair<Term, Int> {
-        val nVars = 4
-        val termA = Variable(nVars, 0, distance)
-        val termB = Variable(nVars, 1, distance.pow(2))
-        val termC = Variable(nVars, 2, ln(distance))
-        val termD = Variable(nVars, 3, ln(distance).pow(2))
+        val nVars = 3
+        val termA = Variable(nVars, 0, ln(distance) * ln(distance))
+        val termB = Variable(nVars, 1, ln(distance))
+        val termC = Variable(nVars, 2, ln(distance) * ln(distance) * ln(distance))
 
         val term = LinearTerm(nVars)
         term.addTerm(termA, 1.0)
         term.addTerm(termB, 1.0)
         term.addTerm(termC, 1.0)
-        term.addTerm(termD, 1.0)
 
         return Pair(term, nVars)
     }
@@ -754,30 +757,26 @@ class Test (
         val vA = model.getVariable(0)
         val vB = model.getVariable(1)
         val vC = model.getVariable(2)
-        val vD = model.getVariable(3)
 
-        val oDistance   = model.addMatrix( distances )
-        val oDistanceP2 = model.addMatrix( distancesPow(distances, 2) )
-        val oDistanceP3 = model.addMatrix( lnDistances(distances) )
-        val oDistanceP4 = model.addMatrix( lnDistancesSquared(distances) )
+        val oLnDistance = model.addMatrix( lnDistances(distances) )
+        val oLnDistanceSquared = model.addMatrix( lnDistancesSquared(distances) )
+        val oLnDistanceCubed = model.addMatrix( lnDistancesCubed(distances) )
 
-        val tA = tf.math.mul(vA, oDistance)
-        val tB = tf.math.mul(vB, oDistanceP2)
-        val tC = tf.math.mul(vC, oDistanceP3)
-        val tD = tf.math.mul(vD, oDistanceP4)
+        val tA = tf.math.mul(vA, oLnDistanceSquared)
+        val tB = tf.math.mul(vB, oLnDistance)
+        val tC = tf.math.mul(vC, oLnDistanceCubed)
 
-        val term = tf.math.addN( listOf(tA, tB, tC, tD) )
+        val term = tf.math.addN(listOf(tA, tB, tC))
         return term
     }
 
     override fun getDistanceParameters(): DoubleArray {
-        return doubleArrayOf(coeff0, coeff1, coeff2, coeff3)
+        return doubleArrayOf(coeff0, coeff1, coeff2)
     }
 
     override fun setDistanceParameters(parameters: DoubleArray) {
         coeff0 = parameters[0]
         coeff1 = parameters[1]
         coeff2 = parameters[2]
-        coeff3 = parameters[3]
     }
 }
