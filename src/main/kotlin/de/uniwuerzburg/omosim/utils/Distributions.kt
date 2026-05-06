@@ -64,15 +64,33 @@ fun createCumDist(weights: IntArray): DoubleArray {
  */
 fun createCumDist(weights: DoubleArray): DoubleArray {
     assert(weights.all { it >= 0 })
+
     val cumDist = DoubleArray(weights.size)
     var cumSum = 0.0
+    var nInfinite = 0
+
     for (i in weights.indices) {
-        cumSum += weights[i]
+        val weight = weights[i]
+        if (weight.isInfinite()) { nInfinite += 1 }
+        cumSum += weight
         cumDist[i] = cumSum
     }
+
     // Normalize
-    for (i in cumDist.indices) {
-        cumDist[i] /= cumSum
+    if (nInfinite > 0) {
+        // Handle infinite weights
+        var runningSum = 0.0
+        for (i in cumDist.indices) {
+            if (weights[i].isInfinite()) {
+                runningSum += 1.0 / nInfinite.toDouble()
+            }
+            cumDist[i] = runningSum
+        }
+    } else {
+        // Normal case
+        for (i in cumDist.indices) {
+            cumDist[i] /= cumSum
+        }
     }
     return cumDist
 }
