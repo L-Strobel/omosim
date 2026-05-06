@@ -31,8 +31,8 @@ class DistanceFunctionVMatrixBuilderTF(
             val attractions = finder.getWeightsNoOrigin(omosim.grid, activityType = mrep.vActivity) // TODO fix for internal cell connection
 
             for (d in 0 until n) {
-                val distanceAdj = if (distances[d].toDouble() <= 0.0) {
-                    0.01f // 10 Meters
+                val distanceAdj = if (distances[d].toDouble() <= 100.0) {
+                    0.1f
                 } else {
                     distances[d] / 1000f
                 }
