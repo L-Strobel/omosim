@@ -86,10 +86,18 @@ fun createCumDist(weights: DoubleArray): DoubleArray {
             }
             cumDist[i] = runningSum
         }
-    } else {
+    } else if (cumSum > 0.0) {
         // Normal case
         for (i in cumDist.indices) {
             cumDist[i] /= cumSum
+        }
+    } else {
+        // CumSum <= 0.0 -> Assume uniform distribution
+        var runningSum = 0.0
+        val equalIncrement = 1.0 / weights.size.toDouble()
+        for (i in cumDist.indices) {
+            runningSum += equalIncrement
+            cumDist[i] = runningSum
         }
     }
     return cumDist
