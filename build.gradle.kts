@@ -15,7 +15,7 @@ allOpen {
 }
 
 group = "de.uniwuerzburg.omosim"
-version = "2.3.2-DFM-8-selfdistance"
+version = "2.3.2-ic-mx-mo"
 
 repositories {
     mavenLocal()
