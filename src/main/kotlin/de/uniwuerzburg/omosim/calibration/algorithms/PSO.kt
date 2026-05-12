@@ -69,7 +69,6 @@ object PSO {
             "lb=$lb:ub$ub:nParticles$nParticles:w$w:phiP$phiP:phiG$phiG:vClamp$vClamp:boundStrategy$boundStrategy"
         )
 
-        //println("Initializing PSO...\r")
         val maxVelocity = vClamp * (ub - lb)
 
         // Initial mse

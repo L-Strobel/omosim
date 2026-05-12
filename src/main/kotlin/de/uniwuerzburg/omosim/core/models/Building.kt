@@ -79,7 +79,12 @@ class Building  (
     }
 
     override fun updateAttractionScaler(dcFunction: LocationChoiceDCWeightFun, value: Double) {
-        attractionScaler[dcFunction.id] = value
+        attractionScaler[dcFunction.id] = value * (attractionScaler[dcFunction.id] ?: 1.0)
+        recalculateAttractions(listOf(dcFunction))
+    }
+
+    override fun resetAttractionScaler(dcFunction: LocationChoiceDCWeightFun) {
+        attractionScaler[dcFunction.id] = 1.0
         recalculateAttractions(listOf(dcFunction))
     }
 

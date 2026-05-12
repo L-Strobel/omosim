@@ -11,4 +11,5 @@ interface RealLocation : LocationOption {
 
     fun recalculateAttractions(dcFunctions: List<LocationChoiceDCWeightFun>)
     fun updateAttractionScaler(dcFunction: LocationChoiceDCWeightFun, value: Double)
+    fun resetAttractionScaler(dcFunction: LocationChoiceDCWeightFun)
 }

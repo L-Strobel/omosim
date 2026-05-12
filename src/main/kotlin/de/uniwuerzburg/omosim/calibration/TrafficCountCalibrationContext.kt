@@ -119,7 +119,7 @@ class TrafficCountCalibrationContext(
         for (activity in ActivityType.entries) {
             val dcFunction = finder.locChoiceWeightFuns[activity]!!
             for (cell in omosim.grid) {
-                cell.updateAttractionScaler(dcFunction, 1.0) // Gravity: attraction values
+                cell.resetAttractionScaler(dcFunction) // Gravity: attraction values
             }
         }
         finder.forcedTransitionMatrix.clear() // Gravity: transition matrix

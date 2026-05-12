@@ -78,4 +78,11 @@ data class Cell (
         }
         recalculateAttractions(listOf(dcFunction))
     }
+
+    override fun resetAttractionScaler(dcFunction: LocationChoiceDCWeightFun) {
+        for (building in buildings) {
+            building.resetAttractionScaler(dcFunction)
+        }
+        recalculateAttractions(listOf(dcFunction))
+    }
 }
