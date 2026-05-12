@@ -4,6 +4,7 @@ import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.algorithms.*
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.DifferentiableModelMV
 import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSSE
+import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSSETensorFlow
 import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSeparate
 import de.uniwuerzburg.omosim.calibration.surrogate.*
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
@@ -122,7 +123,7 @@ class Gravity(
         ){
             for (activity in activities) {
                 val model = SGGravity(context)
-                    .buildNative(activity, TrafficCountSSE(context), TrafficCountVMatrixBuilder(context))
+                    .buildTF(activity, TrafficCountSSETensorFlow(context), TrafficCountVMatrixBuilderTF(context))
                 val x0 = DoubleArray(context.omosim.grid.size - 1) { 1.0 }
                 var d = GradientDescent.run(model, x0, parameters=parameters)
                 d = (d.toList() + listOf(1.0)).toDoubleArray()
