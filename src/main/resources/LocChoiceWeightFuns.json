@@ -141,7 +141,7 @@
         "coeffIndustrialUnits": 0.0,
         "limitShopUnits": 30.0,
         "limitOfficeUnits": 30.0,
-        "coeff0": -4.0e-01,
-        "coeff1": -1.5e+00
+        "coeff0": -1.384e-01,
+        "coeff1": -1.225e+00
     }
 }
