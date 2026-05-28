@@ -102,7 +102,7 @@ class Run : CliktCommand() {
     ).enum<Weekday>().default(Weekday.UNDEFINED)
     private val out by option (
         help="Output file. The output format is inferred from the ending: '.json' -> Json, '.xml'-> MATSim, '.db'-> SQLite"
-    ).file().default(File("output.json"))
+    ).file().multiple(default = listOf(File("output.json")))
     private val routing_mode by option(
         help = "Distance calculation method for destination choice." +
                " Either euclidean distance (BEELINE) or routed distance by car (GRAPHHOPPER)"
@@ -332,30 +332,34 @@ class Run : CliktCommand() {
         }
 
         // Store output
-        logger.get()?.info("Saving results...")
-        val success: Boolean
-        when (out.extension) {
-            "json" -> {
-                success = writeJSONOutput(agents.map { formatOutput(it) }, out, runParameters)
+        for (outFn in out) {
+            logger.get()?.info("Saving results to ${outFn}...")
+            val success: Boolean
+            when (outFn.extension) {
+                "json" -> {
+                    success = writeJSONOutput(agents.map { formatOutput(it) }, outFn, runParameters)
+                }
+                "db" -> {
+                    success = writeSQLite(agents.map { formatOutput(it) }, outFn, runParameters)
+                }
+                "xml" -> {
+                    success = writeMatSim(agents.map { formatOutput(it) }, outFn, n_days, matsim_output_crs, runParameters)
+                }
+                else -> {
+                    logger.get()?.info(
+                        "Warning! output file extension ${outFn.extension} is not implemented." +
+                                "Available output formats: .json, .db (sqlite), .xml (MATSim)" +
+                                "Falling back to JSON"
+                    )
+                    val newOut = File(outFn.parent, outFn.nameWithoutExtension + ".json")
+                    success = writeJSONOutput(agents.map { formatOutput(it) }, newOut, runParameters)
+                }
             }
-            "db" -> {
-                success = writeSQLite(agents.map { formatOutput(it) }, out, runParameters)
+            if (success) {
+                logger.get()?.info("Saving results to ${outFn}... Done!")
+            } else {
+                logger.get()?.error("Couldn't save results to ${outFn}... Done!")
             }
-            "xml" -> {
-                success = writeMatSim(agents.map { formatOutput(it) }, out, n_days, matsim_output_crs, runParameters)
-            }
-            else -> {
-                logger.get()?.info(
-                    "Warning! output file extension ${out.extension} is not implemented." +
-                    "Available output formats: .json, .db (sqlite), .xml (MATSim)" +
-                    "Falling back to JSON"
-                )
-                val newOut = File(out.parent, out.nameWithoutExtension + ".json")
-                success = writeJSONOutput(agents.map { formatOutput(it) }, newOut, runParameters)
-            }
-        }
-        if (success) {
-            logger.get()?.info("Saving results... Done!")
         }
     }
 }
