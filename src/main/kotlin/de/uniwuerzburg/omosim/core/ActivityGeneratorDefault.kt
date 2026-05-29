@@ -5,8 +5,10 @@ import de.uniwuerzburg.omosim.io.json.ActivityChain
 import de.uniwuerzburg.omosim.io.json.ActivityGroup
 import de.uniwuerzburg.omosim.utils.createCumDist
 import de.uniwuerzburg.omosim.utils.sampleCumDist
-import de.uniwuerzburg.omosim.utils.sampleNDGaussian
-import java.util.Random
+import de.uniwuerzburg.omosim.utils.sampleNDGaussianFast
+import org.apache.commons.math3.linear.Array2DRowRealMatrix
+import org.apache.commons.math3.linear.CholeskyDecomposition
+import java.util.*
 
 /**
  * @param activityGroups A list of all possible activity groups
@@ -62,7 +64,7 @@ class ActivityGeneratorDefault (activityGroups: List<ActivityGroup>): ActivityGe
                 weekday, agent.homogenousGroup, agent.mobilityGroup, agent.ageGrp, activityChain
             )
             val i = sampleCumDist(mixture.distr, rng)
-            val stayTimes = sampleNDGaussian(mixture.means[i], mixture.covariances[i], rng).toList()
+            val stayTimes = sampleNDGaussianFast(mixture.means[i], mixture.covLs[i], rng).toList()
             // Handle negative values. Last stay is always until the end of the day, marked by null
             stayTimes.map { if (it < 0 ) 0.0 else it } + null
         }
@@ -204,5 +206,14 @@ class ActivityGeneratorDefault (activityGroups: List<ActivityGroup>): ActivityGe
         val distr: DoubleArray,
         val means: List<DoubleArray>,
         val covariances: List<Array<DoubleArray>>
-    )
+    ) {
+        // Lower triangular matrices of covariance matrices. Precomputed for faster sampling.
+        val covLs = covariances.map {
+            CholeskyDecomposition(Array2DRowRealMatrix(it), 0.1, 1.0E-10).l
+        }
+
+        init {
+            require(covariances.size == means.size) { "Dimension mismatch !" }
+        }
+    }
 }

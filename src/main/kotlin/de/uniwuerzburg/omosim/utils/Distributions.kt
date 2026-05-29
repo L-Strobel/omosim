@@ -2,6 +2,7 @@ package de.uniwuerzburg.omosim.utils
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix
 import org.apache.commons.math3.linear.CholeskyDecomposition
+import org.apache.commons.math3.linear.RealMatrix
 import java.util.*
 
 /**
@@ -142,11 +143,25 @@ fun createAndSampleCumDist(weights: DoubleArray, rng: Random) : Int {
  */
 fun sampleNDGaussian(means: DoubleArray, covariances: Array<DoubleArray>, rng: Random): DoubleArray {
     require(covariances.size == means.size) { "Dimension mismatch !" }
-    val dim = means.size
 
     // Get Cholesky decomposition; Symmetry tolerance is quite high ... Maybe I should investigate why scikit-learn
     // returns such asymmetric matrices
-    val l = CholeskyDecomposition(Array2DRowRealMatrix(covariances), 0.1, 1.0E-10).l // TODO evaluate performance of repeating this so often
+    val l = CholeskyDecomposition(Array2DRowRealMatrix(covariances), 0.1, 1.0E-10).l
+
+    return sampleNDGaussianFast(means, l, rng)
+}
+
+/**
+ * Sample from multidimensional gaussian distribution
+ * Fast version with a precomputed cholesky decomposition.
+ *
+ * @param means Mean vector
+ * @param l lower triangular matrix of covariance matrix
+ * @param rng Random number generator
+ * @return Sample
+ */
+fun sampleNDGaussianFast(means: DoubleArray, l: RealMatrix, rng: Random): DoubleArray {
+    val dim = means.size
 
     // Get independent Gaussian's
     val u = DoubleArray(dim) { rng.nextGaussian() }
