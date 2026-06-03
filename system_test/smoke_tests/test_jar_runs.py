@@ -12,7 +12,9 @@ def test_jar_runs():
         [
             "java", "-jar", jar_path,
             "../src/test/resources/test_area.geojson", "../src/test/resources/test.osm.pbf",
-            "--n_agents", "10", "--out", "test_output/smoke_runs.json"
+            "--n_agents", "10", "--out", "test_output/smoke_runs.json",
+            "--cache_dir", "test_output/omosim_cache",
+
          ],
         capture_output=True,
         text=True,
