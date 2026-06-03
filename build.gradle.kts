@@ -1,3 +1,5 @@
+import org.gradle.internal.os.OperatingSystem
+
 plugins {
     kotlin("jvm") version "2.2.0"
     kotlin("plugin.serialization") version "2.2.0"
@@ -97,4 +99,61 @@ publishing {
 
 application {
     mainClass.set("de.uniwuerzburg.omosim.cli.MainKt")
+}
+
+// Python tests against a build jar
+val venvDir = file("${projectDir}/system_test/.venv") // Venv location
+
+val installPythonDeps = tasks.register<Exec>("installPythonDeps") {
+    group = "verification"
+    description = "Sets up a venv and installs Python test dependencies."
+
+    inputs.file("system_test/requirements.txt")
+    outputs.dir(venvDir)
+
+    if (OperatingSystem.current().isWindows) {
+        commandLine("cmd", "/c", "python -m venv $venvDir && $venvDir\\Scripts\\pip install -r system_test/requirements.txt")
+    } else {
+        commandLine("sh", "-c", "python3 -m venv $venvDir && $venvDir/bin/pip install -r system_test/requirements.txt")
+    }
+}
+
+val acceptanceTest = tasks.register<Exec>("acceptanceTest") {
+    group = "verification"
+    description = "Runs the acceptance tests using pytest."
+
+    dependsOn("shadowJar", "installPythonDeps")
+
+    workingDir = file("system_test")
+
+    val jarFile = file("${project.layout.buildDirectory.get()}/libs/${project.name}-${version}-all.jar")
+    environment("APP_JAR_PATH", jarFile.absolutePath)
+
+    val pytestBinary = if (OperatingSystem.current().isWindows) {
+        "$venvDir\\Scripts\\pytest.exe"
+    } else {
+        "$venvDir/bin/pytest"
+    }
+
+    commandLine(pytestBinary, "acceptance_tests/")
+}
+
+val smokeTest = tasks.register<Exec>("smokeTest") {
+    group = "verification"
+    description = "Builds the Shadow JAR and runs a smoke test against it."
+
+    dependsOn("shadowJar", "installPythonDeps")
+
+    workingDir = file("system_test")
+
+    val jarFile = file("${project.layout.buildDirectory.get()}/libs/${project.name}-${version}-all.jar")
+    environment("APP_JAR_PATH", jarFile.absolutePath)
+
+    val pytestBinary = if (OperatingSystem.current().isWindows) {
+        "$venvDir\\Scripts\\pytest.exe"
+    } else {
+        "$venvDir/bin/pytest"
+    }
+
+    commandLine(pytestBinary, "smoke_tests/")
 }

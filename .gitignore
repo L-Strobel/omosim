@@ -11,3 +11,4 @@ debugOut/
 regional_inputs/
 .kotlin/
 libs/
+system_test/.venv/
