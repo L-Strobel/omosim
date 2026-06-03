@@ -101,12 +101,21 @@ application {
     mainClass.set("de.uniwuerzburg.omosim.cli.MainKt")
 }
 
+tasks.register("ciPipeline") {
+    group = "verification"
+    description = "Run unit tests, build, smoke tests, and acceptance tests."
+
+    dependsOn("test", "shadowJar", "smokeTest", "acceptanceTest")
+}
+
 // Python tests against a build jar
 val venvDir = file("${projectDir}/system_test/.venv") // Venv location
 
 val installPythonDeps = tasks.register<Exec>("installPythonDeps") {
     group = "verification"
     description = "Sets up a venv and installs Python test dependencies."
+
+    mustRunAfter("test")
 
     inputs.file("system_test/requirements.txt")
     outputs.dir(venvDir)
@@ -122,6 +131,7 @@ val acceptanceTest = tasks.register<Exec>("acceptanceTest") {
     group = "verification"
     description = "Runs the acceptance tests using pytest."
 
+    mustRunAfter("test", "smokeTest")
     dependsOn("shadowJar", "installPythonDeps")
 
     workingDir = file("system_test")
