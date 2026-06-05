@@ -1,5 +1,6 @@
 import pytest
 
+import sys
 import geopandas as gpd
 import requests
 from pathlib import Path
@@ -15,7 +16,15 @@ def download_file(url, output_filename):
     with requests.get(url, stream=True) as response:
         response.raise_for_status()
         total_size = int(response.headers.get('content-length', 0))
-        progress_bar = tqdm(total=total_size, unit='iB', unit_scale=True, desc="Downloading")
+
+        progress_bar = tqdm(
+            total=total_size,
+            unit='iB',
+            unit_scale=True,
+            desc=f"Downloading {url}",
+            ascii=True,
+            file=sys.stdout
+        )
 
         with open(output_filename, "wb") as file:
             for chunk in response.iter_content(chunk_size=chunk_size):

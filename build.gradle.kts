@@ -144,7 +144,7 @@ val acceptanceTest = tasks.register<Exec>("acceptanceTest") {
         "$venvDir/bin/pytest"
     }
 
-    commandLine(pytestBinary, "acceptance_tests/")
+    commandLine(pytestBinary, "acceptance_tests/", "-s")
 }
 
 val smokeTest = tasks.register<Exec>("smokeTest") {

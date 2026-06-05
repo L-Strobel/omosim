@@ -1,4 +1,6 @@
 # Copy the following section to a file named config.local.toml in the same folder and provide the necessary local paths.
 [local_paths]
 # [Required for acceptance tests]
-mid17 = "" # Path to MID 17. Should be in an encrypted box (like vera crypt).
+# Path to MID 17 files. Should be in an encrypted box (like vera crypt).
+mid17_persons = ""
+mid17_trips = ""

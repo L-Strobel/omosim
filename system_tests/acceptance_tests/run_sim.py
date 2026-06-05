@@ -1,6 +1,7 @@
 import subprocess
 import os
 import re
+import sys
 
 def run_sim(fn_area, fn_osm, fn_census, fn_gtfs, fn_out):
     jar_path = os.getenv("APP_JAR_PATH")
@@ -28,5 +29,7 @@ def run_sim(fn_area, fn_osm, fn_census, fn_gtfs, fn_out):
         capture_output=True,
         text=True,
     )
+
+    print(result.stdout)
 
     return result
