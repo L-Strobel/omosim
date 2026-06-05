@@ -109,32 +109,31 @@ tasks.register("ciPipeline") {
 }
 
 // Python tests against a build jar
-val venvDir = file("${projectDir}/system_test/.venv") // Venv location
+val venvDir = file("${projectDir}/system_tests/.venv") // Venv location
 
 val installPythonDeps = tasks.register<Exec>("installPythonDeps") {
+    mustRunAfter("test")
+
     group = "verification"
     description = "Sets up a venv and installs Python test dependencies."
 
-    mustRunAfter("test")
-
-    inputs.file("system_test/requirements.txt")
+    inputs.file("system_tests/requirements.txt")
     outputs.dir(venvDir)
 
     if (OperatingSystem.current().isWindows) {
-        commandLine("cmd", "/c", "python -m venv $venvDir && $venvDir\\Scripts\\pip install -r system_test/requirements.txt")
+        commandLine("cmd", "/c", "python -m venv $venvDir && $venvDir\\Scripts\\pip install -r system_tests/requirements.txt")
     } else {
-        commandLine("sh", "-c", "python3 -m venv $venvDir && $venvDir/bin/pip install -r system_test/requirements.txt")
+        commandLine("sh", "-c", "python3 -m venv $venvDir && $venvDir/bin/pip install -r system_tests/requirements.txt")
     }
 }
 
 val acceptanceTest = tasks.register<Exec>("acceptanceTest") {
+    dependsOn("shadowJar", "installPythonDeps")
+    mustRunAfter("test", "smokeTest")
+
     group = "verification"
     description = "Runs the acceptance tests using pytest."
-
-    mustRunAfter("test", "smokeTest")
-    dependsOn("shadowJar", "installPythonDeps")
-
-    workingDir = file("system_test")
+    workingDir = file("system_tests")
 
     val jarFile = file("${project.layout.buildDirectory.get()}/libs/${project.name}-${version}-all.jar")
     environment("APP_JAR_PATH", jarFile.absolutePath)
@@ -149,12 +148,11 @@ val acceptanceTest = tasks.register<Exec>("acceptanceTest") {
 }
 
 val smokeTest = tasks.register<Exec>("smokeTest") {
-    group = "verification"
-    description = "Builds the Shadow JAR and runs a smoke test against it."
-
     dependsOn("shadowJar", "installPythonDeps")
 
-    workingDir = file("system_test")
+    group = "verification"
+    description = "Builds the Shadow JAR and runs a smoke test against it."
+    workingDir = file("system_tests")
 
     val jarFile = file("${project.layout.buildDirectory.get()}/libs/${project.name}-${version}-all.jar")
     environment("APP_JAR_PATH", jarFile.absolutePath)
