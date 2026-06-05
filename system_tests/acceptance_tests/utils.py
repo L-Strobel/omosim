@@ -1,20 +1,29 @@
+import pytest
+
 import geopandas as gpd
 import requests
 from pathlib import Path
 import tomllib
 import zipfile
+from tqdm import tqdm
 
 with open("resources/file_locations.toml", "rb") as f:
     file_locations = tomllib.load(f)
 
 def download_file(url, output_filename):
+    chunk_size = 8192
     with requests.get(url, stream=True) as response:
         response.raise_for_status()
+        total_size = int(response.headers.get('content-length', 0))
+        progress_bar = tqdm(total=total_size, unit='iB', unit_scale=True, desc="Downloading")
 
         with open(output_filename, "wb") as file:
-            for chunk in response.iter_content(chunk_size=8192):
+            for chunk in response.iter_content(chunk_size=chunk_size):
                 if chunk:
+                    progress_bar.update(len(chunk))
                     file.write(chunk)
+
+        progress_bar.close()
 
 def unzip_inspire(file, output_filename):
     with zipfile.ZipFile(file, "r") as zip_ref:

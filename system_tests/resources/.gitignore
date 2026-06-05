@@ -1,0 +1,4 @@
+*.gpkg
+*.zip
+*.pbf
+config.local.toml

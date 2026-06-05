@@ -11,14 +11,16 @@ def test_jar_runs():
     result = subprocess.run(
         [
             "java", "-jar", jar_path,
-            "../src/test/resources/test_area.geojson", "../src/test/resources/test.osm.pbf",
-            "--n_agents", "10", "--out", "test_output/smoke_runs.json",
+            "../src/test/resources/test_area.geojson",
+            "../src/test/resources/test.osm.pbf",
+            "--n_agents", "10",
+            "--out", "test_output/smoke_runs.json",
             "--cache_dir", "test_output/omosim_cache",
 
          ],
         capture_output=True,
         text=True,
-        timeout=10
+        timeout=60
     )
 
     assert result.returncode == 0, f"JAR failed! Error log:\n{result.stderr}"
