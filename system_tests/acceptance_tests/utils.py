@@ -7,7 +7,7 @@ import tomllib
 import zipfile
 from tqdm import tqdm
 
-with open("resources/file_locations.toml", "rb") as f:
+with open("resources/config.toml", "rb") as f:
     file_locations = tomllib.load(f)
 
 def download_file(url, output_filename):

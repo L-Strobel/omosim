@@ -4,7 +4,7 @@ import run_sim
 import tomllib
 from pathlib import Path
 
-with open("resources/file_locations.toml", "rb") as f:
+with open("resources/config.toml", "rb") as f:
     file_locations = tomllib.load(f)
 
 def download_ger_osm() -> str:
