@@ -43,8 +43,8 @@ object BFGS {
         ProgressLogger.logParameters(this.NAME,"lb=$lb:ub$ub:m$m:gTol$gTol")
 
         val x = x0.copyOf()
-        val l = DoubleArray(model.nVars){ lb }
-        val u = DoubleArray(model.nVars){ ub }
+        val l = DoubleArray(model.numberOfVariables()){ lb }
+        val u = DoubleArray(model.numberOfVariables()){ ub }
 
         ProgressLogger.logInitialLoss(this.NAME, model.evaluate(x0))
         ProgressLogger.logProgressHeader()

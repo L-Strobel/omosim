@@ -2,6 +2,7 @@ package de.uniwuerzburg.omosim.calibration.differentiablemodel
 
 
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.*
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelCore
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelUV
 import kotlinx.benchmark.Blackhole
 import kotlinx.benchmark.Scope
@@ -23,7 +24,7 @@ class GradientBenchmark {
     companion object {
         @Suppress("SameParameterValue")
         fun buildLargeTestModelTF(nVars: Int) : TfModelUV {
-            val model = TfModelUV(nVars)
+            val model = TfModelCore(nVars)
             val tf = model.tf
             val terms = mutableListOf<Operand<TFloat32>>()
             for (i in 0 until nVars) {
@@ -46,8 +47,7 @@ class GradientBenchmark {
             val top  = tf.math.mul(mult, tf.constant(-1.1f))
 
             val dTerm = tf.math.div(lTerm1, top)
-            model.finalize(dTerm)
-            return model
+            return TfModelUV(model, dTerm)
         }
 
         fun buildLargeTestModel(nVars: Int) : NativeUV {

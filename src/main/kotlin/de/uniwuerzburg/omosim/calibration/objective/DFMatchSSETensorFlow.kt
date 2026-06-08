@@ -1,6 +1,7 @@
 package de.uniwuerzburg.omosim.calibration.objective
 
 import de.uniwuerzburg.omosim.calibration.DistanceFunctionMatchContext
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelCore
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelUV
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import org.tensorflow.Operand
@@ -12,13 +13,13 @@ class DFMatchSSETensorFlow (
     val activity: ActivityType,
     private val moments: List<Double>,
     val context: DistanceFunctionMatchContext
-) : SGGravityObjectiveTF {
+) : SGGravityObjectiveTF<TfModelUV> {
     override fun build(
-        model: TfModelUV,
+        core: TfModelCore,
         expectedTrips: Map<ActivityType, Operand<TFloat32>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ): TfModelUV {
-        val tf = model.tf
+        val tf = core.tf
         val omosim = context.omosim
         val n = context.omosim.grid.size
 
@@ -39,7 +40,7 @@ class DFMatchSSETensorFlow (
                     fArrayDistance[o][d] = (distances[d] / 1000f).pow(i+1)
                 }
             }
-            val oDistance = model.addMatrix( fArrayDistance )
+            val oDistance = core.addMatrix( fArrayDistance )
             val odMomentValues = tf.math.mul(expectedTripsScaled, oDistance)
             val expectedMomentSum = tf.reduceSum(odMomentValues, tf.constant(intArrayOf(0, 1)))
             val expectedMoment = tf.math.div(expectedMomentSum, expectedTotalTrips)
@@ -58,7 +59,6 @@ class DFMatchSSETensorFlow (
 
         val obj = tf.math.addN(oTerms)
 
-        model.finalize(obj)
-        return model
+        return TfModelUV(core, obj)
     }
 }

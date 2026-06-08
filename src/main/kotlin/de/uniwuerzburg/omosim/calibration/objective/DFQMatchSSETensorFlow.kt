@@ -1,6 +1,7 @@
 package de.uniwuerzburg.omosim.calibration.objective
 
 import de.uniwuerzburg.omosim.calibration.DistanceFunctionMatchContext
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelCore
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelUV
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import org.tensorflow.Operand
@@ -11,13 +12,13 @@ class DFQMatchSSETensorFlow (
     val activity: ActivityType,
     private val cdfVals: List<Pair<Double, Double>>,
     val context: DistanceFunctionMatchContext
-) : SGGravityObjectiveTF {
+) : SGGravityObjectiveTF<TfModelUV> {
     override fun build(
-        model: TfModelUV,
+        core: TfModelCore,
         expectedTrips: Map<ActivityType, Operand<TFloat32>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ): TfModelUV {
-        val tf = model.tf
+        val tf = core.tf
         val omosim = context.omosim
         val n = context.omosim.grid.size
 
@@ -66,7 +67,6 @@ class DFQMatchSSETensorFlow (
         }
         val obj = tf.math.addN(oTerms)
 
-        model.finalize(obj)
-        return model
+        return TfModelUV(core, obj)
     }
 }

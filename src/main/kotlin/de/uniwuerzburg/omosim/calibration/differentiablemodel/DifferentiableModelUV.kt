@@ -8,11 +8,10 @@ import de.uniwuerzburg.omosim.calibration.algorithms.SPSA
 import de.uniwuerzburg.omosim.calibration.logger
 import smile.util.function.DifferentiableMultivariateFunction
 
-abstract class DifferentiableModelUV(
-    val nVars: Int
-) : DifferentiableMultivariateFunction, DifferentiableModel {
-    abstract fun gradient(vals: DoubleArray, gradient: DoubleArray) : Double
-    abstract fun evaluate(vals: DoubleArray): Double
+interface DifferentiableModelUV : DifferentiableMultivariateFunction, DifferentiableModel {
+    fun gradient(vals: DoubleArray, gradient: DoubleArray) : Double
+    fun evaluate(vals: DoubleArray): Double
+    fun numberOfVariables() : Int
 
     /**
      * Optimize the Differentiable Model.
@@ -45,7 +44,7 @@ abstract class DifferentiableModelUV(
             }
             CalibrationAlgorithm.SM_PSO, CalibrationAlgorithm.PSO -> {
                 val objective = { x: DoubleArray -> this.evaluate(x) }
-                PSO.run(this.nVars, objective, nWorker, parameters)
+                PSO.run(this.numberOfVariables(), objective, nWorker, parameters)
             }
             CalibrationAlgorithm.SM_SPSA, CalibrationAlgorithm.SPSA -> {
                 val x0Fallback = getX0(parameters)
@@ -78,6 +77,6 @@ abstract class DifferentiableModelUV(
         } else {
             1.0
         }
-        return DoubleArray(this.nVars) { x0Val }
+        return DoubleArray(this.numberOfVariables()) { x0Val }
     }
 }

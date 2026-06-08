@@ -4,7 +4,6 @@ import de.uniwuerzburg.omosim.calibration.*
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.MC_SAMPLES
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModel
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelUV
 import de.uniwuerzburg.omosim.calibration.objective.SGGravityObjectiveNative
 import de.uniwuerzburg.omosim.calibration.objective.SGGravityObjectiveTF
 import de.uniwuerzburg.omosim.core.ActivityGeneratorDefault
@@ -640,11 +639,11 @@ class SGGravity (
     /**
      * @return surrogate model
      */
-    fun buildTF(
+    fun <M: DifferentiableModel> buildTF(
         vActivity: ActivityType,
-        objective: SGGravityObjectiveTF,
+        objective: SGGravityObjectiveTF<M>,
         vMatrixBuilder: VMatrixBuilderTF
-    ) : TfModelUV {
+    ) : M {
         logger.info("Surrogate (TF): building tensor flow model for activity $vActivity")
 
         // Core work
@@ -656,19 +655,19 @@ class SGGravity (
         // Transition matrix containing variable terms
         val bReturn = vMatrixBuilder.build(mrep)
         val vMatrix = bReturn.first
-        var model = bReturn.second
+        val modelCore = bReturn.second
 
-        logger.info("Surrogate (TF): Number of variables: ${model.nVars}")
+        logger.info("Surrogate (TF): Number of variables: ${modelCore.nVars}")
 
         // Create graph of the expected trips matrix: E(o, d | Car)
         val expectedTrips: MutableMap<ActivityType, Operand<TFloat32>> = ActivityType.entries.associateWith {
-            model.tf.zeros(model.tf.constant(intArrayOf(n, n)), TFloat32::class.java);
+            modelCore.tf.zeros(modelCore.tf.constant(intArrayOf(n, n)), TFloat32::class.java);
         }.toMutableMap()
 
         // Add expected trips for each destination activity
         for (activity in ActivityType.entries) {
             expectedTrips[activity] = addE(
-                DemandBuilderTF(model),
+                DemandBuilderTF(modelCore),
                 mrep,
                 expectedTrips[activity]!!,
                 vMatrix,
@@ -679,7 +678,7 @@ class SGGravity (
         }
 
         // Objective
-        model = objective.build(model, expectedTrips, tripStartDistr)
+        val model = objective.build(modelCore, expectedTrips, tripStartDistr)
 
         // Logging
         val ops = model.getSize()

@@ -4,20 +4,20 @@ import de.uniwuerzburg.omosim.calibration.CalibrationConstants
 import de.uniwuerzburg.omosim.calibration.TrafficCountCalibrationContext
 import de.uniwuerzburg.omosim.calibration.TrafficSensor
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelCore
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelUV
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelMV
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import org.tensorflow.Operand
 import org.tensorflow.types.TFloat32
 import org.tensorflow.types.TInt64
 
-class TrafficCountSSETensorFlow(
+class TrafficCountSeparateTensorFlow(
     val context: TrafficCountCalibrationContext
-) : SGGravityObjectiveTF<TfModelUV> {
+) : SGGravityObjectiveTF<TfModelMV>  {
     override fun build (
         core: TfModelCore,
         expectedTrips: Map<ActivityType, Operand<TFloat32>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
-    ) : TfModelUV {
+    ) : TfModelMV {
         val tf = core.tf
         val totalPopulation = tf.constant(context.totalPopulation.toFloat())
 
@@ -64,6 +64,7 @@ class TrafficCountSSETensorFlow(
             }
         }
 
+        // TODO
         // Objective
         val s = mutableListOf<Operand<TFloat32>>()
         val m = mutableListOf<Float>()
@@ -79,6 +80,7 @@ class TrafficCountSSETensorFlow(
         val sqrDiff = tf.math.square(diff)
         val obj = tf.reduceSum(sqrDiff, tf.constant(0))
 
-        return TfModelUV(core, obj)
+        val model = TfModelMV(2, core, listOf()) // TODO
+        return model
     }
 }

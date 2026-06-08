@@ -3,7 +3,7 @@ package de.uniwuerzburg.omosim.core
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.LinearTerm
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.Term
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.Variable
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelUV
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelCore
 import de.uniwuerzburg.omosim.core.models.Landuse
 import de.uniwuerzburg.omosim.core.models.RealLocation
 import de.uniwuerzburg.omosim.io.geojson.property.BuildingProperties
@@ -91,7 +91,7 @@ sealed class LocationChoiceDCWeightFun {
         throw NotImplementedError()
     }
 
-    open fun applyDeterrenceToTensor(distances: Array<FloatArray>, model: TfModelUV): Operand<TFloat32> {
+    open fun applyDeterrenceToTensor(distances: Array<FloatArray>, model: TfModelCore): Operand<TFloat32> {
         throw NotImplementedError()
     }
 
@@ -444,7 +444,7 @@ class LogNormDCUtil (
         return Pair(term, nVars)
     }
 
-    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, model: TfModelUV): Operand<TFloat32> {
+    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, model: TfModelCore): Operand<TFloat32> {
         val tf = model.tf
 
         val vA = model.getVariable(0)
@@ -562,7 +562,7 @@ class LogNormPowerDCUtil (
         return Pair(term, nVars)
     }
 
-    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, model: TfModelUV): Operand<TFloat32> {
+    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, model: TfModelCore): Operand<TFloat32> {
         val tf = model.tf
 
         val vA = model.getVariable(0)
@@ -670,7 +670,7 @@ data class CombinedDCUtil(
         return Pair(term, nVars)
     }
 
-    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, model: TfModelUV): Operand<TFloat32> {
+    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, model: TfModelCore): Operand<TFloat32> {
         val tf = model.tf
 
         val vA = model.getVariable(0)
@@ -762,7 +762,7 @@ class Ln3 (
         return Pair(term, nVars)
     }
 
-    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, model: TfModelUV): Operand<TFloat32> {
+    override fun applyDeterrenceToTensor(distances: Array<FloatArray>, model: TfModelCore): Operand<TFloat32> {
         val tf = model.tf
 
         val vA = model.getVariable(0)

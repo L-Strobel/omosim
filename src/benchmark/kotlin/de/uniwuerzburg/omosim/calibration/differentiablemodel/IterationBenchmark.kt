@@ -21,20 +21,20 @@ class IterationBenchmark {
     fun setup() {
         model = GradientBenchmark.buildLargeTestModel(10000)
         modelTF = GradientBenchmark.buildLargeTestModelTF(10000)
-        vars = DoubleArray(model!!.nVars) { 1.1 }
+        vars = DoubleArray(model!!.numberOfVariables()) { 1.1 }
     }
 
     @Benchmark
     fun psoBench(bh: Blackhole) {
         val objective = { x: DoubleArray -> model!!.evaluate(x) }
-        val x = PSO.run(model!!.nVars, objective, iterations = 10)
+        val x = PSO.run(model!!.numberOfVariables(), objective, iterations = 10)
         bh.consume(x)
     }
 
     @Benchmark
     fun psoBenchTF(bh: Blackhole) {
         val objective = { x: DoubleArray -> modelTF!!.evaluate(x) }
-        val x = PSO.run(modelTF!!.nVars, objective, iterations = 10)
+        val x = PSO.run(modelTF!!.numberOfVariables(), objective, iterations = 10)
         bh.consume(x)
     }
 }

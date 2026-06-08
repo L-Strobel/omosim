@@ -9,8 +9,8 @@ import smile.util.function.DifferentiableMultivariateFunction
  * Warning: Don't use within coroutines!! ThreadLocal cache will be unstable. Use an ExecutorService instead.
  */
 class NativeUV (
-    nVars: Int
-) : DifferentiableMultivariateFunction, DifferentiableModelUV(nVars), DifferentiableModel {
+    val nVars: Int
+) : DifferentiableMultivariateFunction, DifferentiableModelUV, DifferentiableModel {
     private var root: Term = LinearBaseTerm(nVars)
     private var visited = ThreadLocal<Boolean>()
 
@@ -45,6 +45,10 @@ class NativeUV (
         val result = root.evaluate(vals)
         clearEvalCache() // Safer, but slows down reverse mode a bit.
         return result
+    }
+
+    override fun numberOfVariables(): Int {
+        return this.nVars
     }
 
     fun clearEvalCache() {
