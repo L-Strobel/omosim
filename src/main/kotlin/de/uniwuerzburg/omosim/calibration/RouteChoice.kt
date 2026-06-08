@@ -172,7 +172,7 @@ class RouteChoice(
                 }
             }
         }
-        val model = NativeUV(nVar)
+        val model = NativeModelUV(nVar)
 
         // Initialize simulated traffic counts
         val simCount = mutableMapOf<TrafficSensor, List<LinearTerm>>()

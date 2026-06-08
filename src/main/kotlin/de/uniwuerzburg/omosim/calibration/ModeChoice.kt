@@ -64,7 +64,7 @@ class ModeChoice(
         rng: Random,
         objective: ModeChoiceCalibrationObjective
     ) : DifferentiableModelUV {
-        val model = NativeUV(1) // Only variable: Intercept of car mode
+        val model = NativeModelUV(1) // Only variable: Intercept of car mode
 
         // Initialize simulated traffic counts
         val simCount = mutableMapOf<TrafficSensor, List<LinearTerm>>()

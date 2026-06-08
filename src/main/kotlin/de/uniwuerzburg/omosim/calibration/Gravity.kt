@@ -3,11 +3,12 @@ package de.uniwuerzburg.omosim.calibration
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.TENSOR_FLOW
 import de.uniwuerzburg.omosim.calibration.algorithms.*
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.NativeMV
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.NativeModelMV
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUV
 import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSSE
 import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSSETensorFlow
 import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSeparate
+import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSeparateTensorFlow
 import de.uniwuerzburg.omosim.calibration.surrogate.*
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.models.ActivityType
@@ -290,7 +291,7 @@ class Gravity(
          * Special case of the sum of squares objective using the surrogate model for WSPSA.
          * WSPSA requires that the simulated counts at each traffic counting station are returned separately.
          */
-        fun surrogateObjWSPSA(model: NativeMV, sensors: List<TrafficSensor>): (DoubleArray) ->
+        fun surrogateObjWSPSA(model: NativeModelMV, sensors: List<TrafficSensor>): (DoubleArray) ->
         Pair<Double, DoubleArray> {
             return { x: DoubleArray ->
                 val simCounts = model.evaluate(x)

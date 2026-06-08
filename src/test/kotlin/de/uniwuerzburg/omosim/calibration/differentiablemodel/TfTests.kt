@@ -41,7 +41,7 @@ class TfTests {
     @Test
     fun largerModelGradient() {
         val nVars = 1000
-        val model = NativeUVTest.buildLargeTestModel(nVars)
+        val model = NativeModelUVTest.buildLargeTestModel(nVars)
         val modelTF = buildLargeTestModelTF(nVars)
         val vars = DoubleArray(nVars) { 1.1 }
 
@@ -59,7 +59,7 @@ class TfTests {
     @Test
     fun largerModelEval() {
         val nVars = 10
-        val model = NativeUVTest.buildLargeTestModel(nVars)
+        val model = NativeModelUVTest.buildLargeTestModel(nVars)
         val modelTF = buildLargeTestModelTF(nVars)
         val vars = DoubleArray(nVars) { 1.1 }
 

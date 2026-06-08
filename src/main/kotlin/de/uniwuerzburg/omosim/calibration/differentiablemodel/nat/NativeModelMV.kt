@@ -1,6 +1,5 @@
 package de.uniwuerzburg.omosim.calibration.differentiablemodel.nat
 
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModel
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelMV
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -8,7 +7,7 @@ import java.util.concurrent.TimeUnit
 /**
  * Warning: Don't use within coroutines!! ThreadLocal cache will be unstable. Use an ExecutorService instead.
  */
-class NativeMV (
+class NativeModelMV (
     val nVars: Int
 ) : DifferentiableModelMV {
     private var roots: List<Term> = listOf()

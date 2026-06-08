@@ -8,7 +8,7 @@ import smile.util.function.DifferentiableMultivariateFunction
 /**
  * Warning: Don't use within coroutines!! ThreadLocal cache will be unstable. Use an ExecutorService instead.
  */
-class NativeUV (
+class NativeModelUV (
     val nVars: Int
 ) : DifferentiableMultivariateFunction, DifferentiableModelUV, DifferentiableModel {
     private var root: Term = LinearBaseTerm(nVars)

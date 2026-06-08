@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 @Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
 @State(Scope.Benchmark)
 class GradientBenchmark {
-    var model: NativeUV? = null
+    var model: NativeModelUV? = null
     var modelTF: TfModelUV? = null
     var vars: DoubleArray? = null
 
@@ -50,8 +50,8 @@ class GradientBenchmark {
             return TfModelUV(model, dTerm)
         }
 
-        fun buildLargeTestModel(nVars: Int) : NativeUV {
-            val model = NativeUV(nVars)
+        fun buildLargeTestModel(nVars: Int) : NativeModelUV {
+            val model = NativeModelUV(nVars)
 
             val lTerm1 = LinearTerm(nVars)
             for (i in 0 until nVars) {

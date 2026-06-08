@@ -4,8 +4,8 @@ import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableMode
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.*
 
 object TestObjectives {
-    fun diffModel() : Pair<(DoubleArray) -> Double, NativeUV> {
-        val model = NativeUV(1)
+    fun diffModel() : Pair<(DoubleArray) -> Double, NativeModelUV> {
+        val model = NativeModelUV(1)
         val base = LinearBaseTerm(1)
         base.addTerm(0, 1.0)
         val quad = QuadraticTerm(1, base, base, 1.0)
@@ -25,7 +25,7 @@ object TestObjectives {
             }
             oval
         }
-        val model = NativeUV(nDimensions)
+        val model = NativeModelUV(nDimensions)
         val sum = LinearTerm(nDimensions)
         for (i in 0 until nDimensions) {
             val base = LinearBaseTerm(nDimensions)
