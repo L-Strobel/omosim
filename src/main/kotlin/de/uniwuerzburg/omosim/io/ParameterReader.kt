@@ -62,7 +62,7 @@ class ParameterReader(
             source = getCalibrationResource(fnParam)
             readJsonFromResource(source)
         }
-        logger.info("Using ${fnParam.split(".").first()} from: $source")
+        logger.debug("Using ${fnParam.split(".").first()} from: $source")
         return parameter
     }
 
