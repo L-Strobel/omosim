@@ -1,6 +1,7 @@
 package de.uniwuerzburg.omosim.calibration.algorithms
 
 import java.util.*
+import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
@@ -69,6 +70,12 @@ object PSO {
             "lb=$lb:ub$ub:nParticles$nParticles:w$w:phiP$phiP:phiG$phiG:vClamp$vClamp:boundStrategy$boundStrategy"
         )
 
+        val executor = if (nWorker == null)
+            Executors.newWorkStealingPool()
+        else {
+            Executors.newWorkStealingPool(nWorker)
+        }
+
         val maxVelocity = vClamp * (ub - lb)
 
         // Initial mse
@@ -77,27 +84,29 @@ object PSO {
         ProgressLogger.logInitialLoss(this.NAME, globalBest)
 
         // Initialize particles
-        val particles = List(nParticles) {
-            val x = DoubleArray(nDimensions) { ThreadLocalRandom.current().nextDouble(lb, ub) }
-            val v = DoubleArray(nDimensions) { ThreadLocalRandom.current().nextDouble(-maxVelocity, maxVelocity) }
-            val oval = objective(x)
-            if (oval < globalBest) {
-                globalBest = oval
-                globalBestPosition = x.copyOf()
+        val initTasks = List(nParticles) {
+            Callable {
+                val x = DoubleArray(nDimensions) { ThreadLocalRandom.current().nextDouble(lb, ub) }
+                val v = DoubleArray(nDimensions) { ThreadLocalRandom.current().nextDouble(-maxVelocity, maxVelocity) }
+                val oval = objective(x)
+                PSOParticle(v, x, x, oval)
             }
-            PSOParticle(v, x, x, oval)
+        }
+        val particleFutures = executor.invokeAll(initTasks)
+        val particles = particleFutures.map { it.get() }
+
+        for (particle in particles) {
+            if (particle.best < globalBest) {
+                globalBest = particle.best
+                globalBestPosition = particle.bestPosition.copyOf()
+            }
         }
 
         ProgressLogger.logProgressHeader()
         for(iteration in 0 until iterations ) {
             val time = measureTime {
-                val executor = if (nWorker == null)
-                    Executors.newWorkStealingPool()
-                else {
-                    Executors.newWorkStealingPool(nWorker)
-                }
-                for (particle in particles) {
-                    executor.submit {
+                val tasks = particles.map { particle ->
+                    Callable {
                         var inBound = true
                         for (i in 0 until nDimensions) {
                             val rp = ThreadLocalRandom.current().nextDouble()
@@ -136,8 +145,7 @@ object PSO {
                         }
                     }
                 }
-                executor.shutdown()
-                executor.awaitTermination(5, TimeUnit.HOURS) // Wait as long as necessary.
+                executor.invokeAll(tasks)
 
                 for (particle in particles) {
                     if (particle.best < globalBest) {
@@ -150,6 +158,7 @@ object PSO {
             ProgressLogger.logProgress(this.NAME, iteration, time, globalBest)
         }
         ProgressLogger.logFinalLoss(this.NAME, globalBest)
+        executor.shutdown()
         return globalBestPosition
     }
 
