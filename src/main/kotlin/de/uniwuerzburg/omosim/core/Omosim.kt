@@ -79,7 +79,7 @@ class Omosim (
     overtureRelease: String? = null,
     carOwnershipOption: CarOwnershipOption = CarOwnershipOption.FIX,
     private val modeSpeedUp: Map<Mode, Double> = mapOf(),
-    calibration: String = "publication2023",
+    parametrization: String = "publication2023",
     tourModeUtilityFile: File? = null,
     tripModeUtilityFile: File? = null,
     tripModeUtilityCalibrationFile: File? = null,
@@ -115,7 +115,7 @@ class Omosim (
 
         // Read and set calibration
         parameterReader = ParameterReader(
-            calibration,
+            parametrization,
             tourModeUtilityFile,
             tripModeUtilityFile,
             tripModeUtilityCalibrationFile,

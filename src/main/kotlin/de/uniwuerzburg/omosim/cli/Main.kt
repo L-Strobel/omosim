@@ -108,7 +108,7 @@ class Run : CliktCommand() {
                " Either euclidean distance (BEELINE) or routed distance by car (GRAPHHOPPER)"
     ).enum<RoutingMode>().default(RoutingMode.GRAPHHOPPER)
     private val od by option(
-        help="[Experimental] Path to an OD-Matrix in GeoJSON format. " +
+        help="[Deprecated] Path to an OD-Matrix in GeoJSON format. " +
              "The matrix is used to further calibrate the model to the area using k-factors."
     ).file(mustExist = true, mustBeReadable = true)
     private val census by option(
@@ -151,13 +151,36 @@ class Run : CliktCommand() {
         help = "Whether lat/lon coordinates of chosen trip paths are returned." +
                "Paths only exist for trips with defined modes and within the focus area + buffer."
     ).boolean().default(false)
+    private val parametrization by option(
+        help="Parameter set to use (see options under omosim/src/main/resources/parametrization)." +
+             "Individual parameter files can be overwritten with by setting them to custom files with the commands:" +
+             "--population_file, --activity_group_file, --tour_utilities_file, --tour_utilities_file," +
+             "--trip_utilities_file, --trip_utilities_file_for_calibration, --destination_choice_file"
+    ).default("publication2023")
     private val population_file by option(
         help="Path to file that describes the socio-demographic makeup of the population. " +
-             "Must be formatted like omosim/src/main/resources/Population.json."
+             "Must be formatted like omosim/src/main/resources/parametrization/publication2023/Population.json."
     ).file(mustExist = true, mustBeReadable = true)
     private val activity_group_file by option(
         help="Path to file that describes the activity chains for each population group and the dwell-time distribution for the each chain. " +
-        "Must be formatted like omosim/src/main/resources/ActivityGroup.json"
+        "Must be formatted like omosim/src/main/resources/parametrization/publication2023/ActivityGroup.json"
+    ).file(mustExist = true, mustBeReadable = true)
+    private val tour_utilities_file by option(
+        help="Path to parameter file for the tour mode decision model." +
+              "Must be formatted like omosim/src/main/resources/tourModeUtilities.json"
+    ).file(mustExist = true, mustBeReadable = true)
+    private val trip_utilities_file by option(
+        help="Path to parameter file for the trip mode decision model. " +
+             "Must be formatted like omosim/src/main/resources/tripModeUtilities.json"
+    ).file(mustExist = true, mustBeReadable = true)
+    private val trip_utilities_file_for_calibration by option(
+        help="[Experimental] Path to parameter file for the trip mode decision model used for calibration." +
+             "The model should result in the equivalent mode probabilities as the tour and trip models combined." +
+             "Must be formatted like omosim/src/main/resources/tripModeUtilitiesCalibration.json"
+    ).file(mustExist = true, mustBeReadable = true)
+    private val destination_choice_file by option(
+        help="Path to parameter file for the destination choice model. " +
+             "Must be formatted like omosim/src/main/resources/LocChoiceWeightFuns.json"
     ).file(mustExist = true, mustBeReadable = true)
     private val n_worker by option(
         help="Number of parallel coroutines that can be executed at the same time. " +
@@ -223,7 +246,12 @@ class Run : CliktCommand() {
             nWorker = n_worker,
             gtfsFile = gtfs_file,
             overtureRelease = mapdata_overture,
-            modeSpeedUp = mode_speed_up
+            modeSpeedUp = mode_speed_up,
+            parametrization = parametrization,
+            tourModeUtilityFile = tour_utilities_file,
+            tripModeUtilityFile = trip_utilities_file,
+            tripModeUtilityCalibrationFile = trip_utilities_file_for_calibration,
+            locationChoiceFile = destination_choice_file
         )
 
         /*val dfmcontext = DistanceFunctionMatchContext(omosim)

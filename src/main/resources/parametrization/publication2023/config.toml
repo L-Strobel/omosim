@@ -1,8 +1,13 @@
 # Notes:
 # This calibration is from the 2023 paper:
-# OMOD: An open-source tool for creating disaggregated mobility demand based on OpenStreetMap
+# Leo Strobel and Marco Pruckner,
+# "OMOD: An open-source tool for creating disaggregated mobility demand based on OpenStreetMap",
+# Computers, Environment and Urban Systems
+#
 # The mode choice parameter are from the 2025 paper:
-# Transport Mode Choice for Disaggregated Mobility Demand Generation
+# Leo Strobel and Marco Pruckner,
+# "Transport Mode Choice for Disaggregated Mobility Demand Generation",
+# IEEE-Access
 
 [dependencies]
 parent = "" # Define the ancestor of this calibration from which all not specified parameters should be taken.
