@@ -33,7 +33,7 @@ class SGGravity (
     val context: CalibrationContext,
     val mode: Mode? = Mode.CAR_DRIVER
 ) {
-    private val modeChoiceDummy = ModeChoiceDummyForCalibration()
+    private val modeChoiceDummy = ModeChoiceDummyForCalibration(context.omosim.parameterReader)
     private val fixActivitiesNotHome = setOf(ActivityType.WORK, ActivityType.SCHOOL)
     private val fixActivities = setOf(ActivityType.HOME) + fixActivitiesNotHome
     private val flexActivities = setOf(ActivityType.OTHER, ActivityType.SHOPPING, ActivityType.BUSINESS)

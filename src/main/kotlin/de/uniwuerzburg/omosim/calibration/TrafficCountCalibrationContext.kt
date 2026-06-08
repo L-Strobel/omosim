@@ -86,7 +86,7 @@ class TrafficCountCalibrationContext(
                 CalibrationType.MODE_CHOICE -> {
                     val mcResult = ModeChoice(this).calibrate(ModeChoiceCalibrationObjective.FitIndividualMeasurements)
                     writeJson(mcResult, modeChoiceCalOut)
-                    omosim.tourModeUtilityFn = modeChoiceCalOut
+                    omosim.parameterReader.tourModeUtilityFile = modeChoiceCalOut
                 }
                 CalibrationType.ROUTE_CHOICE -> {
                     RouteChoice(this).calibrate(step.alg, step.parameters)
@@ -123,7 +123,7 @@ class TrafficCountCalibrationContext(
             }
         }
         finder.forcedTransitionMatrix.clear() // Gravity: transition matrix
-        omosim.tourModeUtilityFn = null // Mode choice
+        omosim.parameterReader.tourModeUtilityFile = null // Mode choice
         omosim.altPercentages = mapOf() // Route choice
 
         // Run uncalibrated

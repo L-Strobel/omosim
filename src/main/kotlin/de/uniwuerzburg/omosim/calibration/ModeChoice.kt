@@ -33,7 +33,7 @@ class ModeChoice(
         context.omosim.doModeChoice(agents, ModeChoiceOption.FAST, withPath = false, verbose = false)
 
         // Create mode choice surrogate model
-        val mc = ModeChoiceFast(context.omosim.routingCache)
+        val mc = ModeChoiceFast(context.omosim.routingCache, context.omosim.parameterReader)
         val model = buildModel(agents, mc, context.omosim.mainRng, objective)
 
         // Get X0

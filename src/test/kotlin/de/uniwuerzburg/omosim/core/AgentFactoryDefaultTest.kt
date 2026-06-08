@@ -21,7 +21,7 @@ class AgentFactoryDefaultTest {
     fun ageTest() {
         // Setup
         val mutLocChoiceFuns: MutableMap<ActivityType, LocationChoiceDCWeightFun> =
-            readJsonFromResource("LocChoiceWeightFuns.json")
+            readJsonFromResource("parametrization/publication2023/LocChoiceWeightFuns.json")
         mutLocChoiceFuns[ActivityType.HOME] = ByPopulation
         mutLocChoiceFuns[ActivityType.BUSINESS] = mutLocChoiceFuns[ActivityType.OTHER]!!
         val locChoiceWeightFuns = mutLocChoiceFuns.toMutableMap()
@@ -69,7 +69,7 @@ class AgentFactoryDefaultTest {
     fun popStrataTest() {
         // Setup
         val mutLocChoiceFuns: MutableMap<ActivityType, LocationChoiceDCWeightFun> =
-            readJsonFromResource("LocChoiceWeightFuns.json")
+            readJsonFromResource("parametrization/publication2023/LocChoiceWeightFuns.json")
         mutLocChoiceFuns[ActivityType.HOME] = ByPopulation
         mutLocChoiceFuns[ActivityType.BUSINESS] = mutLocChoiceFuns[ActivityType.OTHER]!!
         val locChoiceWeightFuns = mutLocChoiceFuns.toMutableMap()
@@ -107,7 +107,7 @@ class AgentFactoryDefaultTest {
     fun createAgentsSharePopTest() {
         // Setup
         val mutLocChoiceFuns: MutableMap<ActivityType, LocationChoiceDCWeightFun> =
-            readJsonFromResource("LocChoiceWeightFuns.json")
+            readJsonFromResource("parametrization/publication2023/LocChoiceWeightFuns.json")
         mutLocChoiceFuns[ActivityType.HOME] = ByPopulation
         mutLocChoiceFuns[ActivityType.BUSINESS] = mutLocChoiceFuns[ActivityType.OTHER]!!
         val locChoiceWeightFuns = mutLocChoiceFuns.toMutableMap()

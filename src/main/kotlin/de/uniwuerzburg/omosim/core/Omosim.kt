@@ -5,6 +5,7 @@ import com.graphhopper.gtfs.GraphHopperGtfs
 import com.graphhopper.gtfs.PtRouter
 import de.uniwuerzburg.omosim.calibration.ODTTriple
 import de.uniwuerzburg.omosim.core.models.*
+import de.uniwuerzburg.omosim.io.ParameterReader
 import de.uniwuerzburg.omosim.io.geojson.*
 import de.uniwuerzburg.omosim.io.geojson.property.BuildingProperties
 import de.uniwuerzburg.omosim.io.gtfs.clipGTFSFile
@@ -77,7 +78,13 @@ class Omosim (
     private val gtfsFile: File? = null,
     overtureRelease: String? = null,
     carOwnershipOption: CarOwnershipOption = CarOwnershipOption.FIX,
-    private val modeSpeedUp: Map<Mode, Double> = mapOf()
+    private val modeSpeedUp: Map<Mode, Double> = mapOf(),
+    calibration: String = "publication2023",
+    tourModeUtilityFile: File? = null,
+    tripModeUtilityFile: File? = null,
+    tripModeUtilityCalibrationFile: File? = null,
+    locationChoiceFile: File? = null,
+    carOwnershipUtilityFile: File? = null
 ) {
     @Suppress("MemberVisibilityCanBePrivate")
     val kdTree: KdTree
@@ -99,31 +106,28 @@ class Omosim (
     private val fullArea: Geometry
     val popStrata: List<PopStratum>
     val carOwnership: CarOwnership
-    var tourModeUtilityFn: File? = null
-    var tripModeUtilityFn: File? = null
     var altPercentages: Map<ODTTriple, List<Double>> = mapOf()
+    val parameterReader: ParameterReader
 
     init {
         val timeSource = TimeSource.Monotonic
         val timestampStartInit = timeSource.markNow()
 
-        // Load population distribution
-        popStrata = if (populationFile != null) {
-            readJson(populationFile)
-        } else {
-            readJsonFromResource("Population.json")
-        }
+        // Read and set calibration
+        parameterReader = ParameterReader(
+            calibration,
+            tourModeUtilityFile,
+            tripModeUtilityFile,
+            tripModeUtilityCalibrationFile,
+            populationFile,
+            activityGroupFile,
+            locationChoiceFile,
+            carOwnershipUtilityFile
+        )
+        popStrata = parameterReader.getPopulationDistribution() // Population feature distribution
+        val activityGroups = parameterReader.getActivityGroups() // Activity chain and activity duration distributions
+        val mutLocChoiceFuns = parameterReader.getLocationChoiceFuns() // Load distance distributions
 
-        // Load activity chain data
-        val activityGroups: List<ActivityGroup> = if (activityGroupFile !=null){
-            readJson(activityGroupFile)
-        } else {
-            readJsonFromResource("ActivityGroups.json")
-        }
-
-        // Load distance distributions
-        val mutLocChoiceFuns: MutableMap<ActivityType, LocationChoiceDCWeightFun> =
-            readJsonFromResource("LocChoiceWeightFuns.json")
         if (censusFile != null) {
             censusAvailable = true
             mutLocChoiceFuns[ActivityType.HOME] = ByPopulation
@@ -210,7 +214,7 @@ class Omosim (
                 CarOwnershipFixedProbability(17)
             }
             CarOwnershipOption.MNL -> {
-                val carOwnershipUtility: CarOwnershipUtility = readJsonFromResource("carOwnershipUtility.json")
+                val carOwnershipUtility = parameterReader.getCarOwnershipUtility()
                 CarOwnershipMNL(carOwnershipUtility, 17)
             }
         }
@@ -599,7 +603,7 @@ class Omosim (
                     val modeChoice = ModeChoiceGTFS(
                         hopper!!, gtfsComponents!!.ptRouter,
                         gtfsComponents!!.ptSimDays, gtfsComponents!!.timeZone,
-                        withPath, tourModeUtilityFn, tripModeUtilityFn
+                        withPath, parameterReader
                     )
                     modeChoice.doModeChoice(agents, mainRng, dispatcher, modeSpeedUp, verbose)
                 } finally {
@@ -607,7 +611,7 @@ class Omosim (
                 }
             }
             ModeChoiceOption.FAST -> {
-                val modeChoice = ModeChoiceFast(routingCache, tourModeUtilityFn, tripModeUtilityFn)
+                val modeChoice = ModeChoiceFast(routingCache, parameterReader)
                 modeChoice.doModeChoice(agents, mainRng, dispatcher, modeSpeedUp, verbose)
 
             }

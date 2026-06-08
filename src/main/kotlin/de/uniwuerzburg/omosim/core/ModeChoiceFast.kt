@@ -1,8 +1,7 @@
 package de.uniwuerzburg.omosim.core
 
 import de.uniwuerzburg.omosim.core.models.*
-import de.uniwuerzburg.omosim.io.json.readJson
-import de.uniwuerzburg.omosim.io.json.readJsonFromResource
+import de.uniwuerzburg.omosim.io.ParameterReader
 import de.uniwuerzburg.omosim.routing.Route
 import de.uniwuerzburg.omosim.routing.RoutingCache
 import de.uniwuerzburg.omosim.routing.calcDistanceBeeline
@@ -10,7 +9,6 @@ import de.uniwuerzburg.omosim.utils.ProgressBar
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.io.File
 import java.time.LocalTime
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
@@ -27,19 +25,10 @@ import kotlin.time.TimeSource
  */
 class ModeChoiceFast(
     private val routingCache: RoutingCache,
-    tourModeUtilityFn: File? = null,
-    tripModeUtilityFn: File? = null
+    parameterReader: ParameterReader
 ) : ModeChoice {
-    val tourModeOptions: Array<ModeUtility> = if (tourModeUtilityFn != null) {
-        readJson(tourModeUtilityFn)
-    } else {
-        readJsonFromResource("tourModeUtilities.json")
-    }
-    val tripModeOptions: Array<ModeUtility> = if (tripModeUtilityFn != null) {
-        readJson(tripModeUtilityFn)
-    } else {
-        readJsonFromResource("tripModeUtilities.json")
-    }
+    val tourModeOptions = parameterReader.getTourModeUtilities()
+    val tripModeOptions = parameterReader.getTripModeUtilities()
 
     /**
      * Determine the mode of each trip and calculate the distance and time.

@@ -17,7 +17,7 @@ allOpen {
 }
 
 group = "de.uniwuerzburg.omosim"
-version = "2.3.4-ic-mx"
+version = "2.4.0"
 
 repositories {
     mavenLocal()
@@ -56,6 +56,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.13")
     implementation("org.tensorflow:tensorflow-core-platform:1.1.0")
+    implementation("com.akuleshov7:ktoml-core:0.7.1")
 }
 
 benchmark {

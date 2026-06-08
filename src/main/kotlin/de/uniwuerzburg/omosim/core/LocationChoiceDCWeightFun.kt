@@ -74,6 +74,7 @@ sealed class LocationChoiceDCWeightFun {
     abstract val limitCommercialUnits: Double?
     abstract val limitRetailUnits: Double?
     abstract val limitIndustrialUnits: Double?
+    abstract val useLevels: Boolean
 
     @Transient
     val id: Int = IDDispenser.next()
@@ -166,7 +167,7 @@ sealed class LocationChoiceDCWeightFun {
         return destination.attractions[id]!!
     }
 
-    open fun calcAttraction(properties: BuildingProperties, useLevels: Boolean = true) : Double {
+    open fun calcAttraction(properties: BuildingProperties) : Double {
         val area = if(useLevels) {
             properties.area * properties.levels
         } else {
@@ -302,8 +303,9 @@ object ByPopulation: LocationChoiceDCWeightFun () {
     override val limitCommercialUnits: Double? get() { throw NotImplementedError() }
     override val limitRetailUnits: Double? get() { throw NotImplementedError() }
     override val limitIndustrialUnits: Double? get() { throw NotImplementedError() }
+    override val useLevels: Boolean = true
 
-    override fun calcAttraction(properties: BuildingProperties, useLevels: Boolean): Double {
+    override fun calcAttraction(properties: BuildingProperties): Double {
         return properties.population ?: 0.0
     }
 
@@ -359,7 +361,8 @@ class PureAttraction (
     override val limitResidentialUnits: Double? = null,
     override val limitCommercialUnits: Double? = null,
     override val limitRetailUnits: Double? = null,
-    override val limitIndustrialUnits: Double? = null
+    override val limitIndustrialUnits: Double? = null,
+    override val useLevels: Boolean = true
     ) : LocationChoiceDCWeightFun( ) {
 
     override fun deterrenceFunction(distance: Double): Double {
@@ -418,6 +421,8 @@ class LogNormDCUtil (
     override val limitCommercialUnits: Double? = null,
     override val limitRetailUnits: Double? = null,
     override val limitIndustrialUnits: Double? = null,
+    override val useLevels: Boolean = true,
+
     // For deterrence function
     private var coeff0: Double,
     private var coeff1: Double,
@@ -512,6 +517,8 @@ class LogNormPowerDCUtil (
     override val limitCommercialUnits: Double? = null,
     override val limitRetailUnits: Double? = null,
     override val limitIndustrialUnits: Double? = null,
+    override val useLevels: Boolean = true,
+
     // For deterrence function
     private var coeff0: Double,
     private var coeff1: Double,
@@ -640,6 +647,8 @@ data class CombinedDCUtil(
     override val limitCommercialUnits: Double? = null,
     override val limitRetailUnits: Double? = null,
     override val limitIndustrialUnits: Double? = null,
+    override val useLevels: Boolean = true,
+
     // For deterrence function
     private var coeff0: Double,
     private var coeff1: Double,
@@ -728,6 +737,8 @@ class Ln3 (
     override val limitCommercialUnits: Double? = null,
     override val limitRetailUnits: Double? = null,
     override val limitIndustrialUnits: Double? = null,
+    override val useLevels: Boolean = true,
+
     // For deterrence function
     private var coeff0: Double,
     private var coeff1: Double,

@@ -240,7 +240,7 @@ class Run : CliktCommand() {
             GravityCalibrationStore.read(calibration_file_gravity!!, omosim.grid, omosim.buildings, finder.locChoiceWeightFuns)
         }
         if (calibration_file_mode_choice != null) {
-            omosim.tourModeUtilityFn = calibration_file_mode_choice
+            omosim.parameterReader.tourModeUtilityFile = calibration_file_mode_choice
         }
         if (calibration_file_route_choice != null) {
             omosim.altPercentages = RouteChoiceCalibrationStore(omosim).read(calibration_file_route_choice!!, omosim.grid)

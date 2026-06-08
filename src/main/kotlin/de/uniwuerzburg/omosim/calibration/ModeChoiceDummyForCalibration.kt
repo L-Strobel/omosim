@@ -4,6 +4,7 @@ import de.uniwuerzburg.omosim.core.ModeUtility
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import de.uniwuerzburg.omosim.core.models.MobiAgent
 import de.uniwuerzburg.omosim.core.models.Weekday
+import de.uniwuerzburg.omosim.io.ParameterReader
 import de.uniwuerzburg.omosim.io.json.readJsonFromResource
 import kotlin.math.exp
 
@@ -13,8 +14,10 @@ import kotlin.math.exp
  *
  * This version is static and will not be affected by other calibration runs.
  */
-class ModeChoiceDummyForCalibration {
-    private val tripModeOptions: Array<ModeUtility> = readJsonFromResource("tripModeUtilitiesCalibration.json")
+class ModeChoiceDummyForCalibration(
+    parameterReader: ParameterReader
+) {
+    private val tripModeOptions = parameterReader.getTripModeUtilitiesCalibration()
 
     fun utilitiesForCalibration(
         carDistance: Double, agent: MobiAgent, activity: ActivityType, weekday: Weekday
