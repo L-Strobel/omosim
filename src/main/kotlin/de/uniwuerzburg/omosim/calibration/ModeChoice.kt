@@ -2,6 +2,7 @@ package de.uniwuerzburg.omosim.calibration
 
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.algorithms.BFGS
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUV
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.*
 import de.uniwuerzburg.omosim.calibration.objective.ModeChoiceCalibrationObjective
 import de.uniwuerzburg.omosim.calibration.objective.sseObjective
@@ -63,7 +64,7 @@ class ModeChoice(
         rng: Random,
         objective: ModeChoiceCalibrationObjective
     ) : DifferentiableModelUV {
-        val model = DifferentiableModelUVBase(1) // Only variable: Intercept of car mode
+        val model = NativeUV(1) // Only variable: Intercept of car mode
 
         // Initialize simulated traffic counts
         val simCount = mutableMapOf<TrafficSensor, List<LinearTerm>>()

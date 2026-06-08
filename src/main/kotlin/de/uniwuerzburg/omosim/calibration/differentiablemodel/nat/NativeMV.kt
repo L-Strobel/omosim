@@ -1,21 +1,23 @@
 package de.uniwuerzburg.omosim.calibration.differentiablemodel.nat
 
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModel
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelMV
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 /**
  * Warning: Don't use within coroutines!! ThreadLocal cache will be unstable. Use an ExecutorService instead.
  */
-class DifferentiableModelMV (
+class NativeMV (
     val nVars: Int
-) : DifferentiableModel {
+) : DifferentiableModelMV {
     private var roots: List<Term> = listOf()
 
     fun setRootTerms(terms: List<Term>) {
         roots = terms
     }
 
-    fun jacobian(vals: DoubleArray, nWorker: Int? = null) : Array<DoubleArray> {
+    override fun jacobian(vals: DoubleArray, nWorker: Int?) : Array<DoubleArray> {
         val executor = if (nWorker == null)
             Executors.newWorkStealingPool()
         else {

@@ -1,10 +1,9 @@
 package de.uniwuerzburg.omosim.calibration.surrogate
 
 import de.uniwuerzburg.omosim.calibration.DistanceFunctionMatchContext
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelUV
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import org.tensorflow.Operand
-import org.tensorflow.ndarray.StdArrays
 import org.tensorflow.types.TFloat32
 import kotlin.math.ln
 
@@ -14,14 +13,14 @@ class DistanceFunctionVMatrixBuilderTF(
 ): VMatrixBuilderTF {
     override fun build(
         mrep: SGGravity.SGCompactMatrixRep,
-    ): Pair<Operand<TFloat32>, TfModel> {
+    ): Pair<Operand<TFloat32>, TfModelUV> {
         val omosim = context.omosim
         val n = omosim.grid.size
         val finder = omosim.destinationFinder as DestinationFinderDefault
         val dcFunction = finder.locChoiceWeightFuns[mrep.vActivity]!!
         val (_, nVars) = dcFunction.deterrenceFunctionAsTerm(1.0)
 
-        val model = TfModel(nVars)
+        val model = TfModelUV(nVars)
         val tf = model.tf
 
         val arrDistance = Array(n) { FloatArray(n) }

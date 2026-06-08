@@ -1,4 +1,4 @@
-package de.uniwuerzburg.omosim.calibration.differentiablemodel.nat
+package de.uniwuerzburg.omosim.calibration.differentiablemodel
 
 import de.uniwuerzburg.omosim.calibration.CalibrationAlgorithm
 import de.uniwuerzburg.omosim.calibration.algorithms.BFGS

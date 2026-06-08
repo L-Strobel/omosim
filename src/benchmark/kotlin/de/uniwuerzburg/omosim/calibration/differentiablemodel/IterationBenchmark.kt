@@ -2,8 +2,7 @@ package de.uniwuerzburg.omosim.calibration.differentiablemodel
 
 
 import de.uniwuerzburg.omosim.calibration.algorithms.PSO
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.DifferentiableModelUV
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelUV
 import kotlinx.benchmark.Blackhole
 import org.openjdk.jmh.annotations.*
 import java.util.concurrent.TimeUnit
@@ -15,7 +14,7 @@ import java.util.concurrent.TimeUnit
 @State(Scope.Benchmark)
 class IterationBenchmark {
     var model: DifferentiableModelUV? = null
-    var modelTF: TfModel? = null
+    var modelTF: TfModelUV? = null
     var vars: DoubleArray? = null
 
     @Setup

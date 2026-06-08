@@ -4,12 +4,12 @@ import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.*
 import org.junit.jupiter.api.Test
 import kotlin.math.abs
 
-class DifferentiableModelUVBaseTest {
+class NativeUVTest {
 
     companion object {
         @Suppress("SameParameterValue")
-        fun buildLargeTestModel(nVars: Int) : DifferentiableModelUVBase {
-            val model = DifferentiableModelUVBase(nVars)
+        fun buildLargeTestModel(nVars: Int) : NativeUV {
+            val model = NativeUV(nVars)
 
             val lTerm1 = LinearTerm(nVars)
             for (i in 0 until nVars) {
@@ -71,7 +71,7 @@ class DifferentiableModelUVBaseTest {
         val term = LinearBaseTerm(2)
         term.addTerm(0, 3.0)
         term.addTerm(1, 1.0)
-        val model = DifferentiableModelUVBase(2)
+        val model = NativeUV(2)
         model.setRootTerm(term)
 
         // Test
@@ -104,7 +104,7 @@ class DifferentiableModelUVBaseTest {
         val yTerm = LinearBaseTerm(2)
         yTerm.addTerm(1, 1.0)
         val qTerm = QuadraticTerm(2, xTerm, yTerm, 3.0)
-        val model = DifferentiableModelUVBase(2)
+        val model = NativeUV(2)
         model.setRootTerm(qTerm)
 
         // Test
@@ -135,7 +135,7 @@ class DifferentiableModelUVBaseTest {
         val xTerm = LinearBaseTerm(2)
         xTerm.addTerm(0, 1.0)
         val qTerm = QuadraticTerm(2, xTerm, xTerm, 1.5)
-        val model = DifferentiableModelUVBase(2)
+        val model = NativeUV(2)
         model.setRootTerm(qTerm)
 
         // Test
@@ -171,7 +171,7 @@ class DifferentiableModelUVBaseTest {
         val eTerm = ExponentialTerm(2, qTerm)
         val fTerm = LinearTerm(2)
         fTerm.addTerm(eTerm, 2.0)
-        val model = DifferentiableModelUVBase(2)
+        val model = NativeUV(2)
         model.setRootTerm(fTerm)
 
         // Test
@@ -214,7 +214,7 @@ class DifferentiableModelUVBaseTest {
         val eTerm = ExponentialTerm(2, exponent)
         val fTerm = LinearTerm(2)
         fTerm.addTerm(eTerm, 3.3)
-        val model = DifferentiableModelUVBase(2)
+        val model = NativeUV(2)
         model.setRootTerm(fTerm)
 
         // Test
@@ -248,7 +248,7 @@ class DifferentiableModelUVBaseTest {
         val yTerm = LinearBaseTerm(2)
         yTerm.addTerm(1, 1.0)
         val dTerm = DivisionTerm(2, xTerm, yTerm)
-        val model = DifferentiableModelUVBase(2)
+        val model = NativeUV(2)
         model.setRootTerm(dTerm)
 
         // Test
@@ -283,7 +283,7 @@ class DifferentiableModelUVBaseTest {
         divisor.addTerm(0, 1.0)
         divisor.addTerm(1, 2.0)
         val dTerm = DivisionTerm(2, dividend, divisor)
-        val model = DifferentiableModelUVBase(2)
+        val model = NativeUV(2)
         model.setRootTerm(dTerm)
 
         // Test
@@ -554,7 +554,7 @@ class DifferentiableModelUVBaseTest {
         val eTerm = ExponentialTerm(2, qTerm)
         val fTerm = LinearTerm(2)
         fTerm.addTerm(eTerm, 2.0)
-        val model = DifferentiableModelUVBase(2)
+        val model = NativeUV(2)
         model.setRootTerm(fTerm)
 
         // Test 1

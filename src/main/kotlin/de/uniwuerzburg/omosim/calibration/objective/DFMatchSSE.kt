@@ -9,12 +9,12 @@ class DFMatchSSE (
     private val mean: Double,
     private val m2: Double,
     val context: DistanceFunctionMatchContext
-) : SGGravityObjectiveNative<DifferentiableModelUVBase> {
+) : SGGravityObjectiveNative<NativeUV> {
     override fun build (
         nVars: Int,
         expectedTrips: Map<ActivityType, List<List<LinearTerm>>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
-    ) : DifferentiableModelUVBase {
+    ) : NativeUV {
         val omosim = context.omosim
         val n = context.omosim.grid.size
 
@@ -76,7 +76,7 @@ class DFMatchSSE (
             PowerTerm(nVars, objMoment2, 0.5), 1.0
         )
 
-        val model = DifferentiableModelUVBase(nVars)
+        val model = NativeUV(nVars)
         model.setRootTerm(obj)
 
         return model

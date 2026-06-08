@@ -1,6 +1,6 @@
 package de.uniwuerzburg.omosim.calibration.objective
 
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.DifferentiableModel
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModel
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.LinearTerm
 import de.uniwuerzburg.omosim.core.models.ActivityType
 

@@ -2,6 +2,7 @@ package de.uniwuerzburg.omosim.calibration
 
 import com.gurobi.gurobi.*
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUV
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.*
 import de.uniwuerzburg.omosim.calibration.objective.sseObjectiveGRB
 import de.uniwuerzburg.omosim.calibration.objective.sseObjective
@@ -171,7 +172,7 @@ class RouteChoice(
                 }
             }
         }
-        val model = DifferentiableModelUVBase(nVar)
+        val model = NativeUV(nVar)
 
         // Initialize simulated traffic counts
         val simCount = mutableMapOf<TrafficSensor, List<LinearTerm>>()

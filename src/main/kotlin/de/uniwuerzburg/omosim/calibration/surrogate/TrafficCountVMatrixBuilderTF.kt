@@ -1,7 +1,7 @@
 package de.uniwuerzburg.omosim.calibration.surrogate
 
 import de.uniwuerzburg.omosim.calibration.TrafficCountCalibrationContext
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelUV
 import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
 import org.tensorflow.Operand
 import org.tensorflow.types.TFloat32
@@ -11,10 +11,10 @@ class TrafficCountVMatrixBuilderTF(
 ) : VMatrixBuilderTF {
     override fun build(
         mrep: SGGravity.SGCompactMatrixRep
-    ): Pair<Operand<TFloat32>, TfModel>  {
+    ): Pair<Operand<TFloat32>, TfModelUV>  {
         val nVars = context.omosim.grid.size - 1
 
-        val model = TfModel(nVars)
+        val model = TfModelUV(nVars)
         val tf = model.tf
 
         val tMatrix = mrep.tMatrices[mrep.vActivity]!!.toArray()

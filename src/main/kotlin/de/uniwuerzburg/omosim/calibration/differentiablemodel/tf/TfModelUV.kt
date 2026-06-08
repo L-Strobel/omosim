@@ -1,13 +1,11 @@
 package de.uniwuerzburg.omosim.calibration.differentiablemodel.tf
 
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.DifferentiableModelUV
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUV
 import org.tensorflow.Graph
 import org.tensorflow.Operand
 import org.tensorflow.Session
 import org.tensorflow.ndarray.Shape
 import org.tensorflow.ndarray.StdArrays
-import org.tensorflow.ndarray.buffer.DataBuffers
-import org.tensorflow.ndarray.buffer.FloatDataBuffer
 import org.tensorflow.op.Ops
 import org.tensorflow.op.core.Variable
 import org.tensorflow.proto.ConfigProto
@@ -15,17 +13,16 @@ import org.tensorflow.proto.GPUOptions
 import org.tensorflow.proto.GraphOptions
 import org.tensorflow.proto.OptimizerOptions
 import org.tensorflow.types.TFloat32
-import java.nio.FloatBuffer
 
-class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
+open class TfModelUV(nVars: Int): DifferentiableModelUV(nVars) {
     val graph = Graph()
     val tf: Ops = Ops.create(graph)
     val x: Variable<TFloat32> = tf.variable(Shape.of(nVars.toLong()), TFloat32::class.java)
     val inputTensorContainer: ThreadLocal<ThreadLocalTensorContainer> = ThreadLocal.withInitial {
         ThreadLocalTensorContainer(nVars.toLong())
     }
-    private lateinit var root: Operand<TFloat32>
-    private lateinit var dx: Operand<TFloat32>
+    lateinit var root: Operand<TFloat32>
+    lateinit var dx: Operand<TFloat32>
     lateinit var session: Session
     private val tensors = mutableListOf<TFloat32>()
 
@@ -73,7 +70,7 @@ class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
         tensors.add(tensor)
     }
 
-    fun finalize(root: Operand<TFloat32>) {
+    open fun finalize(root: Operand<TFloat32>) {
         this.root = root
         this.dx = tf.gradients(root, listOf(x)).dy(0)
         this.session = Session(graph, config)

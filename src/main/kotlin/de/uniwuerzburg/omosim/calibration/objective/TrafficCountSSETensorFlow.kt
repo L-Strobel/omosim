@@ -3,7 +3,7 @@ package de.uniwuerzburg.omosim.calibration.objective
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants
 import de.uniwuerzburg.omosim.calibration.TrafficCountCalibrationContext
 import de.uniwuerzburg.omosim.calibration.TrafficSensor
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelUV
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import org.tensorflow.Operand
 import org.tensorflow.types.TFloat32
@@ -13,10 +13,10 @@ class TrafficCountSSETensorFlow(
     val context: TrafficCountCalibrationContext
 ) : SGGravityObjectiveTF {
     override fun build (
-        model: TfModel,
+        model: TfModelUV,
         expectedTrips: Map<ActivityType, Operand<TFloat32>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
-    ) : TfModel {
+    ) : TfModelUV {
         val tf = model.tf
         val totalPopulation = tf.constant(context.totalPopulation.toFloat())
 

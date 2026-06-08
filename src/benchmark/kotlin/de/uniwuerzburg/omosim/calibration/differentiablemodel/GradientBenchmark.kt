@@ -2,7 +2,7 @@ package de.uniwuerzburg.omosim.calibration.differentiablemodel
 
 
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.*
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelUV
 import kotlinx.benchmark.Blackhole
 import kotlinx.benchmark.Scope
 import org.openjdk.jmh.annotations.*
@@ -16,14 +16,14 @@ import java.util.concurrent.TimeUnit
 @Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
 @State(Scope.Benchmark)
 class GradientBenchmark {
-    var model: DifferentiableModelUVBase? = null
-    var modelTF: TfModel? = null
+    var model: NativeUV? = null
+    var modelTF: TfModelUV? = null
     var vars: DoubleArray? = null
 
     companion object {
         @Suppress("SameParameterValue")
-        fun buildLargeTestModelTF(nVars: Int) : TfModel {
-            val model = TfModel(nVars)
+        fun buildLargeTestModelTF(nVars: Int) : TfModelUV {
+            val model = TfModelUV(nVars)
             val tf = model.tf
             val terms = mutableListOf<Operand<TFloat32>>()
             for (i in 0 until nVars) {
@@ -50,8 +50,8 @@ class GradientBenchmark {
             return model
         }
 
-        fun buildLargeTestModel(nVars: Int) : DifferentiableModelUVBase {
-            val model = DifferentiableModelUVBase(nVars)
+        fun buildLargeTestModel(nVars: Int) : NativeUV {
+            val model = NativeUV(nVars)
 
             val lTerm1 = LinearTerm(nVars)
             for (i in 0 until nVars) {

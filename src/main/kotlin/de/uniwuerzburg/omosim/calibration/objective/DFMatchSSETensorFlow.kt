@@ -1,12 +1,10 @@
 package de.uniwuerzburg.omosim.calibration.objective
 
 import de.uniwuerzburg.omosim.calibration.DistanceFunctionMatchContext
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelUV
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import org.tensorflow.Operand
-import org.tensorflow.Session
 import org.tensorflow.types.TFloat32
-import smile.stat.Hypothesis.F
 import kotlin.math.pow
 
 
@@ -16,10 +14,10 @@ class DFMatchSSETensorFlow (
     val context: DistanceFunctionMatchContext
 ) : SGGravityObjectiveTF {
     override fun build(
-        model: TfModel,
+        model: TfModelUV,
         expectedTrips: Map<ActivityType, Operand<TFloat32>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
-    ): TfModel {
+    ): TfModelUV {
         val tf = model.tf
         val omosim = context.omosim
         val n = context.omosim.grid.size

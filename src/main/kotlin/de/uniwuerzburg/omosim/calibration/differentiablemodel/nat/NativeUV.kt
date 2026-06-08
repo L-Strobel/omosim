@@ -1,12 +1,14 @@
 package de.uniwuerzburg.omosim.calibration.differentiablemodel.nat
 
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModel
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUV
 import smile.util.function.DifferentiableMultivariateFunction
 
 
 /**
  * Warning: Don't use within coroutines!! ThreadLocal cache will be unstable. Use an ExecutorService instead.
  */
-class DifferentiableModelUVBase (
+class NativeUV (
     nVars: Int
 ) : DifferentiableMultivariateFunction, DifferentiableModelUV(nVars), DifferentiableModel {
     private var root: Term = LinearBaseTerm(nVars)

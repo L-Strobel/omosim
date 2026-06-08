@@ -1,8 +1,6 @@
 package de.uniwuerzburg.omosim.calibration.surrogate
 
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
-import de.uniwuerzburg.omosim.utils.diagonal
-import org.jetbrains.kotlinx.multik.api.linalg.dot
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelUV
 import org.jetbrains.kotlinx.multik.ndarray.data.D2
 import org.jetbrains.kotlinx.multik.ndarray.data.D2Array
 import org.jetbrains.kotlinx.multik.ndarray.data.NDArray
@@ -11,7 +9,7 @@ import org.tensorflow.Operand
 import org.tensorflow.types.TFloat32
 
 class DemandBuilderTF(
-    val model: TfModel
+    val model: TfModelUV
 ) : DemandBuilder<Operand<TFloat32>, Operand<TFloat32>> {
     val tf = model.tf
 

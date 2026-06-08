@@ -2,19 +2,19 @@ package de.uniwuerzburg.omosim.calibration.objective
 
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants
 import de.uniwuerzburg.omosim.calibration.TrafficCountCalibrationContext
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.DifferentiableModelMV
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.NativeMV
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.LinearTerm
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.Term
 import de.uniwuerzburg.omosim.core.models.ActivityType
 
 class TrafficCountSeparate(
     val context: TrafficCountCalibrationContext
-) : SGGravityObjectiveNative<DifferentiableModelMV> {
+) : SGGravityObjectiveNative<NativeMV> {
     override fun build (
         nVars: Int,
         expectedTrips: Map<ActivityType, List<List<LinearTerm>>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
-    ) : DifferentiableModelMV {
+    ) : NativeMV {
         // Simulated traffic counts
         val simCount = getSimCountsFromDemand(nVars, context, expectedTrips, tripStartDistr)
 
@@ -25,7 +25,7 @@ class TrafficCountSeparate(
                 countsFlat.add( simCount[sensor]!![t] )
             }
         }
-        val model = DifferentiableModelMV(countsFlat.first().nVars)
+        val model = NativeMV(countsFlat.first().nVars)
         model.setRootTerms(countsFlat)
 
         return model

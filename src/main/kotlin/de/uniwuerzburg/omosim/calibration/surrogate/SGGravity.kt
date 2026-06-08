@@ -3,8 +3,8 @@ package de.uniwuerzburg.omosim.calibration.surrogate
 import de.uniwuerzburg.omosim.calibration.*
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.MC_SAMPLES
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.DifferentiableModel
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModel
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelUV
 import de.uniwuerzburg.omosim.calibration.objective.SGGravityObjectiveNative
 import de.uniwuerzburg.omosim.calibration.objective.SGGravityObjectiveTF
 import de.uniwuerzburg.omosim.core.ActivityGeneratorDefault
@@ -644,7 +644,7 @@ class SGGravity (
         vActivity: ActivityType,
         objective: SGGravityObjectiveTF,
         vMatrixBuilder: VMatrixBuilderTF
-    ) : TfModel {
+    ) : TfModelUV {
         logger.info("Surrogate (TF): building tensor flow model for activity $vActivity")
 
         // Core work

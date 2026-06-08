@@ -1,6 +1,6 @@
 package de.uniwuerzburg.omosim.calibration.differentiablemodel
 
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModel
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelUV
 import org.junit.jupiter.api.Test
 import org.tensorflow.Operand
 import org.tensorflow.types.TFloat32
@@ -9,8 +9,8 @@ import kotlin.math.abs
 class TfTests {
     companion object {
         @Suppress("SameParameterValue")
-        fun buildLargeTestModelTF(nVars: Int) : TfModel {
-            val model = TfModel(nVars)
+        fun buildLargeTestModelTF(nVars: Int) : TfModelUV {
+            val model = TfModelUV(nVars)
             val tf = model.tf
             val terms = mutableListOf<Operand<TFloat32>>()
             for (i in 0 until nVars) {
@@ -41,7 +41,7 @@ class TfTests {
     @Test
     fun largerModelGradient() {
         val nVars = 1000
-        val model = DifferentiableModelUVBaseTest.buildLargeTestModel(nVars)
+        val model = NativeUVTest.buildLargeTestModel(nVars)
         val modelTF = buildLargeTestModelTF(nVars)
         val vars = DoubleArray(nVars) { 1.1 }
 
@@ -59,7 +59,7 @@ class TfTests {
     @Test
     fun largerModelEval() {
         val nVars = 10
-        val model = DifferentiableModelUVBaseTest.buildLargeTestModel(nVars)
+        val model = NativeUVTest.buildLargeTestModel(nVars)
         val modelTF = buildLargeTestModelTF(nVars)
         val vars = DoubleArray(nVars) { 1.1 }
 

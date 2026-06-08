@@ -1,6 +1,6 @@
 package de.uniwuerzburg.omosim.calibration.algorithms
 
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.DifferentiableModelUV
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUV
 import smile.math.BFGS
 import kotlin.time.measureTimedValue
 
