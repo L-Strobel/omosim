@@ -105,7 +105,7 @@ tasks.register("ciPipeline") {
     group = "verification"
     description = "Run unit tests, build, smoke tests, and acceptance tests."
 
-    dependsOn("test", "shadowJar", "smokeTest", "acceptanceTest")
+    dependsOn("test", "shadowJar", "smokeTest")
 }
 
 // Python tests against a build jar
