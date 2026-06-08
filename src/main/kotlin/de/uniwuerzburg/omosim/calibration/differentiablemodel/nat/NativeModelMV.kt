@@ -40,7 +40,7 @@ class NativeModelMV (
         return jac
     }
 
-    fun evaluate(vals: DoubleArray): DoubleArray {
+    override fun evaluate(vals: DoubleArray): DoubleArray {
         val result = DoubleArray(roots.size) { 0.0 }
         for ((i, root) in roots.withIndex()) {
             result[i] = root.evaluate(vals)

@@ -18,7 +18,7 @@ class TrafficCountSeparateTensorFlow(
         expectedTrips: Map<ActivityType, Operand<TFloat32>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ) : TfModelMV {
-        val tf = core.tf
+        val tf = core.tf // TODO dedup
         val totalPopulation = tf.constant(context.totalPopulation.toFloat())
 
         // Get origin-destination combinations that affect each sensor
@@ -64,23 +64,13 @@ class TrafficCountSeparateTensorFlow(
             }
         }
 
-        // TODO
-        // Objective
         val s = mutableListOf<Operand<TFloat32>>()
-        val m = mutableListOf<Float>()
         for (sensor in context.sensors) {
             for (t in 0 until CalibrationConstants.T) {
                 s.add(simCount[sensor]!![t])
-                m.add(sensor.measurements[t].toFloat())
             }
         }
-        val vSim = tf.stack(s)
-        val vMeasured = tf.constant(m.toFloatArray())
-        val diff = tf.math.sub(vSim, vMeasured)
-        val sqrDiff = tf.math.square(diff)
-        val obj = tf.reduceSum(sqrDiff, tf.constant(0))
 
-        val model = TfModelMV(2, core, listOf()) // TODO
-        return model
+        return TfModelMV(s.size, core, s)
     }
 }

@@ -24,7 +24,7 @@ class TfModelMV(
         this.session = Session(core.graph, core.config)
     }
 
-    fun evaluate(vals: DoubleArray): DoubleArray {
+    override fun evaluate(vals: DoubleArray): DoubleArray {
         core.fillInputTensor(vals) // Load input
 
         val outArray = FloatArray(this.nOutput)

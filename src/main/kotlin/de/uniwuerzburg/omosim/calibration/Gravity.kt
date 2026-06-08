@@ -3,6 +3,7 @@ package de.uniwuerzburg.omosim.calibration
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.TENSOR_FLOW
 import de.uniwuerzburg.omosim.calibration.algorithms.*
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelMV
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.NativeModelMV
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUV
 import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSSE
@@ -214,8 +215,7 @@ class Gravity(
             val measurements = context.sensors.map { it.measurements }.flatMap { it.toList() }
 
             for (activity in activities) {
-                val model = SGGravity(context).buildNative(activity,
-                    TrafficCountSeparate(context), TrafficCountVMatrixBuilder(context))
+                val model = buildModelMV(activity)
                 val objective = o.surrogateObjWSPSA(model, context.sensors)
                 val x0 = DoubleArray(context.omosim.grid.size - 1) { 1.0 }
                 var d = WSPSA.run(
@@ -231,7 +231,7 @@ class Gravity(
             val measurements = context.sensors.map { it.measurements }.flatMap { it.toList() }
 
             for (activity in activities) {
-                val model = SGGravity(context).buildNative(activity, TrafficCountSeparate(context), TrafficCountVMatrixBuilder(context))
+                val model = buildModelMV(activity)
                 val objective = o.batchObjWSPSA(activity)
                 val x0 = DoubleArray(context.omosim.grid.size - 1) { 1.0 }
                 var d = WSPSA.run(
@@ -273,6 +273,22 @@ class Gravity(
         }
     }
 
+    fun buildModelMV(activity: ActivityType) : DifferentiableModelMV {
+        return if (TENSOR_FLOW) {
+            SGGravity(context).buildTF(
+                activity,
+                TrafficCountSeparateTensorFlow(context),
+                TrafficCountVMatrixBuilderTF(context)
+            )
+        } else {
+            SGGravity(context).buildNative(
+                activity,
+                TrafficCountSeparate(context),
+                TrafficCountVMatrixBuilder(context)
+            )
+        }
+    }
+
     /**
      * Objective functions builders for the Gravity model calibration.
      */
@@ -291,7 +307,7 @@ class Gravity(
          * Special case of the sum of squares objective using the surrogate model for WSPSA.
          * WSPSA requires that the simulated counts at each traffic counting station are returned separately.
          */
-        fun surrogateObjWSPSA(model: NativeModelMV, sensors: List<TrafficSensor>): (DoubleArray) ->
+        fun surrogateObjWSPSA(model: DifferentiableModelMV, sensors: List<TrafficSensor>): (DoubleArray) ->
         Pair<Double, DoubleArray> {
             return { x: DoubleArray ->
                 val simCounts = model.evaluate(x)
