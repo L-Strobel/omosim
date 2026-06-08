@@ -9,6 +9,7 @@ import de.uniwuerzburg.omosim.io.json.readJson
 import de.uniwuerzburg.omosim.io.json.readJsonFromResource
 import kotlinx.serialization.decodeFromString
 import java.io.File
+import java.io.FileNotFoundException
 
 class ParameterReader(
     val calName: String,
@@ -20,63 +21,76 @@ class ParameterReader(
     var locationChoiceFile: File?,
     var carOwnershipUtilityFile: File?,
 ) {
-    val config: ParameterConfig
+    private val config: ParameterConfig = loadConfig(calName)
 
-    init {
-        val fnConfig = "parametrization/${calName}/config.toml"
+    private fun loadConfig(name: String): ParameterConfig {
+        val fnConfig = "parametrization/${name}/config.toml"
         val toml = Omosim::class.java.classLoader.getResource(fnConfig)!!.readText(Charsets.UTF_8)
-        config = Toml.decodeFromString<ParameterConfig>(toml)
+        return Toml.decodeFromString<ParameterConfig>(toml)
     }
 
-    private fun getInternalCalibrationRes(resName: String): String {
-        val fn = "parametrization/${calName}/${resName}"
+    private fun getCalibrationResource(resName: String, searchFolder: String = calName): String {
+        val fn = "parametrization/${searchFolder}/${resName}"
         val res = Omosim::class.java.classLoader.getResource(fn)
 
         return if (res != null) {
             fn
         } else {
-           "parametrization/${config.dependencies.parent}/${resName}"
+            val folderConfig = if(searchFolder == calName) {
+                config
+            } else {
+                loadConfig(searchFolder)
+            }
+
+            val parent = folderConfig.dependencies.parent
+
+            // Current folder is the root folder and file was not found
+            if (parent == "") {
+                throw FileNotFoundException("Parametrization file $resName not found!")
+            }
+
+            getCalibrationResource(resName, parent)
         }
     }
 
-    private inline fun <reified T> getParameter(fnParam: String, customFile: File?) : T {
+    private inline fun <reified T> getParameterJson(fnParam: String, customFile: File?) : T {
         val source: String
         val parameter: T = if (customFile != null) {
             source = customFile.toString()
             readJson(customFile)
         } else {
-            source = getInternalCalibrationRes(fnParam)
+            source = getCalibrationResource(fnParam)
             readJsonFromResource(source)
         }
-        logger.debug("Using ${fnParam.split(".").first()} from: $source")
+        logger.info("Using ${fnParam.split(".").first()} from: $source")
         return parameter
     }
 
     fun getTourModeUtilities() : Array<ModeUtility>  {
-        return getParameter("tourModeUtilities.json", tourModeUtilityFile)
+        return getParameterJson("tourModeUtilities.json", tourModeUtilityFile)
     }
 
     fun getTripModeUtilities() : Array<ModeUtility>  {
-        return getParameter("tripModeUtilities.json", tripModeUtilityFile)
+        return getParameterJson("tripModeUtilities.json", tripModeUtilityFile)
     }
 
     fun getTripModeUtilitiesCalibration() : Array<ModeUtility>  {
-        return getParameter("tripModeUtilitiesCalibration.json", tripModeUtilityForCalibrationFile)
+        return getParameterJson("tripModeUtilitiesCalibration.json", tripModeUtilityForCalibrationFile)
     }
 
     fun getPopulationDistribution() : List<PopStratum> {
-        return getParameter("Population.json", populationFile)
+        return getParameterJson("Population.json", populationFile)
     }
 
     fun getActivityGroups() : List<ActivityGroup>{
-        return getParameter("ActivityGroups.json", activityGroupFile)
+        return getParameterJson("ActivityGroups.json", activityGroupFile)
     }
 
     fun getLocationChoiceFuns() : MutableMap<ActivityType, LocationChoiceDCWeightFun> {
-        return getParameter("LocChoiceWeightFuns.json", locationChoiceFile)
+        return getParameterJson("LocChoiceWeightFuns.json", locationChoiceFile)
     }
 
     fun getCarOwnershipUtility() : CarOwnershipUtility {
-        return getParameter("carOwnershipUtility.json", carOwnershipUtilityFile)
+        return getParameterJson("carOwnershipUtility.json", carOwnershipUtilityFile)
     }
 }
