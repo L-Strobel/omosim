@@ -4,6 +4,7 @@ import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.TENSOR_FLOW
 import de.uniwuerzburg.omosim.calibration.algorithms.*
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.DifferentiableModelMV
+import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.DifferentiableModelUV
 import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSSE
 import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSSETensorFlow
 import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSeparate
@@ -48,7 +49,7 @@ class Gravity(
     fun calibrate(algorithm: CalibrationAlgorithm?, activities: List<ActivityType>, parameters: Map<String, String>?) {
         when (algorithm) {
             CalibrationAlgorithm.SM_LBFGS  -> rw.calibrateLBFGSSM(activities, parameters)
-            CalibrationAlgorithm.SM_GD     -> rw.calibrateGGSM(activities, parameters)
+            CalibrationAlgorithm.SM_GD     -> rw.calibrateGDSM(activities, parameters)
             CalibrationAlgorithm.SM_PSO    -> rw.calibratePSOSM(activities, parameters)
             CalibrationAlgorithm.PSO       -> rw.calibratePSO(activities, parameters)
             CalibrationAlgorithm.PSO_AO    -> rw.calibratePSOAllAtOnce(activities, parameters)
@@ -109,8 +110,7 @@ class Gravity(
             activities: List<ActivityType>, parameters: Map<String, String>? = null
         )  {
             for (activity in activities) {
-                val model = SGGravity(context)
-                    .buildNative(activity, TrafficCountSSE(context), TrafficCountVMatrixBuilder(context))
+                val model = buildModel(activity)
                 val x0 = DoubleArray(context.omosim.grid.size - 1) { 1.0 }
                 var d =  BFGS.run(model, x0, parameters=parameters)
                 d = (d.toList() + listOf(1.0)).toDoubleArray()
@@ -119,12 +119,11 @@ class Gravity(
         }
 
         // Gradient Descent
-        fun calibrateGGSM(
+        fun calibrateGDSM(
             activities: List<ActivityType>, parameters: Map<String, String>? = null
         ){
             for (activity in activities) {
-                val model = SGGravity(context)
-                    .buildTF(activity, TrafficCountSSETensorFlow(context), TrafficCountVMatrixBuilderTF(context))
+                val model = buildModel(activity)
                 val x0 = DoubleArray(context.omosim.grid.size - 1) { 1.0 }
                 var d = GradientDescent.run(model, x0, parameters=parameters)
                 d = (d.toList() + listOf(1.0)).toDoubleArray()
@@ -257,6 +256,22 @@ class Gravity(
         }
     }
 
+    fun buildModel(activity: ActivityType) : DifferentiableModelUV {
+        return if (TENSOR_FLOW) {
+            SGGravity(context).buildTF(
+                activity,
+                TrafficCountSSETensorFlow(context),
+                TrafficCountVMatrixBuilderTF(context)
+            )
+        } else {
+            SGGravity(context).buildNative(
+                activity,
+                TrafficCountSSE(context),
+                TrafficCountVMatrixBuilder(context)
+            )
+        }
+    }
+
     /**
      * Objective functions builders for the Gravity model calibration.
      */
@@ -265,11 +280,7 @@ class Gravity(
          * Sum of squares objective using the surrogate model.
          */
         fun surrogateObj(activity: ActivityType): (DoubleArray) -> Double {
-            val model = if(TENSOR_FLOW) {
-                SGGravity(context).buildTF(activity,  TrafficCountSSETensorFlow(context), TrafficCountVMatrixBuilderTF(context))
-            } else {
-                SGGravity(context).buildNative(activity,  TrafficCountSSE(context), TrafficCountVMatrixBuilder(context))
-            }
+            val model = buildModel(activity)
             return { x: DoubleArray ->
                 model.evaluate(x)
             }
@@ -331,6 +342,7 @@ class Gravity(
                 context.sse(flows)
             }
         }
+
         /**
          * Sum of squared objective computed with a simulation run of 10% of the population.
          *
