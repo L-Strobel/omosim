@@ -15,6 +15,7 @@ object GradientDescent {
         const val ub = 1e3
         val lTol: Double? = null
         val backTracking: Boolean = false
+        val maxNoImprovement = 5
     }
 
     fun run(
@@ -31,6 +32,7 @@ object GradientDescent {
             ub = parameters?.get("ub")?.toDoubleOrNull() ?: Defaults.ub,
             lTol = parameters?.get("lTol")?.toDoubleOrNull() ?: Defaults.lTol,
             backTracking = parameters?.get("backTracking")?.toBoolean() ?: Defaults.backTracking,
+            maxNoImprovement = parameters?.get("nNoImprovement")?.toInt() ?: Defaults.maxNoImprovement,
         )
     }
 
@@ -42,7 +44,8 @@ object GradientDescent {
         lb: Double = Defaults.lb,
         ub: Double = Defaults.ub,
         lTol: Double? = Defaults.lTol,
-        backTracking: Boolean = Defaults.backTracking
+        backTracking: Boolean = Defaults.backTracking,
+        maxNoImprovement: Int = Defaults.maxNoImprovement,
     ) : DoubleArray {
         ProgressLogger.logParameters(this.NAME,"lr0=$lr0:lb=$lb:ub$ub")
 
@@ -120,7 +123,7 @@ object GradientDescent {
                 )
                 break
             }
-            if (nNoImprovement > 5) {
+            if (nNoImprovement > maxNoImprovement) {
                 ProgressLogger.logEarlyTermination(
                     this.NAME, reason = "No improvement in 5 iterations"
                 )
