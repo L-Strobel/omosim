@@ -1,11 +1,9 @@
 package de.uniwuerzburg.omosim.calibration
 
-import de.uniwuerzburg.omosim.core.ModeUtility
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import de.uniwuerzburg.omosim.core.models.MobiAgent
 import de.uniwuerzburg.omosim.core.models.Weekday
 import de.uniwuerzburg.omosim.io.ParameterReader
-import de.uniwuerzburg.omosim.io.json.readJsonFromResource
 import kotlin.math.exp
 
 /**
