@@ -1,6 +1,7 @@
 package de.uniwuerzburg.omosim.calibration
 
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
+import de.uniwuerzburg.omosim.calibration.CalibrationConstants.TENSOR_FLOW
 import de.uniwuerzburg.omosim.calibration.algorithms.*
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.DifferentiableModelMV
 import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSSE
@@ -264,7 +265,11 @@ class Gravity(
          * Sum of squares objective using the surrogate model.
          */
         fun surrogateObj(activity: ActivityType): (DoubleArray) -> Double {
-            val model = SGGravity(context).buildNative(activity,  TrafficCountSSE(context), TrafficCountVMatrixBuilder(context))
+            val model = if(TENSOR_FLOW) {
+                SGGravity(context).buildTF(activity,  TrafficCountSSETensorFlow(context), TrafficCountVMatrixBuilderTF(context))
+            } else {
+                SGGravity(context).buildNative(activity,  TrafficCountSSE(context), TrafficCountVMatrixBuilder(context))
+            }
             return { x: DoubleArray ->
                 model.evaluate(x)
             }

@@ -15,13 +15,15 @@ import org.tensorflow.proto.GPUOptions
 import org.tensorflow.proto.GraphOptions
 import org.tensorflow.proto.OptimizerOptions
 import org.tensorflow.types.TFloat32
+import java.nio.FloatBuffer
 
 class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
     val graph = Graph()
     val tf: Ops = Ops.create(graph)
     val x: Variable<TFloat32> = tf.variable(Shape.of(nVars.toLong()), TFloat32::class.java)
-    val inputTensor: TFloat32 = TFloat32.tensorOf(Shape.of(nVars.toLong()))
-    private val ioBuffer: FloatDataBuffer = DataBuffers.ofFloats(nVars.toLong())
+    val inputTensorContainer: ThreadLocal<ThreadLocalTensorContainer> = ThreadLocal.withInitial {
+        ThreadLocalTensorContainer(nVars.toLong())
+    }
     private lateinit var root: Operand<TFloat32>
     private lateinit var dx: Operand<TFloat32>
     lateinit var session: Session
@@ -79,57 +81,52 @@ class TfModel(nVars: Int): DifferentiableModelUV(nVars) {
 
     fun close() {
         this.session.close()
-        this.inputTensor.close()
+        this.inputTensorContainer.remove()
         this.tensors.forEach { it.close() }
     }
 
     fun fillInputTensor(data: DoubleArray) {
-        for (i in data.indices) {
-            ioBuffer.setFloat(data[i].toFloat(), i.toLong())
-        }
-        inputTensor.copyFrom(ioBuffer)
+        val floatData = FloatArray(data.size) { i -> data[i].toFloat() }
+        StdArrays.copyTo(floatData, inputTensorContainer.get().tensor)
     }
 
     override fun gradient(vals: DoubleArray, gradient: DoubleArray) : Double {
         fillInputTensor(vals) // Load input
 
         // Compute
-        var y: Double?
-        session.runner()
-            .feed(x, inputTensor)
+        val y = session.runner()
+            .feed(x, inputTensorContainer.get().tensor)
             .fetch(root)
             .fetch(dx)
             .run().use { result ->
                 val lossOutput = result[0] as TFloat32
-                y = lossOutput.getFloat().toDouble()
+                val lossValue =  lossOutput.getFloat().toDouble()
                 val gradientOutput = result[1] as TFloat32
-                gradientOutput.copyTo(ioBuffer)
-                gradientOutput.close()
+
+                // Store in Java
+                val outArray = FloatArray(gradient.size)
+                StdArrays.copyFrom(gradientOutput, outArray)
+                for (i in outArray.indices) {
+                    gradient[i] = outArray[i].toDouble()
+                }
+
+                lossValue
             }
-
-        // Store in Java
-        val outArray = FloatArray(gradient.size)
-        ioBuffer.read(outArray)
-        for (i in outArray.indices) {
-            gradient[i] = outArray[i].toDouble()
-        }
-
-        return y!!
+        return y
     }
 
     override fun evaluate(vals: DoubleArray): Double {
         fillInputTensor(vals) // Load input
 
         // Compute
-        var y: Double?
-        session.runner()
-            .feed(x, inputTensor)
+        val y = session.runner()
+            .feed(x, inputTensorContainer.get().tensor)
             .fetch(root)
             .run().use { result ->
                 val lossOutput = result[0] as TFloat32
-                y = lossOutput.getFloat().toDouble()
+                lossOutput.getFloat().toDouble()
             }
-        return y!!
+        return y
     }
 
     override fun f(p0: DoubleArray?): Double {
