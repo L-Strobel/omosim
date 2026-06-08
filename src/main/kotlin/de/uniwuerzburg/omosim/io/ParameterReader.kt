@@ -30,75 +30,53 @@ class ParameterReader(
 
     private fun getInternalCalibrationRes(resName: String): String {
         val fn = "parametrization/${calName}/${resName}"
-        val file = File(fn)
+        val res = Omosim::class.java.classLoader.getResource(fn)
 
-        return if (file.exists()) {
+        return if (res != null) {
             fn
         } else {
            "parametrization/${config.dependencies.parent}/${resName}"
         }
     }
 
-    fun getTourModeUtilities() : Array<ModeUtility>  {
-        return if (tourModeUtilityFile != null) {
-            readJson(tourModeUtilityFile!!)
+    private inline fun <reified T> getParameter(fnParam: String, customFile: File?) : T {
+        val source: String
+        val parameter: T = if (customFile != null) {
+            source = customFile.toString()
+            readJson(customFile)
         } else {
-            val res = getInternalCalibrationRes("tourModeUtilities.json")
-            readJsonFromResource(res)
+            source = getInternalCalibrationRes(fnParam)
+            readJsonFromResource(source)
         }
+        logger.debug("Using ${fnParam.split(".").first()} from: $source")
+        return parameter
+    }
+
+    fun getTourModeUtilities() : Array<ModeUtility>  {
+        return getParameter("tourModeUtilities.json", tourModeUtilityFile)
     }
 
     fun getTripModeUtilities() : Array<ModeUtility>  {
-        return if (tripModeUtilityFile != null) {
-            readJson(tripModeUtilityFile!!)
-        } else {
-            val res = getInternalCalibrationRes("tripModeUtilities.json")
-            readJsonFromResource(res)
-        }
+        return getParameter("tripModeUtilities.json", tripModeUtilityFile)
     }
 
     fun getTripModeUtilitiesCalibration() : Array<ModeUtility>  {
-        return if (tripModeUtilityForCalibrationFile != null) {
-            readJson(tripModeUtilityForCalibrationFile!!)
-        } else {
-            val res = getInternalCalibrationRes("tripModeUtilitiesCalibration.json")
-            readJsonFromResource(res)
-        }
+        return getParameter("tripModeUtilitiesCalibration.json", tripModeUtilityForCalibrationFile)
     }
 
     fun getPopulationDistribution() : List<PopStratum> {
-        return if (populationFile != null) {
-            readJson(populationFile!!)
-        } else {
-            val res = getInternalCalibrationRes("Population.json")
-            readJsonFromResource(res)
-        }
+        return getParameter("Population.json", populationFile)
     }
 
     fun getActivityGroups() : List<ActivityGroup>{
-        return if (activityGroupFile != null) {
-            readJson(activityGroupFile!!)
-        } else {
-            val res = getInternalCalibrationRes("ActivityGroups.json")
-            readJsonFromResource(res)
-        }
+        return getParameter("ActivityGroups.json", activityGroupFile)
     }
 
     fun getLocationChoiceFuns() : MutableMap<ActivityType, LocationChoiceDCWeightFun> {
-        return if (locationChoiceFile != null) {
-            readJson(locationChoiceFile!!)
-        } else {
-            val res = getInternalCalibrationRes("LocChoiceWeightFuns.json")
-            readJsonFromResource(res)
-        }
+        return getParameter("LocChoiceWeightFuns.json", locationChoiceFile)
     }
 
     fun getCarOwnershipUtility() : CarOwnershipUtility {
-        return if (carOwnershipUtilityFile != null) {
-            readJson(carOwnershipUtilityFile!!)
-        } else {
-            val res = getInternalCalibrationRes("carOwnershipUtility.json")
-            readJsonFromResource(res)
-        }
+        return getParameter("carOwnershipUtility.json", carOwnershipUtilityFile)
     }
 }

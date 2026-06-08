@@ -4,5 +4,5 @@
 # The mode choice parameter are from the 2025 paper:
 # Transport Mode Choice for Disaggregated Mobility Demand Generation
 
-[inheritance]
+[dependencies]
 parent = "" # Define the ancestor of this calibration from which all not specified parameters should be taken.
