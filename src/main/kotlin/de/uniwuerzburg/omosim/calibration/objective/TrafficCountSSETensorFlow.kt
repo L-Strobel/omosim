@@ -19,50 +19,7 @@ class TrafficCountSSETensorFlow(
         tripStartDistr: Map<ActivityType, DoubleArray>
     ) : TfModelUV {
         val tf = core.tf
-        val totalPopulation = tf.constant(context.totalPopulation.toFloat())
-
-        // Get origin-destination combinations that affect each sensor
-        val sensorAffectedIndices = mutableMapOf<TrafficSensor, MutableList<LongArray>>()
-        for (sensor in context.sensors) {
-            sensorAffectedIndices[sensor] = mutableListOf<LongArray>()
-        }
-        for ((o, origin) in context.omosim.grid.withIndex()) {
-            for ((d, destination) in context.omosim.grid.withIndex()) {
-                val od = Pair(origin, destination)
-                if (od in context.affectedSensors) {
-                    val affected = context.affectedSensors[od]!!
-                    for (sensor in affected) {
-                        sensorAffectedIndices[sensor]!!.add(longArrayOf(o.toLong(), d.toLong()))
-                    }
-                }
-            }
-        }
-        val oIndices = mutableMapOf<TrafficSensor, Operand<TInt64>>()
-        for (sensor in context.sensors) {
-            val rawIndices = tf.constant( sensorAffectedIndices[sensor]!!.toTypedArray() )
-            oIndices[sensor] = tf.reshape(rawIndices, tf.constant(longArrayOf(-1, 2))) // Ensure correct dimensions
-        }
-
-        // Simulated traffic counts
-        val simCount = mutableMapOf<TrafficSensor, MutableList<Operand<TFloat32>>>()
-        for (sensor in context.sensors) {
-            simCount[sensor] = MutableList(CalibrationConstants.T) { tf.constant(0f) }
-        }
-        for (t in 0 until CalibrationConstants.T) {
-            val e = mutableListOf<Operand<TFloat32>>()
-            for (activity in ActivityType.entries) {
-                val expectedTripsPopScaled = tf.math.mul(expectedTrips[activity]!!, totalPopulation)
-                val timeShare = tf.constant(tripStartDistr[activity]!![t].toFloat())
-                val expectedTripsTScaled = tf.math.mul(expectedTripsPopScaled, timeShare)
-                e.add(expectedTripsTScaled)
-            }
-            val eTotal = tf.math.addN(e)
-
-            for (sensor in context.sensors) {
-                val gathered = tf.gatherNd(eTotal, oIndices[sensor]!!)
-                simCount[sensor]!![t] = tf.reduceSum(gathered, tf.constant(0))
-            }
-        }
+        val simCount = getSimCountsFromDemandTF(context, core, expectedTrips, tripStartDistr)
 
         // Objective
         val s = mutableListOf<Operand<TFloat32>>()
