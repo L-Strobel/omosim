@@ -93,7 +93,7 @@ object SPSA {
                 bestLoss = loss
             }
 
-            ProgressLogger.logProgress(this.NAME, i, time, bestLoss)
+            ProgressLogger.logProgress(this.NAME, i, time, bestLoss, loss)
         }
         ProgressLogger.logFinalLoss(this.NAME, bestLoss)
         return bestX

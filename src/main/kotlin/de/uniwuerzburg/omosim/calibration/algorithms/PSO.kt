@@ -89,7 +89,7 @@ object PSO {
                 val x = DoubleArray(nDimensions) { ThreadLocalRandom.current().nextDouble(lb, ub) }
                 val v = DoubleArray(nDimensions) { ThreadLocalRandom.current().nextDouble(-maxVelocity, maxVelocity) }
                 val oval = objective(x)
-                PSOParticle(v, x, x, oval)
+                PSOParticle(v, x, x, oval, oval)
             }
         }
         val particleFutures = executor.invokeAll(initTasks)
@@ -104,6 +104,7 @@ object PSO {
 
         ProgressLogger.logProgressHeader()
         for(iteration in 0 until iterations ) {
+            var iterationLoss = Double.POSITIVE_INFINITY
             val time = measureTime {
                 val tasks = particles.map { particle ->
                     Callable {
@@ -136,11 +137,11 @@ object PSO {
 
                         if (inBound) {
                             // Check performance
-                            val oval = objective(particle.position)
+                            particle.current = objective(particle.position)
 
-                            if (oval < particle.best) {
+                            if (particle.current  < particle.best) {
                                 particle.bestPosition = particle.position.copyOf()
-                                particle.best = oval
+                                particle.best = particle.current
                             }
                         }
                     }
@@ -152,10 +153,13 @@ object PSO {
                         globalBestPosition = particle.bestPosition.copyOf()
                         globalBest = particle.best
                     }
+                    if (particle.current < iterationLoss) {
+                        iterationLoss = particle.current
+                    }
                 }
             }
 
-            ProgressLogger.logProgress(this.NAME, iteration, time, globalBest)
+            ProgressLogger.logProgress(this.NAME, iteration, time, globalBest, iterationLoss)
         }
         ProgressLogger.logFinalLoss(this.NAME, globalBest)
         executor.shutdown()
@@ -222,6 +226,7 @@ object PSO {
         var velocity: DoubleArray,
         var position: DoubleArray,
         var bestPosition: DoubleArray,
-        var best: Double
+        var best: Double,
+        var current: Double
     )
 }

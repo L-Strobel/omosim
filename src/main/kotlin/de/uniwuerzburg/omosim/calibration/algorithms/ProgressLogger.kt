@@ -13,11 +13,11 @@ internal object ProgressLogger {
     }
 
     fun logProgressHeader() {
-        logger.debug("Algorithm:Iteration:IterationTime:Loss")
+        logger.debug("Algorithm:Iteration:IterationTime:BestLoss:IterationLoss")
     }
 
-    fun logProgress(algorithm: String, iteration: Int, timeLastIteration: Duration, oval: Double) {
-        logger.debug("{}:{}:{}:{}", algorithm, iteration, timeLastIteration, oval)
+    fun logProgress(algorithm: String, iteration: Int, timeLastIteration: Duration, oval: Double, iOVal: Double) {
+        logger.debug("{}:{}:{}:{}:{}", algorithm, iteration, timeLastIteration, oval, iOVal)
     }
 
     fun logFinalLoss(name: String, loss: Double) {

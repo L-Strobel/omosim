@@ -47,7 +47,10 @@ object GradientDescent {
         backTracking: Boolean = Defaults.backTracking,
         maxNoImprovement: Int = Defaults.maxNoImprovement,
     ) : DoubleArray {
-        ProgressLogger.logParameters(this.NAME,"lr0=$lr0:lb=$lb:ub$ub")
+        ProgressLogger.logParameters(
+            this.NAME,
+            "lr0=$lr0:lb=$lb:ub=$ub:lTol=$lTol:backtracking=$backTracking:maxNoImprovement=$maxNoImprovement"
+        )
 
         // Init
         var x = x0.copyOf()
@@ -102,7 +105,7 @@ object GradientDescent {
             } else {
                 nNoImprovement += 1
             }
-            ProgressLogger.logProgress(this.NAME, i, time, bestLoss)
+            ProgressLogger.logProgress(this.NAME, i, time, bestLoss, loss)
 
             // Early Termination
             if (loss.isNaN()) {
@@ -125,7 +128,7 @@ object GradientDescent {
             }
             if (nNoImprovement > maxNoImprovement) {
                 ProgressLogger.logEarlyTermination(
-                    this.NAME, reason = "No improvement in 5 iterations"
+                    this.NAME, reason = "No improvement in $nNoImprovement iterations"
                 )
                 break
             }

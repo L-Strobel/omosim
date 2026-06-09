@@ -26,7 +26,7 @@ object BFGS {
             iterations = parameters?.get("iterations")?.toIntOrNull() ?: Defaults.iterations,
             lb = parameters?.get("lb")?.toDoubleOrNull() ?: Defaults.lb,
             ub = parameters?.get("ub")?.toDoubleOrNull() ?: Defaults.ub,
-            m = parameters?.get("m")?.toIntOrNull() ?: Defaults.m,
+            m  = parameters?.get("m")?.toIntOrNull() ?: Defaults.m,
             gTol = parameters?.get("gTol")?.toDoubleOrNull() ?: Defaults.gTol,
         )
     }
@@ -52,7 +52,7 @@ object BFGS {
             BFGS.minimize(model, m, x, l, u, gTol, iterations)
         }
 
-        ProgressLogger.logProgress(this.NAME, iterations, time, solution) // Progress logging not possible with SMILE
+        ProgressLogger.logProgress(this.NAME, iterations, time, solution, solution) // Progress logging not possible with SMILE
         ProgressLogger.logFinalLoss(this.NAME, solution)
         return x
     }
