@@ -32,7 +32,7 @@ object GradientDescent {
             ub = parameters?.get("ub")?.toDoubleOrNull() ?: Defaults.ub,
             lTol = parameters?.get("lTol")?.toDoubleOrNull() ?: Defaults.lTol,
             backTracking = parameters?.get("backTracking")?.toBoolean() ?: Defaults.backTracking,
-            maxNoImprovement = parameters?.get("nNoImprovement")?.toInt() ?: Defaults.maxNoImprovement,
+            maxNoImprovement = parameters?.get("maxNoImprovement")?.toInt() ?: Defaults.maxNoImprovement,
         )
     }
 
