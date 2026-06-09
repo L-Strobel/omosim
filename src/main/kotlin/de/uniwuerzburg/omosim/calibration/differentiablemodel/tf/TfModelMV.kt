@@ -7,10 +7,10 @@ import org.tensorflow.ndarray.StdArrays
 import org.tensorflow.types.TFloat32
 
 class TfModelMV(
-    val nOutput: Int,
     val core: TfModelCore,
     roots: List<Operand<TFloat32>>
 ) : DifferentiableModelMV {
+    val nOutput = roots.size
     val root: Operand<TFloat32>
     val dx: Operand<TFloat32>
     val session: Session

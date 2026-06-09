@@ -71,6 +71,6 @@ class TrafficCountSeparateTensorFlow(
             }
         }
 
-        return TfModelMV(s.size, core, s)
+        return TfModelMV(core, s)
     }
 }

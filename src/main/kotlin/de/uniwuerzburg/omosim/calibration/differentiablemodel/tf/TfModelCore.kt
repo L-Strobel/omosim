@@ -19,7 +19,7 @@ class TfModelCore(
     val graph = Graph()
     val tf: Ops = Ops.create(graph)
     val x: Variable<TFloat32> = tf.variable(Shape.of(nVars.toLong()), TFloat32::class.java)
-    val inputTensorContainer: ThreadLocal<ThreadLocalTensorContainer> = ThreadLocal.withInitial { // TODO factor out?
+    val inputTensorContainer: ThreadLocal<ThreadLocalTensorContainer> = ThreadLocal.withInitial {
         ThreadLocalTensorContainer(nVars.toLong())
     }
     private val tensors = mutableListOf<TFloat32>()

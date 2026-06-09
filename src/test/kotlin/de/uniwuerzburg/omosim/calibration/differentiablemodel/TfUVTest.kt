@@ -7,7 +7,7 @@ import org.tensorflow.Operand
 import org.tensorflow.types.TFloat32
 import kotlin.math.abs
 
-class TfTests {
+class TfUVTest {
     companion object {
         @Suppress("SameParameterValue")
         fun buildLargeTestModelTF(nVars: Int) : TfModelUV {
