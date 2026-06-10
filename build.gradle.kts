@@ -30,33 +30,53 @@ repositories {
     mavenCentral()
 }
 
+val commonImplementation: Configuration by configurations.creating
+configurations.implementation {
+    extendsFrom(commonImplementation)
+}
+
 dependencies {
-    implementation("org.geotools:gt-epsg-hsql:31.+")
-    implementation("org.geotools:gt-main:31.+")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
-    implementation("org.locationtech.jts:jts-core:1.+")
-    implementation("org.apache.commons:commons-math3:3.+")
-    implementation("com.github.ajalt.clikt:clikt:4.+")
-    implementation("com.graphhopper:graphhopper-core:9.+")
-    implementation("com.graphhopper:graphhopper-reader-gtfs:9.1")
-    implementation("ch.qos.logback:logback-classic:1.+")
-    implementation("org.openstreetmap.osmosis:osmosis-pbf:0.48.+")
-    implementation("org.openstreetmap.osmosis:osmosis-xml:0.48.+")
-    implementation("org.openstreetmap.osmosis:osmosis-areafilter:0.48.+")
-    implementation("com.google.guava:guava:33.2.1-jre")
-    implementation("org.duckdb:duckdb_jdbc:1.1.1")
-    implementation("us.dustinj.timezonemap:timezonemap:4.+")
-    implementation("org.xerial:sqlite-jdbc:3.+")
-    implementation("org.jetbrains.kotlinx:multik-core:0.2.3")
-    implementation("org.jetbrains.kotlinx:multik-default:0.2.3")
-    implementation("com.gurobi:gurobi:11.0.2")
-    implementation("com.github.haifengl:smile-core:4.4.0")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.+")
+    commonImplementation("org.geotools:gt-epsg-hsql:31.+")
+    commonImplementation("org.geotools:gt-main:31.+")
+    commonImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
+    commonImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    commonImplementation("org.locationtech.jts:jts-core:1.+")
+    commonImplementation("org.apache.commons:commons-math3:3.+")
+    commonImplementation("com.github.ajalt.clikt:clikt:4.+")
+    commonImplementation("com.graphhopper:graphhopper-core:9.+")
+    commonImplementation("com.graphhopper:graphhopper-reader-gtfs:9.1")
+    commonImplementation("ch.qos.logback:logback-classic:1.+")
+    commonImplementation("org.openstreetmap.osmosis:osmosis-pbf:0.48.+")
+    commonImplementation("org.openstreetmap.osmosis:osmosis-xml:0.48.+")
+    commonImplementation("org.openstreetmap.osmosis:osmosis-areafilter:0.48.+")
+    commonImplementation("com.google.guava:guava:33.2.1-jre")
+    commonImplementation("org.duckdb:duckdb_jdbc:1.1.1")
+    commonImplementation("us.dustinj.timezonemap:timezonemap:4.+")
+    commonImplementation("org.xerial:sqlite-jdbc:3.+")
+    commonImplementation("com.gurobi:gurobi:11.0.2")
+    commonImplementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.13")
+    commonImplementation("com.akuleshov7:ktoml-core:0.7.1")
+    commonImplementation("org.jetbrains.kotlinx:multik-default:0.2.3")
+
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.13")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.+")
+    testImplementation("org.tensorflow:tensorflow-core-platform:1.1.0")
+
+    // Libraries that come with heavy platform specific binaries
     implementation("org.tensorflow:tensorflow-core-platform:1.1.0")
-    implementation("com.akuleshov7:ktoml-core:0.7.1")
+    implementation("com.github.haifengl:smile-core:4.4.0")
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("omosim") {
+            from(components["java"])
+        }
+    }
+}
+
+application {
+    mainClass.set("de.uniwuerzburg.omosim.cli.MainKt")
 }
 
 benchmark {
@@ -87,26 +107,61 @@ java {
 }
 
 tasks.shadowJar {
+    description = "Builds big shadow JARs that works with all platforms"
     mergeServiceFiles()
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("omosim") {
-            from(components["java"])
+val platforms = listOf("windows-x86_64", "linux-x86_64")
+
+platforms.forEach { platform ->
+    val platformConfig = configurations.create("shadow-$platform") {
+        extendsFrom(commonImplementation)
+        exclude(group = "org.bytedeco", module = "openblas-platform")
+    }
+
+    dependencies {
+        "shadow-$platform"("com.github.haifengl:smile-core:4.4.0")
+        "shadow-$platform"("org.bytedeco:openblas:0.3.26-1.5.10:$platform")
+
+        "shadow-$platform"("org.tensorflow:tensorflow-core-api:1.1.0")
+        "shadow-$platform"("org.tensorflow:tensorflow-core-native:1.1.0:$platform")
+    }
+
+    tasks.register<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar-$platform") {
+        group = "shadow"
+        description = "Compiles a shadow JAR for $platform"
+
+        configurations = listOf(platformConfig)
+        from(sourceSets.main.get().output)
+        archiveClassifier.set(platform)
+
+        manifest {
+            attributes("Main-Class" to application.mainClass.get())
         }
+
+        exclude("META-INF/*.SF")
+        exclude("META-INF/*.DSA")
+        exclude("META-INF/*.RSA")
+
+        mergeServiceFiles()
     }
 }
 
-application {
-    mainClass.set("de.uniwuerzburg.omosim.cli.MainKt")
+tasks.register("shadowJarAll") {
+    group = "shadow"
+    description = "Builds shadow JARs for all supported platforms individually"
+
+    platforms.forEach { platform ->
+        dependsOn(tasks.named("shadowJar-$platform"))
+    }
+    dependsOn("shadowJar")
 }
 
 tasks.register("ciPipeline") {
     group = "verification"
     description = "Run unit tests, build, smoke tests, and acceptance tests."
 
-    dependsOn("test", "shadowJar", "smokeTest")
+    dependsOn("test", "shadowJarAll", "smokeTest")
 }
 
 // Python tests against a build jar
@@ -129,17 +184,27 @@ val installPythonDeps = tasks.register<Exec>("installPythonDeps") {
 }
 
 val acceptanceTest = tasks.register<Exec>("acceptanceTest") {
-    dependsOn("shadowJar", "installPythonDeps")
+    dependsOn("shadowJarAll", "installPythonDeps")
     mustRunAfter("test", "smokeTest")
 
     group = "verification"
     description = "Runs the acceptance tests using pytest."
     workingDir = file("system_tests")
 
-    val jarFile = file("${project.layout.buildDirectory.get()}/libs/${project.name}-${version}-all.jar")
+    val arch = System.getProperty("os.arch").lowercase()
+    val is86 = arch.contains("x86_64") || arch.contains("amd64")
+    val os = OperatingSystem.current()
+
+    val jarFile = if (os.isWindows and is86) {
+        file("${project.layout.buildDirectory.get()}/libs/${project.name}-${version}-windows-x86_64.jar")
+    } else if (os.isLinux and is86) {
+        file("${project.layout.buildDirectory.get()}/libs/${project.name}-${version}-linux-x86_64.jar")
+    } else {
+        file("${project.layout.buildDirectory.get()}/libs/${project.name}-${version}-all.jar")
+    }
     environment("APP_JAR_PATH", jarFile.absolutePath)
 
-    val pytestBinary = if (OperatingSystem.current().isWindows) {
+    val pytestBinary = if (os.isWindows) {
         "$venvDir\\Scripts\\pytest.exe"
     } else {
         "$venvDir/bin/pytest"
@@ -149,16 +214,26 @@ val acceptanceTest = tasks.register<Exec>("acceptanceTest") {
 }
 
 val smokeTest = tasks.register<Exec>("smokeTest") {
-    dependsOn("shadowJar", "installPythonDeps")
+    dependsOn("shadowJarAll", "installPythonDeps")
 
     group = "verification"
     description = "Builds the Shadow JAR and runs a smoke test against it."
     workingDir = file("system_tests")
 
-    val jarFile = file("${project.layout.buildDirectory.get()}/libs/${project.name}-${version}-all.jar")
+    val arch = System.getProperty("os.arch").lowercase()
+    val is86 = arch.contains("x86_64") || arch.contains("amd64")
+    val os = OperatingSystem.current()
+
+    val jarFile = if (os.isWindows and is86) {
+        file("${project.layout.buildDirectory.get()}/libs/${project.name}-${version}-windows-x86_64.jar")
+    } else if (os.isLinux and is86) {
+        file("${project.layout.buildDirectory.get()}/libs/${project.name}-${version}-linux-x86_64.jar")
+    } else {
+        file("${project.layout.buildDirectory.get()}/libs/${project.name}-${version}-all.jar")
+    }
     environment("APP_JAR_PATH", jarFile.absolutePath)
 
-    val pytestBinary = if (OperatingSystem.current().isWindows) {
+    val pytestBinary = if (os.isWindows) {
         "$venvDir\\Scripts\\pytest.exe"
     } else {
         "$venvDir/bin/pytest"

@@ -16,7 +16,6 @@ def test_jar_runs():
             "--n_agents", "10",
             "--out", "test_output/smoke_runs.json",
             "--cache_dir", "test_output/omosim_cache",
-
          ],
         capture_output=True,
         text=True,
