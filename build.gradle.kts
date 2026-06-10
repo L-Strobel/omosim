@@ -36,6 +36,8 @@ configurations.implementation {
 }
 
 dependencies {
+    commonImplementation(files("libs/alglib-java/alglib406free.jar"))
+
     commonImplementation("org.geotools:gt-epsg-hsql:31.+")
     commonImplementation("org.geotools:gt-main:31.+")
     commonImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")

@@ -7,6 +7,7 @@ package de.uniwuerzburg.omosim.calibration
  */
 enum class CalibrationAlgorithm {
     SM_LBFGS,
+    SM_MINBC,
     SM_GD,
     SM_PSO, PSO, PSO_AO,
     SM_SPSA, SPSA, SPSA_AO,
