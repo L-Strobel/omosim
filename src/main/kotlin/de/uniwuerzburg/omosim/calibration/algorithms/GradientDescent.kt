@@ -15,7 +15,7 @@ object GradientDescent {
         const val ub = 1e3
         val lTol: Double? = null
         val backTracking: Boolean = false
-        val maxNoImprovement = 5
+        val maxNoImprovement = 1000
     }
 
     fun run(
