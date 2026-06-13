@@ -13,11 +13,11 @@ object WSPSA {
         const val iterations = 10000
         const val lb = 1e-3
         const val ub = 1e3
-        const val a0 = 300.0
+        const val a0 = 1e-4
         const val c0 = 100.0
         const val A = 0.0
         const val gamma = 0.1
-        const val alpha = 0.6
+        const val alpha = 0.0
     }
 
     fun run(

@@ -22,7 +22,7 @@ object PSO {
         const val lb = 1e-3
         const val ub = 1e3
         const val nParticles = 20
-        const val w = 1.0
+        const val w = 0.75
         const val phiP = 2.05
         const val phiG = 2.05
         const val vClamp = 0.1

@@ -10,7 +10,7 @@ object GradientDescent {
 
     object Defaults {
         const val iterations = 1000
-        const val lr0 = 1.0e-8
+        const val lr0 = 1.0e-6
         const val lb = 1e-3
         const val ub = 1e3
         val lTol: Double? = null
