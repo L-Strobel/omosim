@@ -15,6 +15,8 @@ import de.uniwuerzburg.omosim.core.models.ActivityType
 import de.uniwuerzburg.omosim.core.models.Cell
 import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
 import java.io.File
+import java.nio.file.Path
+import java.nio.file.Paths
 
 /**
  * Calibrate OMoSim output by adjusting the gravity model.
@@ -34,7 +36,8 @@ import java.io.File
  * @param context Calibration context to use. Includes a Simulator (OMoSim) and the traffic count data.
  */
 class Gravity(
-    private val context: TrafficCountCalibrationContext
+    private val context: TrafficCountCalibrationContext,
+    private val calibrationOutputFolder: Path
 ) {
     private val rw = RunWrappers()
     private val o = Objectives()
@@ -114,10 +117,14 @@ class Gravity(
             activities: List<ActivityType>
         )  {
             for (activity in activities) {
+                val outputFile = Paths.get(
+                    calibrationOutputFolder.toString(),
+                    "smEval${activity.name}.json"
+                ).toFile()
                 if (TENSOR_FLOW) {
                     SurrogateGravity(context).buildTF(
                         activity,
-                        SMEvaluatorTF(context, File("smEval${activity.name}.json")),
+                        SMEvaluatorTF(context, outputFile),
                         TrafficCountVMatrixBuilderTF(context)
                     )
                 } else {

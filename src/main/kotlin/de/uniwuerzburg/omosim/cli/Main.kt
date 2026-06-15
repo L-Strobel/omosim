@@ -314,26 +314,18 @@ class Run : CliktCommand() {
                 calibrationSteps.removeAt(i)
             }
 
-
             // Create output files
             val calDir = calibrationParameters!!.calibration_out_dir
             Files.createDirectories(calDir)
-            val gravityOut = Paths.get(calDir.toString(), "gravity.json").toFile()
-            val modeChoiceOut = Paths.get(calDir.toString(), "mode_choice.json").toFile()
-            val routeChoiceOut = Paths.get(calDir.toString(), "route_choice").toFile()
 
             // Calibrate
             val calibrator = TrafficCountCalibrationContext(
                 calibrationParameters!!.calibration_traffic_count_file,
                 omosim,
-                calibrationParameters!!.calibration_population
+                calibrationParameters!!.calibration_population,
+                calDir
             )
-            calibrator.calibrate(
-                gravityOut,
-                modeChoiceOut,
-                routeChoiceOut,
-                calibrationSteps,
-            )
+            calibrator.calibrate(calibrationSteps)
             return // Don't continue with normal run
         }
 

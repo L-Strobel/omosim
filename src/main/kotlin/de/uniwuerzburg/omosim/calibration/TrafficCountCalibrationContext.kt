@@ -20,6 +20,8 @@ import org.locationtech.jts.geom.LineString
 import org.locationtech.jts.geom.MultiLineString
 import org.locationtech.jts.index.hprtree.HPRtree
 import java.io.File
+import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.math.pow
 
 /**
@@ -35,12 +37,16 @@ class TrafficCountCalibrationContext(
     trafficCountDataFile: File,
     override val omosim: Omosim,
     population: Double? = null,
+    private val calibrationOutputFolder: Path
 ) : CalibrationContext {
     val sensors: List<TrafficSensor> = TrafficSensor.readSensorData(trafficCountDataFile, omosim.transformer)
     val finder = omosim.destinationFinder as DestinationFinderDefault
     val affectedSensors: Map<Pair<RealLocation, RealLocation>, List<TrafficSensor>>
     var affectedAltSensors: Map<Pair<RealLocation, RealLocation>, List<List<TrafficSensor>>> = mapOf()
     override val totalPopulation: Double = population ?: initTotalPopulation()
+    private val gravityOut: File = Paths.get(calibrationOutputFolder.toString(), "gravity.json").toFile()
+    private val modeChoiceOut: File = Paths.get(calibrationOutputFolder.toString(), "mode_choice.json").toFile()
+    private val routeChoiceOut: File = Paths.get(calibrationOutputFolder.toString(), "route_choice").toFile()
 
     init {
         T = sensors.first().measurements.size // Set number of time slices
@@ -56,15 +62,9 @@ class TrafficCountCalibrationContext(
     /**
      * Calibration entry point.
      *
-     * @param gravityCalOut File where to store the calibration result for the GRAVITY step
-     * @param modeChoiceCalOut  File where to store the calibration result for the MODE_CHOICE step
-     * @param routeChoiceCalOut  File where to store the calibration result for the ROUTE_CHOICE step
      * @param steps Calibration steps to be done.
      */
     fun calibrate(
-        gravityCalOut: File,
-        modeChoiceCalOut: File,
-        routeChoiceCalOut: File,
         steps: List<CalibrationStep>
     ) {
         // If alternative routes need to be computed
@@ -79,18 +79,21 @@ class TrafficCountCalibrationContext(
         for ((i, step) in steps.withIndex()) {
             when(step.type) {
                 CalibrationType.GRAVITY -> {
-                    Gravity(this).calibrate(step.alg, step.activities, step.parameters)
+                    Gravity(this, calibrationOutputFolder)
+                        .calibrate(step.alg, step.activities, step.parameters)
                     val finder = omosim.destinationFinder as DestinationFinderDefault
-                    GravityCalibrationStore.write(gravityCalOut, omosim.buildings, finder.locChoiceWeightFuns)
+                    GravityCalibrationStore.write(gravityOut, omosim.buildings, finder.locChoiceWeightFuns)
                 }
                 CalibrationType.MODE_CHOICE -> {
-                    val mcResult = ModeChoice(this).calibrate(ModeChoiceCalibrationObjective.FitIndividualMeasurements)
-                    writeJson(mcResult, modeChoiceCalOut)
-                    omosim.parameterReader.tourModeUtilityFile = modeChoiceCalOut
+                    val mcResult = ModeChoice(this)
+                        .calibrate(ModeChoiceCalibrationObjective.FitIndividualMeasurements)
+                    writeJson(mcResult, modeChoiceOut)
+                    omosim.parameterReader.tourModeUtilityFile = modeChoiceOut
                 }
                 CalibrationType.ROUTE_CHOICE -> {
-                    RouteChoice(this).calibrate(step.alg, step.parameters)
-                    RouteChoiceCalibrationStore(omosim).write(routeChoiceCalOut, omosim.altPercentages)
+                    RouteChoice(this)
+                        .calibrate(step.alg, step.parameters)
+                    RouteChoiceCalibrationStore(omosim).write(routeChoiceOut, omosim.altPercentages)
                 }
                 CalibrationType.EVALUATE -> {
                     evaluate(0.1)
