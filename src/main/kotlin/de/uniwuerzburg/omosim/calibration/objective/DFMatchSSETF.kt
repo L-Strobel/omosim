@@ -9,11 +9,11 @@ import org.tensorflow.types.TFloat32
 import kotlin.math.pow
 
 
-class DFMatchSSETensorFlow (
+class DFMatchSSETF (
     val activity: ActivityType,
     private val moments: List<Double>,
     val context: DistanceFunctionMatchContext
-) : SGGravityObjectiveTF<TfModelUV> {
+) : SMGravityObjectiveTF<TfModelUV> {
     override fun build(
         core: TfModelCore,
         expectedTrips: Map<ActivityType, Operand<TFloat32>>,

@@ -10,7 +10,7 @@ class TrafficCountVMatrixBuilderTF(
     val context: TrafficCountCalibrationContext
 ) : VMatrixBuilderTF {
     override fun build(
-        mrep: SGGravity.SGCompactMatrixRep
+        mrep: SurrogateGravity.SGCompactMatrixRep
     ): Pair<Operand<TFloat32>, TfModelCore>  {
         val nVars = context.omosim.grid.size - 1
 

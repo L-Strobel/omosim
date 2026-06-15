@@ -6,7 +6,7 @@ import de.uniwuerzburg.omosim.calibration.algorithms.*
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelMV
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUV
 import de.uniwuerzburg.omosim.calibration.objective.*
-import de.uniwuerzburg.omosim.calibration.surrogate.SGGravity
+import de.uniwuerzburg.omosim.calibration.surrogate.SurrogateGravity
 import de.uniwuerzburg.omosim.calibration.surrogate.TrafficCountVMatrixBuilder
 import de.uniwuerzburg.omosim.calibration.surrogate.TrafficCountVMatrixBuilderTF
 import de.uniwuerzburg.omosim.calibration.surrogate.optimizeTMatrix
@@ -115,9 +115,9 @@ class Gravity(
         )  {
             for (activity in activities) {
                 if (TENSOR_FLOW) {
-                    SGGravity(context).buildTF(
+                    SurrogateGravity(context).buildTF(
                         activity,
-                        SGEvaluatorTF(context, File("sgEval${activity.name}.json")),
+                        SMEvaluatorTF(context, File("smEval${activity.name}.json")),
                         TrafficCountVMatrixBuilderTF(context)
                     )
                 } else {
@@ -278,7 +278,7 @@ class Gravity(
 
         fun calibrateMatrix(activities: List<ActivityType>) {
             for (activity in activities) {
-                val model = SGGravity(context)
+                val model = SurrogateGravity(context)
                 val wm = model.optimizeTMatrix(activity)
 
                 val finder = context.omosim.destinationFinder as DestinationFinderDefault
@@ -293,13 +293,13 @@ class Gravity(
 
     fun buildModel(activity: ActivityType) : DifferentiableModelUV {
         return if (TENSOR_FLOW) {
-            SGGravity(context).buildTF(
+            SurrogateGravity(context).buildTF(
                 activity,
-                TrafficCountSSETensorFlow(context),
+                TrafficCountSSETF(context),
                 TrafficCountVMatrixBuilderTF(context)
             )
         } else {
-            SGGravity(context).buildNative(
+            SurrogateGravity(context).buildNative(
                 activity,
                 TrafficCountSSE(context),
                 TrafficCountVMatrixBuilder(context)
@@ -309,13 +309,13 @@ class Gravity(
 
     fun buildModelMV(activity: ActivityType) : DifferentiableModelMV {
         return if (TENSOR_FLOW) {
-            SGGravity(context).buildTF(
+            SurrogateGravity(context).buildTF(
                 activity,
-                TrafficCountSeparateTensorFlow(context),
+                TrafficCountSeparateTF(context),
                 TrafficCountVMatrixBuilderTF(context)
             )
         } else {
-            SGGravity(context).buildNative(
+            SurrogateGravity(context).buildNative(
                 activity,
                 TrafficCountSeparate(context),
                 TrafficCountVMatrixBuilder(context)

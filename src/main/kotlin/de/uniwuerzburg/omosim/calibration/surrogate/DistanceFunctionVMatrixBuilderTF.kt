@@ -12,7 +12,7 @@ class DistanceFunctionVMatrixBuilderTF(
     val context: DistanceFunctionMatchContext
 ): VMatrixBuilderTF {
     override fun build(
-        mrep: SGGravity.SGCompactMatrixRep,
+        mrep: SurrogateGravity.SGCompactMatrixRep,
     ): Pair<Operand<TFloat32>, TfModelCore> {
         val omosim = context.omosim
         val n = omosim.grid.size

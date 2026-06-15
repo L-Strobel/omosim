@@ -11,7 +11,7 @@ class DistanceFunctionVMatrixBuilder(
     val context: DistanceFunctionMatchContext
 ) : VMatrixBuilderNative {
     override fun build(
-        mrep: SGGravity.SGCompactMatrixRep,
+        mrep: SurrogateGravity.SGCompactMatrixRep,
     ): Pair<List<List<Term>>, Int> {
         val vMatrix = mutableListOf<List<Term>>()
 

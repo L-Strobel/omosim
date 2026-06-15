@@ -16,10 +16,10 @@ import org.tensorflow.ndarray.StdArrays
 import org.tensorflow.types.TFloat32
 import java.io.File
 
-class SGEvaluatorTF(
+class SMEvaluatorTF(
     val context: TrafficCountCalibrationContext,
     val outputFile: File
-) : SGGravityObjectiveTF<TfModelMV>  {
+) : SMGravityObjectiveTF<TfModelMV>  {
     override fun build (
         core: TfModelCore,
         expectedTrips: Map<ActivityType, Operand<TFloat32>>,
@@ -80,7 +80,7 @@ class SGEvaluatorTF(
         }
 
         // Save output
-        val evalSMOutput = SGEvaluateOutput(
+        val evalSMOutput = SMEvaluateOutput(
             evalSimCounts,
             sensorNames,
             timeSteps,
@@ -94,7 +94,7 @@ class SGEvaluatorTF(
 }
 
 @Serializable
-class SGEvaluateOutput(
+class SMEvaluateOutput(
     val simCounts: List<Double>,
     val simCountsSensorNames: List<String>,
     val simCountsTimeSteps: List<Int>,

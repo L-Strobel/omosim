@@ -9,7 +9,7 @@ class DFMatchSSE (
     private val mean: Double,
     private val m2: Double,
     val context: DistanceFunctionMatchContext
-) : SGGravityObjectiveNative<NativeModelUV> {
+) : SMGravityObjectiveNative<NativeModelUV> {
     override fun build (
         nVars: Int,
         expectedTrips: Map<ActivityType, List<List<LinearTerm>>>,

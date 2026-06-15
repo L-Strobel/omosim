@@ -8,11 +8,11 @@ import org.tensorflow.Operand
 import org.tensorflow.types.TFloat32
 
 
-class DFQMatchSSETensorFlow (
+class DFQMatchSSETF (
     val activity: ActivityType,
     private val cdfVals: List<Pair<Double, Double>>,
     val context: DistanceFunctionMatchContext
-) : SGGravityObjectiveTF<TfModelUV> {
+) : SMGravityObjectiveTF<TfModelUV> {
     override fun build(
         core: TfModelCore,
         expectedTrips: Map<ActivityType, Operand<TFloat32>>,

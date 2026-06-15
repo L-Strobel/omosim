@@ -8,7 +8,7 @@ class TrafficCountVMatrixBuilder(
     val context: TrafficCountCalibrationContext
 ) : VMatrixBuilderNative {
     override fun build(
-        mrep: SGGravity.SGCompactMatrixRep
+        mrep: SurrogateGravity.SGCompactMatrixRep
     ): Pair<List<List<Term>>, Int> {
         val n = context.omosim.grid.size
         val nVars = context.omosim.grid.size - 1

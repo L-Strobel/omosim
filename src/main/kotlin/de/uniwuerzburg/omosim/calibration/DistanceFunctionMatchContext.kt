@@ -1,9 +1,5 @@
 package de.uniwuerzburg.omosim.calibration
 
-import de.uniwuerzburg.omosim.calibration.algorithms.GradientDescent
-import de.uniwuerzburg.omosim.calibration.objective.DFMatchSSETensorFlow
-import de.uniwuerzburg.omosim.calibration.surrogate.DistanceFunctionVMatrixBuilderTF
-import de.uniwuerzburg.omosim.calibration.surrogate.SGGravity
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.Omosim
 import de.uniwuerzburg.omosim.core.models.ActivityType

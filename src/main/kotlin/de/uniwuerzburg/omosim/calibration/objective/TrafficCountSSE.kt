@@ -7,7 +7,7 @@ import de.uniwuerzburg.omosim.core.models.ActivityType
 
 class TrafficCountSSE(
     val context: TrafficCountCalibrationContext
-) : SGGravityObjectiveNative<NativeModelUV> {
+) : SMGravityObjectiveNative<NativeModelUV> {
     override fun build (
         nVars: Int,
         expectedTrips: Map<ActivityType, List<List<LinearTerm>>>,

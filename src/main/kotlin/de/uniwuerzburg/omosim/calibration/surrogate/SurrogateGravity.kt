@@ -4,8 +4,8 @@ import de.uniwuerzburg.omosim.calibration.*
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.MC_SAMPLES
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModel
-import de.uniwuerzburg.omosim.calibration.objective.SGGravityObjectiveNative
-import de.uniwuerzburg.omosim.calibration.objective.SGGravityObjectiveTF
+import de.uniwuerzburg.omosim.calibration.objective.SMGravityObjectiveNative
+import de.uniwuerzburg.omosim.calibration.objective.SMGravityObjectiveTF
 import de.uniwuerzburg.omosim.core.ActivityGeneratorDefault
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.models.*
@@ -28,7 +28,7 @@ import org.tensorflow.types.TFloat32
  *
  * @param context Calibration context to use. Includes a Simulator (OMoSim) and the traffic count data.
  */
-class SGGravity (
+class SurrogateGravity (
     val context: CalibrationContext,
     val mode: Mode? = Mode.CAR_DRIVER
 ) {
@@ -585,7 +585,7 @@ class SGGravity (
      */
     fun <M: DifferentiableModel> buildNative(
         vActivity: ActivityType,
-        objective: SGGravityObjectiveNative<M>,
+        objective: SMGravityObjectiveNative<M>,
         vMatrixBuilder: VMatrixBuilderNative,
         iThresh: Double = 1e-4
     ) : M {
@@ -641,7 +641,7 @@ class SGGravity (
      */
     fun <M: DifferentiableModel> buildTF(
         vActivity: ActivityType,
-        objective: SGGravityObjectiveTF<M>,
+        objective: SMGravityObjectiveTF<M>,
         vMatrixBuilder: VMatrixBuilderTF
     ) : M {
         logger.info("Surrogate (TF): building tensor flow model for activity $vActivity")

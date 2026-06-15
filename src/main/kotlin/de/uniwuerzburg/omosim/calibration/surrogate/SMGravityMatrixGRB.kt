@@ -8,7 +8,6 @@ import de.uniwuerzburg.omosim.calibration.objective.sseObjectiveGRB
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import org.jetbrains.kotlinx.multik.api.*
 import org.jetbrains.kotlinx.multik.ndarray.data.D2Array
-import org.jetbrains.kotlinx.multik.ndarray.data.get
 import org.jetbrains.kotlinx.multik.ndarray.data.set
 
 /**
@@ -23,7 +22,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
  * Higher values -> Computes faster but is a rougher approximation of the markov chain representation.
  * @return Optimal transition matrix
  */
-fun SGGravity.optimizeTMatrix(
+fun SurrogateGravity.optimizeTMatrix(
     activityType: ActivityType,
     iThresh: Double = 1e-4
 ) : D2Array<Double>? {
