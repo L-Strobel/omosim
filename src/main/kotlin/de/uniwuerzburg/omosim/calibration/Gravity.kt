@@ -4,17 +4,17 @@ import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.TENSOR_FLOW
 import de.uniwuerzburg.omosim.calibration.algorithms.*
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelMV
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.NativeModelMV
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUV
-import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSSE
-import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSSETensorFlow
-import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSeparate
-import de.uniwuerzburg.omosim.calibration.objective.TrafficCountSeparateTensorFlow
-import de.uniwuerzburg.omosim.calibration.surrogate.*
+import de.uniwuerzburg.omosim.calibration.objective.*
+import de.uniwuerzburg.omosim.calibration.surrogate.SGGravity
+import de.uniwuerzburg.omosim.calibration.surrogate.TrafficCountVMatrixBuilder
+import de.uniwuerzburg.omosim.calibration.surrogate.TrafficCountVMatrixBuilderTF
+import de.uniwuerzburg.omosim.calibration.surrogate.optimizeTMatrix
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import de.uniwuerzburg.omosim.core.models.Cell
 import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
+import java.io.File
 
 /**
  * Calibrate OMoSim output by adjusting the gravity model.
@@ -50,18 +50,19 @@ class Gravity(
      */
     fun calibrate(algorithm: CalibrationAlgorithm?, activities: List<ActivityType>, parameters: Map<String, String>?) {
         when (algorithm) {
-            CalibrationAlgorithm.SM_LBFGS  -> rw.calibrateLBFGSSM(activities, parameters)
-            CalibrationAlgorithm.SM_MINBC  -> rw.calibrateMinBcSM(activities, parameters)
-            CalibrationAlgorithm.SM_GD     -> rw.calibrateGDSM(activities, parameters)
-            CalibrationAlgorithm.SM_PSO    -> rw.calibratePSOSM(activities, parameters)
-            CalibrationAlgorithm.PSO       -> rw.calibratePSO(activities, parameters)
-            CalibrationAlgorithm.PSO_AO    -> rw.calibratePSOAllAtOnce(activities, parameters)
-            CalibrationAlgorithm.SM_SPSA   -> rw.calibrateSPSASM(activities, parameters)
-            CalibrationAlgorithm.SPSA      -> rw.calibrateSPSA(activities, parameters)
-            CalibrationAlgorithm.SPSA_AO   -> rw.calibrateSPSAAllAtOnce(activities, parameters)
-            CalibrationAlgorithm.SM_WSPSA  -> rw.calibrateWSPSASM(activities, parameters)
-            CalibrationAlgorithm.WSPSA     -> rw.calibrateWSPSA(activities, parameters)
-            CalibrationAlgorithm.SM_MATRIX -> rw.calibrateMatrix(activities)
+            CalibrationAlgorithm.SM_LBFGS    -> rw.calibrateLBFGSSM(activities, parameters)
+            CalibrationAlgorithm.SM_MINBC    -> rw.calibrateMinBcSM(activities, parameters)
+            CalibrationAlgorithm.SM_GD       -> rw.calibrateGDSM(activities, parameters)
+            CalibrationAlgorithm.SM_PSO      -> rw.calibratePSOSM(activities, parameters)
+            CalibrationAlgorithm.PSO         -> rw.calibratePSO(activities, parameters)
+            CalibrationAlgorithm.PSO_AO      -> rw.calibratePSOAllAtOnce(activities, parameters)
+            CalibrationAlgorithm.SM_SPSA     -> rw.calibrateSPSASM(activities, parameters)
+            CalibrationAlgorithm.SPSA        -> rw.calibrateSPSA(activities, parameters)
+            CalibrationAlgorithm.SPSA_AO     -> rw.calibrateSPSAAllAtOnce(activities, parameters)
+            CalibrationAlgorithm.SM_WSPSA    -> rw.calibrateWSPSASM(activities, parameters)
+            CalibrationAlgorithm.WSPSA       -> rw.calibrateWSPSA(activities, parameters)
+            CalibrationAlgorithm.SM_MATRIX   -> rw.calibrateMatrix(activities)
+            CalibrationAlgorithm.SM_EVALUATE -> rw.evaluateSM(activities)
             null -> throw IllegalArgumentException("Algorithm can't be null for Gravity model calibration!")
         }
     }
@@ -108,6 +109,25 @@ class Gravity(
      *  interface at this point.
      */
     private inner class RunWrappers {
+        // Evaluate Surrogate
+        fun evaluateSM(
+            activities: List<ActivityType>
+        )  {
+            for (activity in activities) {
+                if (TENSOR_FLOW) {
+                    SGGravity(context).buildTF(
+                        activity,
+                        SGEvaluatorTF(context, File("sgEval${activity.name}.json")),
+                        TrafficCountVMatrixBuilderTF(context)
+                    )
+                } else {
+                    throw NotImplementedError(
+                        "Surrogate evaluation of native model is not implemented yet!"
+                    )
+                }
+            }
+        }
+
         // L-BFGS
         fun calibrateLBFGSSM(
             activities: List<ActivityType>, parameters: Map<String, String>? = null

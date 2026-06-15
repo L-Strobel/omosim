@@ -13,4 +13,5 @@ enum class CalibrationAlgorithm {
     SM_SPSA, SPSA, SPSA_AO,
     SM_WSPSA, WSPSA,
     SM_MATRIX,
+    SM_EVALUATE,
 }
