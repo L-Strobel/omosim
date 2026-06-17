@@ -590,6 +590,7 @@ class SurrogateGravity (
         iThresh: Double = 1e-4
     ) : M {
         logger.info("Surrogate (Native): Building native model for activity $vActivity")
+        logger.info("Surrogate (Native): Weekday: ${context.weekday}")
 
         // Core work
         val n = context.omosim.grid.size
@@ -645,6 +646,7 @@ class SurrogateGravity (
         vMatrixBuilder: VMatrixBuilderTF
     ) : M {
         logger.info("Surrogate (TF): building tensor flow model for activity $vActivity")
+        logger.info("Surrogate (TF): Weekday: ${context.weekday}")
 
         // Core work
         val n = context.omosim.grid.size
