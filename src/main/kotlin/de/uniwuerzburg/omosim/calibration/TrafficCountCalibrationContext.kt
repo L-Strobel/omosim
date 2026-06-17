@@ -36,6 +36,7 @@ import kotlin.math.pow
 class TrafficCountCalibrationContext(
     trafficCountDataFile: File,
     override val omosim: Omosim,
+    override val weekday: Weekday,
     population: Double? = null,
     private val calibrationOutputFolder: Path
 ) : CalibrationContext {

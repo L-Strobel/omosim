@@ -322,6 +322,7 @@ class Run : CliktCommand() {
             val calibrator = TrafficCountCalibrationContext(
                 calibrationParameters!!.calibration_traffic_count_file,
                 omosim,
+                start_wd,
                 calibrationParameters!!.calibration_population,
                 calDir
             )

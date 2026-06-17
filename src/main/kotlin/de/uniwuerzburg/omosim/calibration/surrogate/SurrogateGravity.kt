@@ -256,7 +256,7 @@ class SurrogateGravity (
                 // Get chains for that stratum
                 val ageGrp = AgeGrp.fromInt(socioFeatureSet.age)
                 val chains = activityGenerator.getChain(
-                    Weekday.UNDEFINED, socioFeatureSet.hom, socioFeatureSet.mob, ageGrp, ActivityType.HOME
+                    context.weekday, socioFeatureSet.hom, socioFeatureSet.mob, ageGrp, ActivityType.HOME
                 )
                 val chainProbs = chains.weights.normalize()!!.toTypedArray()
 
@@ -311,7 +311,7 @@ class SurrogateGravity (
 
     private fun getPMode(mode: Mode?) : Map<ActivityType, D2Array<Double>> {
         return when(mode) {
-            Mode.CAR_DRIVER -> getPCar()
+            Mode.CAR_DRIVER -> getPCar(context.weekday)
             null -> ActivityType.entries.associateWith { // All Modes
                 mk.ones<Double>(omosim.grid.size, omosim.grid.size)
             }
@@ -595,7 +595,7 @@ class SurrogateGravity (
         val n = context.omosim.grid.size
         val mrep = generateMarkovChainRep(vActivity) // Compact matrix representation
         val relevantODs = context.getRelevantODs() // Relevant origin-destination pairs for measurements
-        val tripStartDistr = monteCarloTripStartDistribution( MC_SAMPLES ) // Temporal trip distribution
+        val tripStartDistr = monteCarloTripStartDistribution( MC_SAMPLES, context.weekday ) // Temporal trip distribution
 
         // Transition matrix containing variable terms
         val (vMatrix, nVars) = vMatrixBuilder.build(mrep)
@@ -650,7 +650,7 @@ class SurrogateGravity (
         val n = context.omosim.grid.size
         val mrep = generateMarkovChainRep(vActivity) // Compact matrix representation
         val relevantODs = context.getRelevantODs() // Relevant origin-destination pairs for measurements
-        val tripStartDistr = monteCarloTripStartDistribution( MC_SAMPLES ) // Temporal trip distribution
+        val tripStartDistr = monteCarloTripStartDistribution( MC_SAMPLES, context.weekday ) // Temporal trip distribution
 
         // Transition matrix containing variable terms
         val bReturn = vMatrixBuilder.build(mrep)

@@ -3,9 +3,11 @@ package de.uniwuerzburg.omosim.calibration
 import de.uniwuerzburg.omosim.core.Omosim
 import de.uniwuerzburg.omosim.core.models.MobiAgent
 import de.uniwuerzburg.omosim.core.models.ModeChoiceOption
+import de.uniwuerzburg.omosim.core.models.Weekday
 
 interface CalibrationContext {
     val omosim: Omosim
+    val weekday: Weekday
     val totalPopulation: Double
 
     /**

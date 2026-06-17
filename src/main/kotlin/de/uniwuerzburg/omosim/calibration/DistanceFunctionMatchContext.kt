@@ -3,10 +3,12 @@ package de.uniwuerzburg.omosim.calibration
 import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.Omosim
 import de.uniwuerzburg.omosim.core.models.ActivityType
+import de.uniwuerzburg.omosim.core.models.Weekday
 import kotlin.math.pow
 
 class DistanceFunctionMatchContext(
     override val omosim: Omosim,
+    override val weekday: Weekday,
     population: Double? = null
 ) : CalibrationContext {
     override val totalPopulation: Double = population ?: initTotalPopulation()
