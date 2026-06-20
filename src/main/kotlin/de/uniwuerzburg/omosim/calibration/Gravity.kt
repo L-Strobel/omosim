@@ -172,8 +172,7 @@ class Gravity(
             for (activity in activities) {
                 val model = buildModel(activity)
                 val x0 = getX0(activity)
-                var d = BFGS.run(model, x0, parameters=parameters)
-                d = (d.toList() + listOf(1.0)).toDoubleArray()
+                val d = BFGS.run(model, x0, parameters=parameters)
                 updateCalibration(d, activity)
             }
         }
@@ -217,21 +216,28 @@ class Gravity(
                 updateCalibration(d, activity)
             }
         }
+
         fun calibratePSO(
             activities: List<ActivityType>, parameters: Map<String, String>? = null
         ) {
             for (activity in activities) {
                 val objective = o.batchObj(activity)
-                val d = PSO.run(grid.size, objective, parameters = parameters, nWorker = context.omosim.nWorker)
+                val d = PSO.run(
+                    grid.size - 1,
+                    objective,
+                    parameters = parameters,
+                    nWorker = context.omosim.nWorker
+                )
                 updateCalibration(d, activity)
             }
         }
+
         fun calibratePSOAllAtOnce(
             activities: List<ActivityType>, parameters: Map<String, String>? = null
         ) {
             val objective = o.batchObj(activities)
             val d = PSO.run(
-                grid.size * activities.size,
+                (grid.size * activities.size) - activities.size,
                 objective,
                 parameters = parameters,
                 nWorker = context.omosim.nWorker
