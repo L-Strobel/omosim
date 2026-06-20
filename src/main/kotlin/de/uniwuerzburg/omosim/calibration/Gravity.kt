@@ -14,7 +14,6 @@ import de.uniwuerzburg.omosim.core.DestinationFinderDefault
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import de.uniwuerzburg.omosim.core.models.Cell
 import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
-import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -41,6 +40,7 @@ class Gravity(
 ) {
     private val rw = RunWrappers()
     private val o = Objectives()
+    private val grid = context.omosim.grid
 
     /**
      * Run calibration.
@@ -70,6 +70,34 @@ class Gravity(
         }
     }
 
+    private fun getX0(activities: List<ActivityType>) : DoubleArray {
+        val x0s = mutableListOf<DoubleArray>()
+        for (activity in activities) {
+            x0s.add(getX0(activity))
+        }
+        return x0s.flatMap { it.toList() }.toDoubleArray()
+    }
+
+    private fun getX0(activity: ActivityType) : DoubleArray {
+        val dcFunction = context.finder.locChoiceWeightFuns[activity]!!
+        val x0 = DoubleArray(grid.size - 1) { 1.0 }
+
+        // Get previous scalers
+        for ((gi, cell) in grid.dropLast(1).withIndex()) {
+            x0[gi] = cell.getAttractionScaler(dcFunction)
+        }
+
+        // Normalize using the last element as a pivot
+        val lastValue = grid.last().getAttractionScaler(dcFunction)
+        if (lastValue != 1.0) {
+            for (i in x0.indices) {
+                x0[i] /= lastValue
+            }
+        }
+
+        return x0
+    }
+
     /**
      * Update gravity model of one activity.
      *
@@ -77,9 +105,10 @@ class Gravity(
      * @param activity Activity
      */
     private fun updateCalibration(x: DoubleArray, activity: ActivityType) {
+        require(x.size == grid.size - 1) {"Inconsistent parameter vector size!"}
         val dcFunction = context.finder.locChoiceWeightFuns[activity]!!
-        for ((cell, v) in context.omosim.grid.zip(x.toTypedArray())) {
-            cell.updateAttractionScaler(dcFunction, v)
+        for ((cell, v) in grid.dropLast(1).zip(x.toTypedArray())) {
+            cell.setAttractionScaler(dcFunction, v)
         }
     }
 
@@ -90,10 +119,11 @@ class Gravity(
      * @param activities Activities
      */
     private fun updateCalibration(x: DoubleArray, activities: List<ActivityType>) {
+        require(x.size == (grid.size * activities.size) - activities.size) {"Inconsistent parameter vector size!"}
         for ((ai, activity) in activities.withIndex()) {
             val dcFunction = context.finder.locChoiceWeightFuns[activity]!!
-            for ((gi, cell) in context.omosim.grid.withIndex()) {
-                cell.updateAttractionScaler(dcFunction, x[ai * context.omosim.grid.size + gi])
+            for ((gi, cell) in grid.dropLast(1).withIndex()) {
+                cell.setAttractionScaler(dcFunction, x[ai * (grid.size - 1) + gi])
             }
         }
     }
@@ -141,8 +171,8 @@ class Gravity(
         )  {
             for (activity in activities) {
                 val model = buildModel(activity)
-                val x0 = DoubleArray(context.omosim.grid.size - 1) { 1.0 }
-                var d =  BFGS.run(model, x0, parameters=parameters)
+                val x0 = getX0(activity)
+                var d = BFGS.run(model, x0, parameters=parameters)
                 d = (d.toList() + listOf(1.0)).toDoubleArray()
                 updateCalibration(d, activity)
             }
@@ -154,9 +184,8 @@ class Gravity(
         )  {
             for (activity in activities) {
                 val model = buildModel(activity)
-                val x0 = DoubleArray(context.omosim.grid.size - 1) { 1.0 }
-                var d =  MinBc.run(model, x0, parameters=parameters)
-                d = (d.toList() + listOf(1.0)).toDoubleArray()
+                val x0 = getX0(activity)
+                val d = MinBc.run(model, x0, parameters=parameters)
                 updateCalibration(d, activity)
             }
         }
@@ -167,9 +196,8 @@ class Gravity(
         ){
             for (activity in activities) {
                 val model = buildModel(activity)
-                val x0 = DoubleArray(context.omosim.grid.size - 1) { 1.0 }
-                var d = GradientDescent.run(model, x0, parameters=parameters)
-                d = (d.toList() + listOf(1.0)).toDoubleArray()
+                val x0 = getX0(activity)
+                val d = GradientDescent.run(model, x0, parameters=parameters)
                 updateCalibration(d, activity)
             }
         }
@@ -180,13 +208,12 @@ class Gravity(
         ){
             for (activity in activities) {
                 val objective = o.surrogateObj(activity)
-                var d = PSO.run(
-                    context.omosim.grid.size - 1,
+                val d = PSO.run(
+                    grid.size - 1,
                     objective,
                     parameters = parameters,
                     nWorker = context.omosim.nWorker
                 )
-                d = (d.toList() + listOf(1.0)).toDoubleArray()
                 updateCalibration(d, activity)
             }
         }
@@ -195,12 +222,7 @@ class Gravity(
         ) {
             for (activity in activities) {
                 val objective = o.batchObj(activity)
-                val d = PSO.run(
-                    context.omosim.grid.size,
-                    objective,
-                    parameters = parameters,
-                    nWorker = context.omosim.nWorker
-                )
+                val d = PSO.run(grid.size, objective, parameters = parameters, nWorker = context.omosim.nWorker)
                 updateCalibration(d, activity)
             }
         }
@@ -209,7 +231,7 @@ class Gravity(
         ) {
             val objective = o.batchObj(activities)
             val d = PSO.run(
-                context.omosim.grid.size * activities.size,
+                grid.size * activities.size,
                 objective,
                 parameters = parameters,
                 nWorker = context.omosim.nWorker
@@ -223,10 +245,8 @@ class Gravity(
         ) {
             for (activity in activities) {
                 val objective = o.surrogateObj(activity)
-                val x0 = DoubleArray(context.omosim.grid.size - 1) { 1.0 }
-                var d = SPSA.run(x0, objective, parameters = parameters)
-
-                d = (d.toList() + listOf(1.0)).toDoubleArray()
+                val x0 = getX0(activity)
+                val d = SPSA.run(x0, objective, parameters = parameters)
                 updateCalibration(d, activity)
             }
         }
@@ -234,16 +254,17 @@ class Gravity(
             activities: List<ActivityType>, parameters: Map<String, String>? = null
         ) {
             val objective = o.batchObj(activities)
-            val x0 = DoubleArray(context.omosim.grid.size * activities.size) { 1.0 }
+            val x0 = getX0(activities)
             val d = SPSA.run(x0, objective, parameters = parameters)
             updateCalibration(d, activities)
         }
+
         fun calibrateSPSA(
             activities: List<ActivityType>, parameters: Map<String, String>? = null
         ) {
             for (activity in activities) {
                 val objective = o.batchObj(activity)
-                val x0 = DoubleArray(context.omosim.grid.size ) { 1.0 }
+                val x0 = getX0(activity)
                 val d = SPSA.run(x0, objective, parameters = parameters)
                 updateCalibration(d, activity)
             }
@@ -258,11 +279,10 @@ class Gravity(
             for (activity in activities) {
                 val model = buildModelMV(activity)
                 val objective = o.surrogateObjWSPSA(model, context.sensors)
-                val x0 = DoubleArray(context.omosim.grid.size - 1) { 1.0 }
-                var d = WSPSA.run(
+                val x0 = getX0(activity)
+                val d = WSPSA.run(
                     x0, objective, measurements, model, parameters = parameters
                 )
-                d = (d.toList() + listOf(1.0)).toDoubleArray()
                 updateCalibration(d, activity)
             }
         }
@@ -274,11 +294,8 @@ class Gravity(
             for (activity in activities) {
                 val model = buildModelMV(activity)
                 val objective = o.batchObjWSPSA(activity)
-                val x0 = DoubleArray(context.omosim.grid.size - 1) { 1.0 }
-                var d = WSPSA.run(
-                    x0, objective, measurements, model, parameters = parameters
-                )
-                d = (d.toList() + listOf(1.0)).toDoubleArray()
+                val x0 = getX0(activity)
+                val d = WSPSA.run(x0, objective, measurements, model, parameters = parameters)
                 updateCalibration(d, activity)
             }
         }
@@ -290,7 +307,7 @@ class Gravity(
 
                 val finder = context.omosim.destinationFinder as DestinationFinderDefault
                 val force = mutableMapOf<Cell, DoubleArray>()
-                for ((i, cell) in context.omosim.grid.withIndex()) {
+                for ((i, cell) in grid.withIndex()) {
                     force[cell] = wm!!.toArray()[i]
                 }
                 finder.forcedTransitionMatrix[activity] = force
@@ -374,12 +391,7 @@ class Gravity(
          */
         fun batchObj(activities: List<ActivityType>): (DoubleArray) -> Double {
             return { x: DoubleArray ->
-                for ((ai, activity) in activities.withIndex()) {
-                    val dcFunction = context.finder.locChoiceWeightFuns[activity]!!
-                    for ((gi, cell) in context.omosim.grid.withIndex()) {
-                        cell.updateAttractionScaler(dcFunction, x[ai * context.omosim.grid.size + gi])
-                    }
-                }
+                updateCalibration(x, activities)
                 val flows = context.runBatch(0.1)
                 context.sse(flows)
             }
@@ -392,10 +404,7 @@ class Gravity(
          */
         fun batchObj(activity: ActivityType): (DoubleArray) -> Double {
             return { x: DoubleArray ->
-                val dcFunction = context.finder.locChoiceWeightFuns[activity]!!
-                for ((i, cell) in context.omosim.grid.withIndex()) {
-                    cell.updateAttractionScaler(dcFunction, x[i])
-                }
+                updateCalibration(x, activity)
                 val flows = context.runBatch(0.1)
                 context.sse(flows)
             }
@@ -410,12 +419,8 @@ class Gravity(
          * WSPSA requires that the simulated counts at each traffic counting station are returned separately.
          */
         fun batchObjWSPSA(activity: ActivityType): (DoubleArray) -> Pair<Double, DoubleArray> {
-            return { xTmp: DoubleArray ->
-                val x = (xTmp.toList() + listOf(1.0)).toDoubleArray()
-                val dcFunction = context.finder.locChoiceWeightFuns[activity]!!
-                for ((i, cell) in context.omosim.grid.withIndex()) {
-                    cell.updateAttractionScaler(dcFunction, x[i])
-                }
+            return { x: DoubleArray ->
+                updateCalibration(x, activity)
                 val flows = context.runBatch(0.1)
                 context.sse(flows)
 

@@ -29,14 +29,14 @@ interface DifferentiableModelUV : DifferentiableMultivariateFunction, Differenti
     ) : DoubleArray {
         val x = when (algorithm) {
             CalibrationAlgorithm.SM_LBFGS -> {
-                val x0Fallback = getX0(parameters)
+                val x0Fallback = getX0Fallback(parameters)
                 if (x0 == null) {
                     logger.warn("x0 not supplied to LBFGS. Running with x0=${x0Fallback.toList()}")
                 }
                 BFGS.run(this, x0 ?: x0Fallback, parameters)
             }
             CalibrationAlgorithm.SM_GD -> {
-                val x0Fallback = getX0(parameters)
+                val x0Fallback = getX0Fallback(parameters)
                 if (x0 == null) {
                     logger.warn("x0 not supplied to Gradient Descent. Running with x0=${x0Fallback.toList()}")
                 }
@@ -47,7 +47,7 @@ interface DifferentiableModelUV : DifferentiableMultivariateFunction, Differenti
                 PSO.run(this.numberOfVariables(), objective, nWorker, parameters)
             }
             CalibrationAlgorithm.SM_SPSA, CalibrationAlgorithm.SPSA -> {
-                val x0Fallback = getX0(parameters)
+                val x0Fallback = getX0Fallback(parameters)
                 if (x0 == null) {
                     logger.warn("x0 not supplied to SPSA. Running with x0=${x0Fallback.toList()}")
                 }
@@ -65,7 +65,7 @@ interface DifferentiableModelUV : DifferentiableMultivariateFunction, Differenti
     /**
      * Get starting value for x based on the specified bounds.
      */
-    private fun getX0(parameters: Map<String, String>) : DoubleArray {
+    private fun getX0Fallback(parameters: Map<String, String>) : DoubleArray {
         val lb = parameters["lb"]?.toDoubleOrNull()
         val ub = parameters["ub"]?.toDoubleOrNull()
         val x0Val = if (( lb != null ) and (ub != null)) {

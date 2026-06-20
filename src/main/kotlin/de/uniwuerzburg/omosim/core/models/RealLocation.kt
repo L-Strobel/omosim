@@ -10,6 +10,7 @@ interface RealLocation : LocationOption {
     val attractions: Map<Int, Double>
 
     fun recalculateAttractions(dcFunctions: List<LocationChoiceDCWeightFun>)
-    fun updateAttractionScaler(dcFunction: LocationChoiceDCWeightFun, value: Double)
+    fun setAttractionScaler(dcFunction: LocationChoiceDCWeightFun, value: Double)
+    fun getAttractionScaler(dcFunction: LocationChoiceDCWeightFun) : Double
     fun resetAttractionScaler(dcFunction: LocationChoiceDCWeightFun)
 }

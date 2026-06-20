@@ -72,11 +72,29 @@ data class Cell (
             .mapValues { it.value.sum() }
     }
 
-    override fun updateAttractionScaler(dcFunction: LocationChoiceDCWeightFun, value: Double) {
+    override fun setAttractionScaler(dcFunction: LocationChoiceDCWeightFun, value: Double) {
         for (building in buildings) {
-            building.updateAttractionScaler(dcFunction, value)
+            building.setAttractionScaler(dcFunction, value)
         }
         recalculateAttractions(listOf(dcFunction))
+    }
+
+    override fun getAttractionScaler(dcFunction: LocationChoiceDCWeightFun): Double {
+        val scalers = buildings.map { it.getAttractionScaler(dcFunction) }
+        val attractions = buildings.map { it.attractions[dcFunction.id]!! }
+
+        var baseAttraction = 0.0
+        var scaledAttraction = 0.0
+        for (i in buildings.indices) {
+            baseAttraction += attractions[i] / scalers[i]
+            scaledAttraction += attractions[i]
+        }
+
+        return if (baseAttraction == 0.0) {
+            1.0
+        } else {
+            scaledAttraction / baseAttraction
+        }
     }
 
     override fun resetAttractionScaler(dcFunction: LocationChoiceDCWeightFun) {
