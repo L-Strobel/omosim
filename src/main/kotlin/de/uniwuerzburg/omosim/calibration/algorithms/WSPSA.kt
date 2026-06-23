@@ -10,11 +10,11 @@ object WSPSA {
     private const val NAME = "WSPSA"
 
     object Defaults {
-        const val iterations = 10000
+        const val iterations = 2000
         const val lb = 1e-3
         const val ub = 1e3
         const val a0 = 1e-4
-        const val c0 = 100.0
+        const val c0 = 10.0
         const val A = 0.0
         const val gamma = 0.1
         const val alpha = 0.0

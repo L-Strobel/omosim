@@ -8,7 +8,7 @@ object MinBc {
     private const val NAME = "MinBc"
 
     object Defaults {
-        const val iterations = 100
+        const val iterations = 1000
         const val lb = 1e-3
         const val ub = 1e3
     }
