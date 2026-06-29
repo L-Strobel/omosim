@@ -26,7 +26,11 @@ class ModeChoice(
     /**
      * Calibrate mode choice.
      */
-    fun calibrate(objective: ModeChoiceCalibrationObjective) : Array<ModeUtility> {
+    fun calibrate(
+        objective: ModeChoiceCalibrationObjective,
+        algorithm: CalibrationAlgorithm?,
+        parameters: Map<String, String>,
+    ) : Array<ModeUtility> {
         context.omosim.mainRng.setSeed(0) // Seed impact low with 100% of agents
 
         // Run Simulation
@@ -41,8 +45,13 @@ class ModeChoice(
         val carUtil = mc.tourModeOptions.find { it.mode == Mode.CAR_DRIVER }
         val x0 = doubleArrayOf(carUtil!!.intercept)
 
+        // Default Bounds
+        val parametersCorrected = parameters.toMutableMap()
+        parametersCorrected["lb"] = (parameters["lb"]?.toDoubleOrNull() ?: -50.0).toString()
+        parametersCorrected["lb"] = (parameters["ub"]?.toDoubleOrNull() ?: 50.0).toString()
+
         // Optimize
-        val x = BFGS.run(model, x0, lb=-50.0, ub=50.0)
+        val x = model.optimizeWith(algorithm, parametersCorrected, x0)
 
         // Store calibration
         carUtil.intercept = x[0]

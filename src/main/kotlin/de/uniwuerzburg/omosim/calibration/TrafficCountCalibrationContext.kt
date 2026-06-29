@@ -87,7 +87,11 @@ class TrafficCountCalibrationContext(
                 }
                 CalibrationType.MODE_CHOICE -> {
                     val mcResult = ModeChoice(this)
-                        .calibrate(ModeChoiceCalibrationObjective.FitIndividualMeasurements)
+                        .calibrate(
+                            ModeChoiceCalibrationObjective.FitIndividualMeasurements,
+                            step.alg,
+                            step.parameters
+                        )
                     writeJson(mcResult, modeChoiceOut)
                     omosim.parameterReader.tourModeUtilityFile = modeChoiceOut
                 }
