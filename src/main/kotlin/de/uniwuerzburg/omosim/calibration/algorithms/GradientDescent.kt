@@ -49,7 +49,7 @@ object GradientDescent {
     ) : DoubleArray {
         ProgressLogger.logParameters(
             this.NAME,
-            "lr0=$lr0:lb=$lb:ub=$ub:lTol=$lTol:backtracking=$backTracking:maxNoImprovement=$maxNoImprovement"
+            "lr0=$lr0:lb=$lb:ub=$ub:lTol=$lTol:backTracking=$backTracking:maxNoImprovement=$maxNoImprovement"
         )
 
         // Init
