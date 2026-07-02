@@ -48,7 +48,7 @@ class ModeChoice(
         // Default Bounds
         val parametersCorrected = parameters.toMutableMap()
         parametersCorrected["lb"] = (parameters["lb"]?.toDoubleOrNull() ?: -50.0).toString()
-        parametersCorrected["lb"] = (parameters["ub"]?.toDoubleOrNull() ?: 50.0).toString()
+        parametersCorrected["ub"] = (parameters["ub"]?.toDoubleOrNull() ?: 50.0).toString()
 
         // Optimize
         val x = model.optimizeWith(algorithm, parametersCorrected, x0)
