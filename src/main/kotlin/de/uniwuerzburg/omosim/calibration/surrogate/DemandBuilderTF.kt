@@ -8,6 +8,11 @@ import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
 import org.tensorflow.Operand
 import org.tensorflow.types.TFloat32
 
+/**
+ * Build demand terms in TensorFlow.
+ *
+ * Warning! Ignores cTol attributes.
+ */
 class DemandBuilderTF(
     val model: TfModelCore
 ) : DemandBuilder<Operand<TFloat32>, Operand<TFloat32>> {
@@ -21,7 +26,8 @@ class DemandBuilderTF(
     override fun add(
         accMatrix: Operand<TFloat32>,
         other: NDArray<Double, D2>,
-        relevantRCs: Set<Pair<Int, Int>>?
+        relevantRCs: Set<Pair<Int, Int>>?,
+        cTol: Double
     ): Operand<TFloat32> {
         val otherTF = model.addMatrix( other.toArray() )
         return tf.math.add(accMatrix, otherTF)
@@ -31,7 +37,8 @@ class DemandBuilderTF(
         accMatrix: Operand<TFloat32>,
         other: Operand<TFloat32>,
         mCoeff: NDArray<Double, D2>,
-        relevantRCs: Set<Pair<Int, Int>>?
+        relevantRCs: Set<Pair<Int, Int>>?,
+        cTol: Double
     ): Operand<TFloat32> {
         val mCoeffTF = model.addMatrix( mCoeff.toArray() )
         val otherMult = tf.math.mul(other, mCoeffTF)
@@ -42,7 +49,8 @@ class DemandBuilderTF(
         accMatrix: Operand<TFloat32>,
         v: Operand<TFloat32>,
         mCoeff: NDArray<Double, D2>,
-        relevantRCs: Set<Pair<Int, Int>>?
+        relevantRCs: Set<Pair<Int, Int>>?,
+        cTol: Double
     ): Operand<TFloat32> {
         val mCoeffTF = model.addMatrix( mCoeff.toArray() )
         val vDiag = tf.linalg.tensorDiag( tf.squeeze( v ) )

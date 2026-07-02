@@ -500,7 +500,7 @@ class SurrogateGravity (
                     activity -> {
                         // For segments that started at vActivity: V = (vK)^T
                         // Here we only build v (vStart)
-                        vStart = demandBuilder.matrixMult(mrep.h, vMatrix, transpose=false, relevantRCs=null, cTol=0.0)
+                        vStart = demandBuilder.matrixMult(mrep.h, vMatrix, transpose=false, relevantRCs=null, cTol=iThresh)
 
                         // For other segments: V = (K^T)X
                         val left  = mPriorCnst.transpose()
@@ -559,18 +559,18 @@ class SurrogateGravity (
 
         // F
         if (mrep.vActivity != activity) {
-            expectedTrips = demandBuilder.add(expectedTrips, fix, relevantODs)
+            expectedTrips = demandBuilder.add(expectedTrips, fix, relevantODs, cTol=iThresh)
         }
 
         // V
         if (demandBuilder.shape(mVar).first == 1) {
-            expectedTrips = demandBuilder.diagMultAdd(expectedTrips, mVar, tMatrixCar, relevantODs)
+            expectedTrips = demandBuilder.diagMultAdd(expectedTrips, mVar, tMatrixCar, relevantODs, cTol=iThresh)
         } else {
-            expectedTrips = demandBuilder.add(expectedTrips, mVar, pCar, relevantODs)
+            expectedTrips = demandBuilder.add(expectedTrips, mVar, pCar, relevantODs, cTol=iThresh)
         }
         if ((mrep.vActivity in fixActivities) and (mrep.vActivity == activity)){
             // For segments that started at vActivity: V = (diag(v)K)^T
-            expectedTrips = demandBuilder.diagMultAdd(expectedTrips, vStart!!, mPriorVarTCar, relevantODs)
+            expectedTrips = demandBuilder.diagMultAdd(expectedTrips, vStart!!, mPriorVarTCar, relevantODs, cTol=iThresh)
         }
         return expectedTrips
     }

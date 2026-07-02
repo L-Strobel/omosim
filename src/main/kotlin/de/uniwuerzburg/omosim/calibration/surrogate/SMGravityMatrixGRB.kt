@@ -40,6 +40,8 @@ fun SurrogateGravity.optimizeTMatrix(
     try {
         // Setup
         val env = GRBEnv()
+        env.set(GRB.DoubleParam.FeasibilityTol, 1e-3); // Relax feasibility bounds
+
         val model = GRBModel(env)
 
         // Create gurobi expression of the expected trips matrix: E(o, d | Car)

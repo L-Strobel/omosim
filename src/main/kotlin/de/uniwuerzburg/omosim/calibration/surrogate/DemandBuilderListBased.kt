@@ -10,7 +10,6 @@ import org.jetbrains.kotlinx.multik.ndarray.operations.max
 import kotlin.math.abs
 
 abstract class DemandBuilderListBased<V, ACC>: DemandBuilder<List<List<V>>, List<List<ACC>>> {
-
     abstract fun addVar(term: ACC, v: V, coefficient: Double)
     abstract fun addConstant(term: ACC, constant: Double)
     abstract fun addTerm(term: ACC, other: ACC, coefficient: Double)
@@ -19,11 +18,15 @@ abstract class DemandBuilderListBased<V, ACC>: DemandBuilder<List<List<V>>, List
     override fun add(
         accMatrix: List<List<ACC>>,
         other: NDArray<Double, D2>,
-        relevantRCs: Set<Pair<Int, Int>>?
+        relevantRCs: Set<Pair<Int, Int>>?,
+        cTol: Double
     ): List<List<ACC>> {
         for (o in 0 until accMatrix.size) {
             for (d in 0 until accMatrix[o].size) {
                 if ((relevantRCs != null) && (Pair(o, d) !in relevantRCs)) {
+                    continue
+                }
+                if (abs(other[o,d]) <= cTol) {
                     continue
                 }
                 addConstant(accMatrix[o][d], other[o, d])
@@ -36,11 +39,15 @@ abstract class DemandBuilderListBased<V, ACC>: DemandBuilder<List<List<V>>, List
         accMatrix: List<List<ACC>>,
         other: List<List<ACC>>,
         mCoeff: NDArray<Double, D2>,
-        relevantRCs: Set<Pair<Int, Int>>?
+        relevantRCs: Set<Pair<Int, Int>>?,
+        cTol: Double
     ): List<List<ACC>> {
         for (o in 0 until accMatrix.size) {
             for (d in 0 until accMatrix[o].size) {
                 if ((relevantRCs != null) && (Pair(o, d) !in relevantRCs)) {
+                    continue
+                }
+                if (abs(mCoeff[o, d]) <= cTol) {
                     continue
                 }
                 addTerm(accMatrix[o][d], other[o][d], mCoeff[o, d])
@@ -53,11 +60,15 @@ abstract class DemandBuilderListBased<V, ACC>: DemandBuilder<List<List<V>>, List
         accMatrix: List<List<ACC>>,
         v: List<List<ACC>>,
         mCoeff: NDArray<Double, D2>,
-        relevantRCs: Set<Pair<Int, Int>>?
+        relevantRCs: Set<Pair<Int, Int>>?,
+        cTol: Double
     ): List<List<ACC>> {
         for (o in 0 until accMatrix.size) {
             for (d in 0 until accMatrix[o].size) {
                 if ((relevantRCs != null) && (Pair(o, d) !in relevantRCs)) {
+                    continue
+                }
+                if (abs(mCoeff[o, d]) <= cTol) {
                     continue
                 }
                 addTerm(accMatrix[o][d], v[0][o], mCoeff[o, d])
