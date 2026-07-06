@@ -1,10 +1,7 @@
 package de.uniwuerzburg.omosim.calibration.differentiablemodel
 
 import de.uniwuerzburg.omosim.calibration.CalibrationAlgorithm
-import de.uniwuerzburg.omosim.calibration.algorithms.BFGS
-import de.uniwuerzburg.omosim.calibration.algorithms.GradientDescent
-import de.uniwuerzburg.omosim.calibration.algorithms.PSO
-import de.uniwuerzburg.omosim.calibration.algorithms.SPSA
+import de.uniwuerzburg.omosim.calibration.algorithms.*
 import de.uniwuerzburg.omosim.calibration.logger
 import smile.util.function.DifferentiableMultivariateFunction
 

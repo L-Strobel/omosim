@@ -28,9 +28,9 @@ interface CalibrationContext {
 
         // Run Simulation
         val agents = if (omosim.censusAvailable) {
-            omosim.run(sharePop, verbose = false)
+            omosim.run(sharePop, weekday, verbose = false)
         } else {
-            omosim.run((sharePop * totalPopulation).toInt(), verbose = false)
+            omosim.run((sharePop * totalPopulation).toInt(), weekday, verbose = false)
         }
         omosim.doModeChoice(agents, ModeChoiceOption.FAST, false, verbose = false)
 

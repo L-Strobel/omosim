@@ -40,7 +40,7 @@ fun SurrogateGravity.optimizeTMatrix(
     try {
         // Setup
         val env = GRBEnv()
-        env.set(GRB.DoubleParam.FeasibilityTol, 1e-3); // Relax feasibility bounds
+        env.set(GRB.DoubleParam.FeasibilityTol, 1e-3) // Relax feasibility bounds
 
         val model = GRBModel(env)
 
@@ -74,7 +74,7 @@ fun SurrogateGravity.optimizeTMatrix(
         }
 
         // Temporal trip distribution
-        val tripStartDistr = monteCarloTripStartDistribution(MC_SAMPLES)
+        val tripStartDistr = monteCarloTripStartDistribution(MC_SAMPLES, weekday = context.weekday)
 
         // Add expected trips for each destination activity
         for (activity in ActivityType.entries) {
