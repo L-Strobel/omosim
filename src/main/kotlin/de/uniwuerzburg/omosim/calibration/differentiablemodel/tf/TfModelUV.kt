@@ -6,6 +6,9 @@ import org.tensorflow.Session
 import org.tensorflow.ndarray.StdArrays
 import org.tensorflow.types.TFloat32
 
+/**
+ * Univariate TensorFlow model.
+ */
 class TfModelUV(
     val core: TfModelCore,
     val root: Operand<TFloat32>

@@ -8,6 +8,12 @@ import de.uniwuerzburg.omosim.core.models.ActivityType
 import org.tensorflow.Operand
 import org.tensorflow.types.TFloat32
 
+/**
+ * Sum of squares error between measured and simulated traffic count.
+ * TensorFlow.
+ *
+ * loss = sum((m-s)^2)
+ */
 class TrafficCountSSETF(
     val context: TrafficCountCalibrationContext
 ) : SMGravityObjectiveTF<TfModelUV> {

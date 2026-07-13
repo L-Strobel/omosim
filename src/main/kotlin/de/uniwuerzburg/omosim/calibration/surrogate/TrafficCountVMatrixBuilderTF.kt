@@ -6,6 +6,10 @@ import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
 import org.tensorflow.Operand
 import org.tensorflow.types.TFloat32
 
+/**
+ * Matrix that defines how the transition matrix of vActivity changes with the attraction value scalers.
+ * TensorFlow.
+ */
 class TrafficCountVMatrixBuilderTF(
     val context: TrafficCountCalibrationContext
 ) : VMatrixBuilderTF {

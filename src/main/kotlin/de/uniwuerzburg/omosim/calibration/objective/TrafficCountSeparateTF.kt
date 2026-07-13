@@ -8,6 +8,10 @@ import de.uniwuerzburg.omosim.core.models.ActivityType
 import org.tensorflow.Operand
 import org.tensorflow.types.TFloat32
 
+/**
+ * Returns simulated traffic counts as a vector. Used for W-SPSA.
+ * TensorFlow.
+ */
 class TrafficCountSeparateTF(
     val context: TrafficCountCalibrationContext
 ) : SMGravityObjectiveTF<TfModelMV>  {

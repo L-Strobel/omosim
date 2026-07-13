@@ -5,6 +5,12 @@ import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.NativeModelUV
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.LinearTerm
 import de.uniwuerzburg.omosim.core.models.ActivityType
 
+/**
+ * Sum of squares error between measured and simulated traffic count.
+ * Native.
+ *
+ * loss = sum((m-s)^2)
+ */
 class TrafficCountSSE(
     val context: TrafficCountCalibrationContext
 ) : SMGravityObjectiveNative<NativeModelUV> {

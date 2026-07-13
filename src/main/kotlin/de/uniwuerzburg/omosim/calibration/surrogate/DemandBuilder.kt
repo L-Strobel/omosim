@@ -4,6 +4,9 @@ import org.jetbrains.kotlinx.multik.ndarray.data.D2
 import org.jetbrains.kotlinx.multik.ndarray.data.D2Array
 import org.jetbrains.kotlinx.multik.ndarray.data.NDArray
 
+/**
+ * Builds demand terms that together comprise the expected origin-destination matrix.
+ */
 interface DemandBuilder<M_IN, M_OUT> {
     fun shape(m: M_OUT): Pair<Int, Int>
 

@@ -6,6 +6,9 @@ import org.tensorflow.Session
 import org.tensorflow.ndarray.StdArrays
 import org.tensorflow.types.TFloat32
 
+/**
+ * Multivariate TensorFlow model.
+ */
 class TfModelMV(
     val core: TfModelCore,
     roots: List<Operand<TFloat32>>

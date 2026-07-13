@@ -16,6 +16,9 @@ import org.tensorflow.ndarray.StdArrays
 import org.tensorflow.types.TFloat32
 import java.io.File
 
+/**
+ * Used to test how well the surrogate fits the simulation it was build to approximate.
+ */
 class SMEvaluatorTF(
     val context: TrafficCountCalibrationContext,
     val outputFile: File

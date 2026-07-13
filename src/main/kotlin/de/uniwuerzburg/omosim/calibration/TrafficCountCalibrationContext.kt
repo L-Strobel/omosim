@@ -25,7 +25,7 @@ import java.nio.file.Paths
 import kotlin.math.pow
 
 /**
- * Entry point for calibration.
+ * Entry point for traffic count calibration.
  *
  * Context for OMoSim calibration. Stores the simulator to calibrate in addition to the traffic count data to be used
  * as the reference.

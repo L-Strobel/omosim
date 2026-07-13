@@ -4,6 +4,10 @@ import de.uniwuerzburg.omosim.calibration.TrafficCountCalibrationContext
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.*
 import org.jetbrains.kotlinx.multik.ndarray.data.get
 
+/**
+ * Matrix that defines how the transition matrix of vActivity changes with the attraction value scalers.
+ * Native.
+ */
 class TrafficCountVMatrixBuilder(
     val context: TrafficCountCalibrationContext
 ) : VMatrixBuilderNative {

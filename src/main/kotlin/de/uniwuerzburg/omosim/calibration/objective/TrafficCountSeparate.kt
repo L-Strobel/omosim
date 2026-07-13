@@ -7,6 +7,10 @@ import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.LinearTerm
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.Term
 import de.uniwuerzburg.omosim.core.models.ActivityType
 
+/**
+ * Returns simulated traffic counts as a vector. Used for W-SPSA.
+ * Native.
+ */
 class TrafficCountSeparate(
     val context: TrafficCountCalibrationContext
 ) : SMGravityObjectiveNative<NativeModelMV> {

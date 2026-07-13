@@ -576,7 +576,12 @@ class SurrogateGravity (
     }
 
     /**
+     * Build surrogate of OMoSim that is capable of calibrating gravity model parameters.
+     * Natively.
+     *
      * @param vActivity ActivityType for which the gravity model will be variable
+     * @param objective Objective function
+     * @param vMatrixBuilder Matrix that defines how the transition matrix of vActivity changes with the parameters.
      * @param iThresh Performance parameter.
      * All terms with coefficients below this value will be ignored and not added to the result.
      * Higher values -> Computes faster but is a rougher approximation of the markov chain representation.
@@ -638,6 +643,12 @@ class SurrogateGravity (
     }
 
     /**
+     * Build surrogate of OMoSim that is capable of calibrating gravity model parameters.
+     * With TensorFlow.
+     *
+     * @param vActivity ActivityType for which the gravity model will be variable
+     * @param objective Objective function
+     * @param vMatrixBuilder Matrix that defines how the transition matrix of vActivity changes with the parameters.
      * @return surrogate model
      */
     fun <M: DifferentiableModel> buildTF(

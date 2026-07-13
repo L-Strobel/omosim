@@ -6,6 +6,9 @@ import de.uniwuerzburg.omosim.core.models.ActivityType
 import de.uniwuerzburg.omosim.core.models.Weekday
 import kotlin.math.pow
 
+/**
+ * Dormant. Calibrate the trip distance distribution.
+ */
 class DistanceFunctionMatchContext(
     override val omosim: Omosim,
     override val weekday: Weekday,

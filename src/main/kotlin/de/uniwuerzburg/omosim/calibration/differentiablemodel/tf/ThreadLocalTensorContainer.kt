@@ -4,6 +4,10 @@ import java.lang.ref.Cleaner
 import org.tensorflow.ndarray.Shape
 import org.tensorflow.types.TFloat32
 
+/**
+ * Thread local storage of TensorFlow tensor.
+ * Necessary then tensor flow models are used by multiple threads.
+ */
 class ThreadLocalTensorContainer(size: Long) {
     val tensor: TFloat32 = TFloat32.tensorOf(Shape.of(size))
 

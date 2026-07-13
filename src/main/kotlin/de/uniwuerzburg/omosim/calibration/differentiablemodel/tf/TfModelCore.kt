@@ -13,6 +13,12 @@ import org.tensorflow.proto.GraphOptions
 import org.tensorflow.proto.OptimizerOptions
 import org.tensorflow.types.TFloat32
 
+/**
+ * Tensor flow graph builder. Used for both univariate and multivariate models.
+ *
+ * An object of this class is passed between graph building steps and gives access to tf and x.
+ * Once the graph is complete the object is given to either TfModelUV or TfModelMV to be finalized and made executable.
+ */
 class TfModelCore(
     val nVars: Int
 ) {

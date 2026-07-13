@@ -5,6 +5,14 @@ import de.uniwuerzburg.omosim.calibration.algorithms.*
 import de.uniwuerzburg.omosim.calibration.logger
 import smile.util.function.DifferentiableMultivariateFunction
 
+/**
+ * Main interface for a differentiable model.
+ * Can compute the approximate loss and gradients of a simulation.
+ *
+ * Implementations:
+ * - TensorFlow: TfModelUV
+ * - Native: NativeModelUV
+ */
 interface DifferentiableModelUV : DifferentiableMultivariateFunction, DifferentiableModel {
     fun gradient(vals: DoubleArray, gradient: DoubleArray) : Double
     fun evaluate(vals: DoubleArray): Double
