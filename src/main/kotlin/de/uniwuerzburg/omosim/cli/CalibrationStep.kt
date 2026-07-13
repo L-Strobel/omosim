@@ -46,7 +46,9 @@ class CalibrationStep (
                 } catch (e: IllegalArgumentException) {
                     throw IllegalArgumentException()
                 }
-
+            }
+            if (type == CalibrationType.ROUTE_CHOICE) {
+                throw IllegalArgumentException("Route Choice calibration currently not supported!")
             }
 
             // ALG
