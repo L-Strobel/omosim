@@ -35,6 +35,14 @@ configurations.implementation {
     extendsFrom(commonImplementation)
 }
 
+// Force stdlib to the match the kotlin version
+// Necessary because of old dependency in us.dustinj.timezonemap:timezonemap:4.5
+configurations.all {
+    resolutionStrategy {
+        force("org.jetbrains.kotlin:kotlin-stdlib:2.0.20")
+    }
+}
+
 dependencies {
     commonImplementation(files("libs/alglib-java/alglib406free.jar"))
 
@@ -53,7 +61,7 @@ dependencies {
     commonImplementation("org.openstreetmap.osmosis:osmosis-areafilter:0.48.+")
     commonImplementation("com.google.guava:guava:33.2.1-jre")
     commonImplementation("org.duckdb:duckdb_jdbc:1.1.1")
-    commonImplementation("us.dustinj.timezonemap:timezonemap:4.+")
+    commonImplementation("us.dustinj.timezonemap:timezonemap:4.5")
     commonImplementation("org.xerial:sqlite-jdbc:3.+")
     commonImplementation("com.gurobi:gurobi:11.0.2")
     commonImplementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.13")
