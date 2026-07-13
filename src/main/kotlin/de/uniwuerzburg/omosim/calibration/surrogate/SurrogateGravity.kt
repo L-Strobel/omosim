@@ -674,7 +674,7 @@ class SurrogateGravity (
 
         // Create graph of the expected trips matrix: E(o, d | Car)
         val expectedTrips: MutableMap<ActivityType, Operand<TFloat32>> = ActivityType.entries.associateWith {
-            modelCore.tf.zeros(modelCore.tf.constant(intArrayOf(n, n)), TFloat32::class.java);
+            modelCore.tf.zeros(modelCore.tf.constant(intArrayOf(n, n)), TFloat32::class.java)
         }.toMutableMap()
 
         // Add expected trips for each destination activity

@@ -2,7 +2,6 @@ package de.uniwuerzburg.omosim.calibration.differentiablemodel.tf
 
 import org.tensorflow.Graph
 import org.tensorflow.Operand
-import org.tensorflow.Session
 import org.tensorflow.ndarray.Shape
 import org.tensorflow.ndarray.StdArrays
 import org.tensorflow.op.Ops
