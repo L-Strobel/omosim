@@ -152,7 +152,7 @@ class Run : CliktCommand() {
                "Paths only exist for trips with defined modes and within the focus area + buffer."
     ).boolean().default(false)
     private val parametrization by option(
-        help="Parameter set to use (see options under omosim/src/main/resources/parametrization)." +
+        help="Parameter set to use (see options under omosim/src/main/resources/parametrization). " +
              "Individual parameter files can be overwritten with by setting them to custom files with the commands:" +
              "--population_file, --activity_group_file, --tour_utilities_file, --tour_utilities_file," +
              "--trip_utilities_file, --trip_utilities_file_for_calibration, --destination_choice_file"

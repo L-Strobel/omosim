@@ -212,6 +212,31 @@ Example:
 ]
 ```
 
+## Parameterization
+
+The default parameters *publication2023* are calibrated based on the household travel survey "Mobilität in Deutschland 2017",
+see [OMOD: An open-source tool for creating disaggregated mobility demand based on OpenStreetMap](https://doi.org/10.1016/j.compenvurbsys.2023.102029)
+for the parameterization process.
+
+The available parameter sets can be found [here](src/main/resources/parametrization)
+
+Parameter sets can be applied as follows:
+
+```
+--parametrization=<folder name in ressources (e.g. publication2023)>
+```
+
+Parameters of individual submodels can be overwritten with the following arguments:
+
+```
+--activity_group_file=<path>  
+--tour_utilities_file=<path>  
+--trip_utilities_file=<path> 
+--destination_choice_file=<path>
+```
+
+See [here](src/main/resources/parametrization/publication2023) for examples of the file formats.
+
 ## [EXPERIMENTAL] Calibration
 
 It is possible to calibrate Omosim with local data. Currently, only traffic count data is supported.
@@ -273,21 +298,31 @@ The second step will evaluate the calibration results and print some metrics to 
 Each step must always contain 3 colons. If you want to use default values for algorithms, etc.,
 you can leave the space between colons empty.
 
-Options per step:
+#### Options per step:
 
-- TYPE: GRAVITY, MODE_CHOICE, ROUTE_CHOICE, EVALUATE
+- TYPE: GRAVITY, MODE_CHOICE, EVALUATE, DEBUG
 
-Currently only for GRAVITY:
+The following options can be set for only for *GRAVITY*:
 
 - ALG: SM_LBFGS, SM_GD, SM_PSO, PSO, PSO_AO, SM_SPSA, SPSA, SPSA_AO, SM_WSPSA, WSPSA
 - ACTIVITY: HOME, WORK, SCHOOL, SHOPPING, OTHER
 - PARAMS: [See algorithm implementations](src/main/kotlin/de/uniwuerzburg/omosim/calibration/algorithms) 
 
+#### Order
+
 The only supported order of steps currently is:
 
-Gravity → Mode Choice → Route Choice
+(Gravity)* → Mode Choice
 
-Evaluate can be put at any point, and steps can be repeated or excluded.
+Evaluate and debug can be put at any point, and steps can be repeated or excluded.
+
+#### Utility Steps: Evaluate and Debug
+
+- Evaluate: Tests the calibrated parameters and compares them to the measurements and baseline parameters.
+The test is performed by simulating a 10% sample of the population. Using the *FAST* mode choice option.
+- Debug: Test if the traffic sensor locations are reasonable.
+  - Test 1: Are any cars passing through the field of vision of the sensor?
+  - Test 2: What percentage of cars passing through the sensor are in the correct direction?
 
 ### Total population
 
@@ -302,7 +337,6 @@ A calibration run will output files to the directory specified by the *--calibra
 These can be supplied to a normal run with the options:
 - *--calibration_file_gravity*: for gravity model calibration
 - *--calibration_file_mode_choice*: for mode choice model calibration
-- *--calibration_file_route_choice*: for route choice calibration
 
 ## Usage as Java library
 
@@ -349,121 +383,154 @@ class App {
 ## CLI Options
 
 ```
---n_agents=<int>             Number of agents to simulate. If
-                             populate_buffer_area = y, additional agents are
-                             created to populate the buffer area.
---share_pop=<float>          Share of the population to simulate. 0.0 = 0%,
-                             1.0 = 100% If populate_buffer_area = y,
-                             additional agents are created to populate the
-                             buffer area.
---n_days=<int>               Number of days to simulate
---start_wd=(MO|TU|WE|TH|FR|SA|SU|HO|UNDEFINED)
-                             First weekday to simulate. If the value is set
-                             to UNDEFINED, all simulated days will be
-                             UNDEFINED.
---out=<path>                 Output file. The output format is inferred from
-                             the ending: '.json' -> Json, '.xml'-> MATSim,
-                             '.db'-> SQLite
---routing_mode=(GRAPHHOPPER|BEELINE)
-                             Distance calculation method for destination
-                             choice. Either euclidean distance (BEELINE) or
-                             routed distance by car (GRAPHHOPPER)
---od=<path>                  [Experimental] Path to an OD-Matrix in GeoJSON
-                             format. The matrix is used to further calibrate
-                             the model to the area using k-factors.
---census=<path>              Path to population data in GeoJSON format. For
-                             an example of how to create such a file see
-                             python_tools/format_zensus2011.py. Should cover
-                             the entire area, but can cover more.
---grid_precision=<float>     Allowed average distance between a focus area
-                             building and its corresponding TAZ center. The
-                             default is 150m and suitable in most cases.In
-                             the buffer area the allowed distance increases
-                             quadratically with distance. Unit: meters
---buffer=<float>             Distance by which the focus area (defined by
-                             GeoJSON) is buffered in order to account for
-                             traffic generated by the surrounding. Unit:
-                             meters
---seed=<int>                 RNG seed.
---cache_dir=<path>           Cache directory
---populate_buffer_area=true|false
-                             Determines if home locations of agents can be
-                             in the buffer area (so outside of the focus
-                             area). If set to 'y' additional agents will be
-                             created so that the proportion of agents in and
-                             outside the focus area is the same as in the
-                             census data. The focus area will always be
-                             populated by n_agents agents.
---distance_matrix_cache_size=<int>
-                             Maximum number of entries of the distance
-                             matrix to precompute (only if routing_mode is
-                             GRAPHHOPPER). A high value will lead to high
-                             RAM usage and long initialization times but
-                             overall significant speed gains. The default
-                             value will use approximately 8 GB RAM at
-                             maximum.
---mode_choice=(NONE|CAR_ONLY|GTFS|FAST)
-                             Type of mode choice. NONE: Returns trips with
-                             undefined modes.GTFS: Uses a logit model with
-                             public transit as an option
---return_path_coords=true|false
-                             Whether lat/lon coordinates of chosen trip
-                             paths are returned.Paths only exist for trips
-                             with defined modes and within the focus area +
-                             buffer.
---population_file=<path>     Path to file that describes the
-                             socio-demographic makeup of the population.
-                             Must be formatted like
-                             omosim/src/main/resources/Population.json.
---activity_group_file=<path> Path to file that describes the activity chains
-                             for each population group and the dwell-time
-                             distribution for the each chain. Must be
-                             formatted like
-                             omosim/src/main/resources/ActivityGroup.json
---n_worker=<int>             Number of parallel coroutines that can be
-                             executed at the same time. Default: Number of
-                             CPU-Cores available.
---gtfs_file=<path>           Path to an General Transit Feed Specification
-                             (GTFS) for the area. Required for public
-                             transit routing,for example if public transit
-                             is an option in mode choice. Must be a .zip
-                             file or a directory (see https://gtfs.org/).
-                             Recommended download platform for Germany:
-                             https://gtfs.de/
---mapdata_overture=<text>    Use overture map data instead of OSM for
-                             buildings and POIs. Usage: --mapdata_overture
-                             RELEASE. Where RELEASE is a valid overture
-                             release. For an introduction to Overture Maps
-                             see https://overturemaps.org/
---matsim_output_crs=<text>   CRS of MatSIM output. Must be a code understood
-                             by org.geotools.referencing.CRS.decode().
---mode_speed_up=<value>      Value: MODE=FACTOR. Multiply the travel time of
-                             each trip of the mode by the factor.Example:
-                             CAR_DRIVER=0.3, will slow down car travel
-                             durations by 70%.
---calibration_traffic_count_file=<path>
-                             [EXPERIMENTAL] Traffic count data that serves as ground truth.
---calibration_steps=<value>  [EXPERIMENTAL] Defines one calibration step to undertake.
-                             Format: TYPE:ALG:ACTIVITY?,..:PARAMS
-                             Example:
-                             GRAVITY:MM_PSO:OTHER,WORK:iterations=1000:lb=0.2
---calibration_out_dir=<path> [EXPERIMENTAL] Calibration output directory. Stores the result
-                             of a calibration run.Calibration results will
-                             be stored in this file with the names gravity,
-                             mode choice, etc.
---calibration_population=<float>
-                             [EXPERIMENTAL] Population of the area (focus + buffer).
-                             Necessary input when no census data is
-                             supplied. Used to scale the estimate traffic
-                             counts.
---calibration_file_gravity=<path>
-                             [EXPERIMENTAL] Calibration file to use for the gravity model
-                             (destination choice). Generated by a
-                             calibration run.
---calibration_file_mode_choice=<path>
-                             [EXPERIMENTAL] Calibration file to use for mode choice.
-                             Generated by a calibration run.
--h, --help                   Show this message and exit
+  --n_agents=<int>              Number of agents to simulate. If
+                                populate_buffer_area = y, additional agents are
+                                created to populate the buffer area.
+  --share_pop=<float>           Share of the population to simulate. 0.0 = 0%,
+                                1.0 = 100% If populate_buffer_area = y,
+                                additional agents are created to populate the
+                                buffer area.
+  --n_days=<int>                Number of days to simulate
+  --start_wd=(MO|TU|WE|TH|FR|SA|SU|HO|UNDEFINED)
+                                First weekday to simulate. If the value is set
+                                to UNDEFINED, all simulated days will be
+                                UNDEFINED.
+  --out=<path>                  Output file. The output format is inferred from
+                                the ending: '.json' -> Json, '.xml'-> MATSim,
+                                '.db'-> SQLite
+  --routing_mode=(GRAPHHOPPER|BEELINE)
+                                Distance calculation method for destination
+                                choice. Either euclidean distance (BEELINE) or
+                                routed distance by car (GRAPHHOPPER)
+  --od=<path>                   [Deprecated] Path to an OD-Matrix in GeoJSON
+                                format. The matrix is used to further calibrate
+                                the model to the area using k-factors.
+  --census=<path>               Path to population data in GeoJSON format. For
+                                an example of how to create such a file see
+                                python_tools/format_zensus2011.py. Should cover
+                                the entire area, but can cover more.
+  --grid_precision=<float>      Allowed average distance between a focus area
+                                building and its corresponding TAZ center. The
+                                default is 150m and suitable in most cases.In
+                                the buffer area the allowed distance increases
+                                quadratically with distance. Unit: meters
+  --buffer=<float>              Distance by which the focus area (defined by
+                                GeoJSON) is buffered in order to account for
+                                traffic generated by the surrounding. Unit:
+                                meters
+  --seed=<int>                  RNG seed.
+  --cache_dir=<path>            Cache directory
+  --populate_buffer_area=true|false
+                                Determines if home locations of agents can be
+                                in the buffer area (so outside of the focus
+                                area). If set to 'y' additional agents will be
+                                created so that the proportion of agents in and
+                                outside the focus area is the same as in the
+                                census data. The focus area will always be
+                                populated by n_agents agents.
+  --distance_matrix_cache_size=<int>
+                                Maximum number of entries of the distance
+                                matrix to precompute (only if routing_mode is
+                                GRAPHHOPPER). A high value will lead to high
+                                RAM usage and long initialization times but
+                                overall significant speed gains. The default
+                                value will use approximately 8 GB RAM at
+                                maximum.
+  --mode_choice=(NONE|CAR_ONLY|GTFS|FAST)
+                                Type of mode choice. NONE: Returns trips with
+                                undefined modes. CAR_ONLY: Select the car mode
+                                for every trip. GTFS: Uses a logit model with
+                                public transit as an option. FAST: Same as GTFS
+                                but without accounting for travel time. Less
+                                precise but computes significantly faster.
+  --return_path_coords=true|false
+                                Whether lat/lon coordinates of chosen trip
+                                paths are returned.Paths only exist for trips
+                                with defined modes and within the focus area +
+                                buffer.
+  --parametrization=<text>      Parameter set to use (see options under
+                                omosim/src/main/resources/parametrization). Individual
+                                parameter files can be overwritten with by
+                                setting them to custom files with the
+                                commands:--population_file,
+                                --activity_group_file, --tour_utilities_file,
+                                --tour_utilities_file,--trip_utilities_file,
+                                --trip_utilities_file_for_calibration,
+                                --destination_choice_file
+  --population_file=<path>      Path to file that describes the
+                                socio-demographic makeup of the population.
+                                Must be formatted like
+                                omosim/src/main/resources/parametrization/publication2023/Population.json.
+  --activity_group_file=<path>  Path to file that describes the activity chains
+                                for each population group and the dwell-time
+                                distribution for the each chain. Must be
+                                formatted like
+                                omosim/src/main/resources/parametrization/publication2023/ActivityGroup.json
+  --tour_utilities_file=<path>  Path to parameter file for the tour mode
+                                decision model.Must be formatted like
+                                omosim/src/main/resources/tourModeUtilities.json
+  --trip_utilities_file=<path>  Path to parameter file for the trip mode
+                                decision model. Must be formatted like
+                                omosim/src/main/resources/tripModeUtilities.json
+  --trip_utilities_file_for_calibration=<path>
+                                [Experimental] Path to parameter file for the
+                                trip mode decision model used for
+                                calibration.The model should result in the
+                                equivalent mode probabilities as the tour and
+                                trip models combined.Must be formatted like
+                                omosim/src/main/resources/tripModeUtilitiesCalibration.json
+  --destination_choice_file=<path>
+                                Path to parameter file for the destination
+                                choice model. Must be formatted like
+                                omosim/src/main/resources/LocChoiceWeightFuns.json
+  --n_worker=<int>              Number of parallel coroutines that can be
+                                executed at the same time. Default: Number of
+                                CPU-Cores available.
+  --gtfs_file=<path>            Path to an General Transit Feed Specification
+                                (GTFS) for the area. Required for public
+                                transit routing,for example if public transit
+                                is an option in mode choice. Must be a .zip
+                                file or a directory (see https://gtfs.org/).
+                                Recommended download platform for Germany:
+                                https://gtfs.de/
+  --mapdata_overture=<text>     Use overture map data instead of OSM for
+                                buildings and POIs. Usage: --mapdata_overture
+                                RELEASE. Where RELEASE is a valid overture
+                                release. For an introduction to Overture Maps
+                                see https://overturemaps.org/
+  --matsim_output_crs=<text>    CRS of MatSIM output. Must be a code understood
+                                by org.geotools.referencing.CRS.decode().
+  --mode_speed_up=<value>       Value: MODE=FACTOR. Multiply the travel time of
+                                each trip of the mode by the factor.Example:
+                                CAR_DRIVER=0.3, will slow down car travel
+                                durations by 70%.
+  --calibration_traffic_count_file=<path>
+                                [EXPERIMENTAL] Traffic count data that serves
+                                as ground truth.
+  --calibration_steps=<value>   [EXPERIMENTAL] Defines one calibration step to
+                                undertake. Format: TYPE:ALG:ACTIVITY,..:PARAMS
+                                Example:
+                                GRAVITY:SM_PSO:OTHER,WORK:iterations=1000:lb=0.2
+  --calibration_out_dir=<path>  [EXPERIMENTAL] Calibration output directory.
+                                Stores the result of a calibration
+                                run.Calibration results will be stored in this
+                                file with the names gravity, mode choice, etc.
+  --calibration_population=<float>
+                                [EXPERIMENTAL] Population of the area (focus +
+                                buffer). Necessary input when no census data is
+                                supplied. Used to scale the estimate traffic
+                                counts.
+  --calibration_file_gravity=<path>
+                                [EXPERIMENTAL] Calibration file to use for the
+                                gravity model (destination choice). Generated
+                                by a calibration run.
+  --calibration_file_mode_choice=<path>
+                                [EXPERIMENTAL] Calibration file to use for mode
+                                choice. Generated by a calibration run.
+  --calibration_file_route_choice=<path>
+                                [EXPERIMENTAL] Calibration file to use for
+                                route choice. Generated by a calibration run.
+  -h, --help                    Show this message and exit
 ```
 
 ## Documentation
