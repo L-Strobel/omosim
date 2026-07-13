@@ -53,7 +53,7 @@ class CalibrationOptions : OptionGroup (
     ).convert{ CalibrationStep.fromCLIString(it) }.multiple(
         default = listOf(
             CalibrationStep(CalibrationType.DEBUG, null, listOf(),  mapOf()),
-            CalibrationStep(CalibrationType.GRAVITY, CalibrationAlgorithm.SM_PSO, listOf(ActivityType.OTHER), mapOf()),
+            CalibrationStep(CalibrationType.GRAVITY, CalibrationAlgorithm.SM_GD, listOf(ActivityType.OTHER), mapOf()),
             CalibrationStep(CalibrationType.EVALUATE, null, listOf(),  mapOf())
         )
     )
