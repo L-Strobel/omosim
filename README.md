@@ -223,7 +223,7 @@ The available parameter sets can be found [here](src/main/resources/parametrizat
 Parameter sets can be applied as follows:
 
 ```
---parametrization=<folder name in ressources (e.g. publication2023)>
+--parametrization=<folder name in resources (e.g. publication2023)>
 ```
 
 Parameters of individual submodels can be overwritten with the following arguments:
