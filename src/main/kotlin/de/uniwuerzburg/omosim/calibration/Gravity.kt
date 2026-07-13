@@ -54,7 +54,7 @@ class Gravity(
     fun calibrate(algorithm: CalibrationAlgorithm?, activities: List<ActivityType>, parameters: Map<String, String>?) {
         when (algorithm) {
             CalibrationAlgorithm.SM_LBFGS    -> rw.calibrateLBFGSSM(activities, parameters)
-            CalibrationAlgorithm.SM_MINBC    -> rw.calibrateMinBcSM(activities, parameters)
+            // CalibrationAlgorithm.SM_MINBC    -> rw.calibrateMinBcSM(activities, parameters)
             CalibrationAlgorithm.SM_GD       -> rw.calibrateGDSM(activities, parameters)
             CalibrationAlgorithm.SM_PSO      -> rw.calibratePSOSM(activities, parameters)
             CalibrationAlgorithm.PSO         -> rw.calibratePSO(activities, parameters)
@@ -64,7 +64,7 @@ class Gravity(
             CalibrationAlgorithm.SPSA_AO     -> rw.calibrateSPSAAllAtOnce(activities, parameters)
             CalibrationAlgorithm.SM_WSPSA    -> rw.calibrateWSPSASM(activities, parameters)
             CalibrationAlgorithm.WSPSA       -> rw.calibrateWSPSA(activities, parameters)
-            CalibrationAlgorithm.SM_MATRIX   -> rw.calibrateMatrix(activities)
+            // CalibrationAlgorithm.SM_MATRIX   -> rw.calibrateMatrix(activities)
             CalibrationAlgorithm.SM_EVALUATE -> rw.evaluateSM(activities)
             null -> throw IllegalArgumentException("Algorithm can't be null for Gravity model calibration!")
         }
