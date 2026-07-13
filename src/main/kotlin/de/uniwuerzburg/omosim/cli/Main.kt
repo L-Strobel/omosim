@@ -254,14 +254,6 @@ class Run : CliktCommand() {
             locationChoiceFile = destination_choice_file
         )
 
-        /*val dfmcontext = DistanceFunctionMatchContext(omosim)
-        dfmcontext.calibrate(listOf(12.29, 423.92, 19254.45, 1121533.85), ActivityType.WORK)
-        dfmcontext.calibrate(listOf(10.70, 352.39, 17869.13, 1109196.12), ActivityType.SCHOOL)
-        dfmcontext.calibrate(listOf(4.83,  155.42, 9300.0, 7e5), ActivityType.OTHER)
-        dfmcontext.calibrate(listOf(2.21, 44.60, 1541.96, 73242.16), ActivityType.SHOPPING)*/
-
-        // TODO fix BEELINE
-
         // Apply Calibration
         if (calibration_file_gravity != null) {
             val finder = omosim.destinationFinder as DestinationFinderDefault
