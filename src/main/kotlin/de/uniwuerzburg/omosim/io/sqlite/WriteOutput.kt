@@ -5,17 +5,35 @@ import de.uniwuerzburg.omosim.io.json.OutputEntry
 import de.uniwuerzburg.omosim.io.json.OutputTrip
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.io.WKBWriter
 import org.locationtech.jts.io.WKTWriter
 import java.io.File
 import java.sql.DriverManager
 import java.sql.SQLException
 import java.sql.Types.INTEGER
 
+enum class WGeomTypes {
+    WKT, WKB
+}
 
-fun writeSQLite(output: List<OutputEntry>, file: File, runParams: Map<String, String>) : Boolean {
+fun writeSQLite(
+    output: List<OutputEntry>, file: File, runParams: Map<String, String>,
+    pathOutputType: WGeomTypes = WGeomTypes.WKB
+) : Boolean {
     val url = "jdbc:sqlite:${file.absolutePath}"
     val geometryFactory = GeometryFactory()
-    val wktWriter = WKTWriter()
+
+    // Path output writer
+    var wktWriter: WKTWriter? = null
+    var wkbWriter: WKBWriter? = null
+    when (pathOutputType) {
+        WGeomTypes.WKT -> {
+            wktWriter = WKTWriter()
+        }
+        WGeomTypes.WKB -> {
+            wkbWriter = WKBWriter()
+        }
+    }
 
     try {
         val conn = DriverManager.getConnection(url)
@@ -200,8 +218,17 @@ fun writeSQLite(output: List<OutputEntry>, file: File, runParams: Map<String, St
                                 .toTypedArray()
                             if (coords.size > 1) {
                                 val line = geometryFactory.createLineString(coords)
-                                val wkt = wktWriter.write(line)
-                                tripPStmt.setString(8, wkt)
+
+                                when (pathOutputType) {
+                                    WGeomTypes.WKT -> {
+                                        val wkt = wktWriter!!.write(line)
+                                        tripPStmt.setString(8, wkt)
+                                    }
+                                    WGeomTypes.WKB -> {
+                                        val wkb = wkbWriter!!.write(line)
+                                        tripPStmt.setBytes(8, wkb)
+                                    }
+                                }
                             } else {
                                 tripPStmt.setNull(8, java.sql.Types.VARCHAR)
                             }
