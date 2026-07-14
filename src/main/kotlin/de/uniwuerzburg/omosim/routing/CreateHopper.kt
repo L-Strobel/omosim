@@ -23,7 +23,8 @@ fun createGraphHopper(osmLoc: String, cacheLoc: String) : GraphHopper {
     hopper.graphHopperLocation = cacheLoc
     hopper.setEncodedValuesString(
         "car_access, car_average_speed, road_class, foot_access, hike_rating, " +
-        "foot_priority, foot_average_speed, bike_priority, bike_access, roundabout, bike_average_speed"
+        "foot_priority, foot_average_speed, bike_priority, bike_access, roundabout, bike_average_speed," +
+        "country, foot_road_access, mtb_rating, bike_road_access"
     )
 
     // Profiles
@@ -59,7 +60,8 @@ fun createGraphHopperGTFS(osmLoc: String, gtfsLoc: String, cacheLoc: String) : P
     ghConfig.putObject("datareader.file", osmLoc)
     ghConfig.putObject(
         "graph.encoded_values",
-        "foot_access, foot_priority, foot_average_speed, hike_rating"
+        "foot_access, foot_priority, foot_average_speed, hike_rating," +
+        "country, road_class, foot_road_access, mtb_rating"
     )
 
     // Profiles

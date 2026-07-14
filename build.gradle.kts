@@ -1,14 +1,14 @@
 import org.gradle.internal.os.OperatingSystem
 
 plugins {
-    kotlin("jvm") version "2.2.0"
-    kotlin("plugin.serialization") version "2.2.0"
-    id("com.gradleup.shadow") version "8.+"
+    kotlin("jvm") version "2.4.10"
+    kotlin("plugin.serialization") version "2.4.10"
+    id("com.gradleup.shadow") version "8.3.11"
     id("java")
     id("org.jetbrains.dokka") version "2.2.0"
     id("maven-publish")
-    id("org.jetbrains.kotlinx.benchmark") version "0.4.13"
-    kotlin("plugin.allopen") version "2.2.0"
+    id("org.jetbrains.kotlinx.benchmark") version "0.4.17"
+    kotlin("plugin.allopen") version "2.4.10"
     application
 }
 
@@ -17,7 +17,7 @@ allOpen {
 }
 
 group = "de.uniwuerzburg.omosim"
-version = "2.4.8"
+version = "2.4.9"
 
 repositories {
     mavenLocal()
@@ -35,48 +35,47 @@ configurations.implementation {
     extendsFrom(commonImplementation)
 }
 
-// Force stdlib to the match the kotlin version
-// Necessary because of old dependency in us.dustinj.timezonemap:timezonemap:4.5
+// Fix old std dependency in us.dustinj.timezonemap:timezonemap:4.5
 configurations.all {
     resolutionStrategy.dependencySubstitution {
         substitute(module("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.32"))
-            .using(module("org.jetbrains.kotlin:kotlin-stdlib:2.2.0"))
+            .using(module("org.jetbrains.kotlin:kotlin-stdlib:2.4.10"))
     }
 }
 
 dependencies {
     commonImplementation(files("libs/alglib-java/alglib406free.jar"))
 
-    commonImplementation("org.geotools:gt-epsg-hsql:31.+")
-    commonImplementation("org.geotools:gt-main:31.+")
-    commonImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
-    commonImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
-    commonImplementation("org.locationtech.jts:jts-core:1.+")
-    commonImplementation("org.apache.commons:commons-math3:3.+")
-    commonImplementation("com.github.ajalt.clikt:clikt:4.+")
-    commonImplementation("com.graphhopper:graphhopper-core:9.+")
-    commonImplementation("com.graphhopper:graphhopper-reader-gtfs:9.1")
-    commonImplementation("ch.qos.logback:logback-classic:1.+")
-    commonImplementation("org.openstreetmap.osmosis:osmosis-pbf:0.48.+")
-    commonImplementation("org.openstreetmap.osmosis:osmosis-xml:0.48.+")
-    commonImplementation("org.openstreetmap.osmosis:osmosis-areafilter:0.48.+")
-    commonImplementation("com.google.guava:guava:33.2.1-jre")
-    commonImplementation("org.duckdb:duckdb_jdbc:1.1.1")
+    commonImplementation("org.geotools:gt-epsg-hsql:35.0")
+    commonImplementation("org.geotools:gt-main:35.0")
+    commonImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json: 1.11.0")
+    commonImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
+    commonImplementation("org.locationtech.jts:jts-core:1.20.0")
+    commonImplementation("org.apache.commons:commons-math3:3.6.1")
+    commonImplementation("com.github.ajalt.clikt:clikt:5.1.0")
+    commonImplementation("com.graphhopper:graphhopper-core:11.0")
+    commonImplementation("com.graphhopper:graphhopper-reader-gtfs:11.0")
+    commonImplementation("ch.qos.logback:logback-classic:1.5.38")
+    commonImplementation("org.openstreetmap.osmosis:osmosis-pbf:0.48.3")
+    commonImplementation("org.openstreetmap.osmosis:osmosis-xml:0.48.3")
+    commonImplementation("org.openstreetmap.osmosis:osmosis-areafilter:0.48.3")
+    commonImplementation("com.google.guava:guava:33.6.0-jre")
+    commonImplementation("org.duckdb:duckdb_jdbc: 1.5.4.0")
     commonImplementation("us.dustinj.timezonemap:timezonemap:4.5")
-    commonImplementation("org.xerial:sqlite-jdbc:3.+")
-    commonImplementation("com.gurobi:gurobi:11.0.2")
-    commonImplementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.13")
+    commonImplementation("org.xerial:sqlite-jdbc:3.53.2.0")
+    commonImplementation("com.gurobi:gurobi:13.0.2")
+    commonImplementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.17")
     commonImplementation("com.akuleshov7:ktoml-core:0.7.1")
-    commonImplementation("org.jetbrains.kotlinx:multik-default:0.2.3")
+    commonImplementation("org.jetbrains.kotlinx:multik-default:0.3.1")
     commonImplementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1-0.6.x-compat") // For com.akuleshov7:ktoml-core:0.7.1
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.+")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.1.1")
     testImplementation("org.tensorflow:tensorflow-core-platform:1.1.0")
 
     // Libraries that come with heavy platform specific binaries
     implementation("org.tensorflow:tensorflow-core-platform:1.1.0")
-    implementation("com.github.haifengl:smile-core:4.4.0")
+    implementation("com.github.haifengl:smile-core:6.2.4")
 }
 
 publishing {
@@ -132,8 +131,8 @@ platforms.forEach { platform ->
     }
 
     dependencies {
-        "shadow-$platform"("com.github.haifengl:smile-core:4.4.0")
-        "shadow-$platform"("org.bytedeco:openblas:0.3.26-1.5.10:$platform")
+        "shadow-$platform"("com.github.haifengl:smile-core: 6.2.4")
+        "shadow-$platform"("org.bytedeco:openblas:0.3.31-1.5.13:$platform")
 
         "shadow-$platform"("org.tensorflow:tensorflow-core-api:1.1.0")
         "shadow-$platform"("org.tensorflow:tensorflow-core-native:1.1.0:$platform")
