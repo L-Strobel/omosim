@@ -8,7 +8,7 @@ plugins {
     id("org.jetbrains.dokka") version "2.2.0"
     id("maven-publish")
     id("org.jetbrains.kotlinx.benchmark") version "0.4.13"
-    kotlin("plugin.allopen") version "2.0.20"
+    kotlin("plugin.allopen") version "2.2.0"
     application
 }
 
@@ -38,8 +38,9 @@ configurations.implementation {
 // Force stdlib to the match the kotlin version
 // Necessary because of old dependency in us.dustinj.timezonemap:timezonemap:4.5
 configurations.all {
-    resolutionStrategy {
-        force("org.jetbrains.kotlin:kotlin-stdlib:2.0.20")
+    resolutionStrategy.dependencySubstitution {
+        substitute(module("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.32"))
+            .using(module("org.jetbrains.kotlin:kotlin-stdlib:2.2.0"))
     }
 }
 
@@ -67,6 +68,7 @@ dependencies {
     commonImplementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.13")
     commonImplementation("com.akuleshov7:ktoml-core:0.7.1")
     commonImplementation("org.jetbrains.kotlinx:multik-default:0.2.3")
+    commonImplementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1-0.6.x-compat") // For com.akuleshov7:ktoml-core:0.7.1
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.junit.jupiter:junit-jupiter:5.+")
