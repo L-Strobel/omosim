@@ -7,18 +7,19 @@ import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.io.WKBWriter
 import org.locationtech.jts.io.WKTWriter
+import org.locationtech.jts.io.twkb.TWKBWriter
 import java.io.File
 import java.sql.DriverManager
 import java.sql.SQLException
 import java.sql.Types.INTEGER
 
-enum class WGeomTypes {
-    WKT, WKB
+enum class RouteGeomTypes {
+    WKT, WKB, TWKB
 }
 
 fun writeSQLite(
     output: List<OutputEntry>, file: File, runParams: Map<String, String>,
-    pathOutputType: WGeomTypes = WGeomTypes.WKB
+    routeGeomType: RouteGeomTypes = RouteGeomTypes.TWKB
 ) : Boolean {
     val url = "jdbc:sqlite:${file.absolutePath}"
     val geometryFactory = GeometryFactory()
@@ -26,12 +27,16 @@ fun writeSQLite(
     // Path output writer
     var wktWriter: WKTWriter? = null
     var wkbWriter: WKBWriter? = null
-    when (pathOutputType) {
-        WGeomTypes.WKT -> {
+    var twkbWriter: TWKBWriter? = null
+    when (routeGeomType) {
+        RouteGeomTypes.WKT -> {
             wktWriter = WKTWriter()
         }
-        WGeomTypes.WKB -> {
+        RouteGeomTypes.WKB -> {
             wkbWriter = WKBWriter()
+        }
+        RouteGeomTypes.TWKB -> {
+            twkbWriter = TWKBWriter().setXYPrecision(5)
         }
     }
 
@@ -219,14 +224,18 @@ fun writeSQLite(
                             if (coords.size > 1) {
                                 val line = geometryFactory.createLineString(coords)
 
-                                when (pathOutputType) {
-                                    WGeomTypes.WKT -> {
+                                when (routeGeomType) {
+                                    RouteGeomTypes.WKT -> {
                                         val wkt = wktWriter!!.write(line)
                                         tripPStmt.setString(8, wkt)
                                     }
-                                    WGeomTypes.WKB -> {
+                                    RouteGeomTypes.WKB -> {
                                         val wkb = wkbWriter!!.write(line)
                                         tripPStmt.setBytes(8, wkb)
+                                    }
+                                    RouteGeomTypes.TWKB -> {
+                                        val twkb = twkbWriter!!.write(line)
+                                        tripPStmt.setBytes(8, twkb)
                                     }
                                 }
                             } else {

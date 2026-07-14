@@ -51,6 +51,7 @@ dependencies {
     commonImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json: 1.11.0")
     commonImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     commonImplementation("org.locationtech.jts:jts-core:1.20.0")
+    commonImplementation("org.locationtech.jts.io:jts-io-common:1.20.0")
     commonImplementation("org.apache.commons:commons-math3:3.6.1")
     commonImplementation("com.github.ajalt.clikt:clikt:5.1.0")
     commonImplementation("com.graphhopper:graphhopper-core:11.0")
