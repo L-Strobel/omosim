@@ -75,7 +75,7 @@ dependencies {
 
     // Libraries that come with heavy platform specific binaries
     implementation("org.tensorflow:tensorflow-core-platform:1.1.0")
-    implementation("com.github.haifengl:smile-core:6.2.4")
+    implementation("com.github.haifengl:smile-core:4.4.2")
 }
 
 publishing {
@@ -131,7 +131,7 @@ platforms.forEach { platform ->
     }
 
     dependencies {
-        "shadow-$platform"("com.github.haifengl:smile-core: 6.2.4")
+        "shadow-$platform"("com.github.haifengl:smile-core:4.4.2")
         "shadow-$platform"("org.bytedeco:openblas:0.3.31-1.5.13:$platform")
 
         "shadow-$platform"("org.tensorflow:tensorflow-core-api:1.1.0")
