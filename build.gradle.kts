@@ -30,7 +30,7 @@ repositories {
     mavenCentral()
 }
 
-val commonImplementation: Configuration by configurations.creating
+val commonImplementation = configurations.create("commonImplementation")
 configurations.implementation {
     extendsFrom(commonImplementation)
 }
