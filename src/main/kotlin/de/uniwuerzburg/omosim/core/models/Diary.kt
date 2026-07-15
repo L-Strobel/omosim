@@ -1,10 +1,11 @@
 package de.uniwuerzburg.omosim.core.models
 
 import java.time.LocalTime
+import java.util.Random
 
 typealias TripVisitor = (
     trip: Trip, originActivity: Activity, destinationActivity: Activity,
-    departureTime: LocalTime, departureWD: Weekday, finished: Boolean
+    departureTime: LocalTime, departureWD: Weekday, finished: Boolean, rng: Random?
 ) -> Unit
 
 /**
@@ -32,7 +33,8 @@ data class Diary (
      * For example, changing the mode of that trip.
      */
     fun visitTrips(
-        visitor: TripVisitor
+        visitor: TripVisitor,
+        rng: Random? = null,
     ){
         if (this.activities.size <= 1) {
             return
@@ -58,7 +60,15 @@ data class Diary (
             val currentTime = LocalTime.of(currentMinute.toInt() / 60, currentMinute.toInt() % 60)
 
             // Update trip
-            visitor(trip, currentActivity, nextActivity, currentTime, wd, i >= (trips.size - 1))
+            visitor(
+                trip,
+                currentActivity,
+                nextActivity,
+                currentTime,
+                wd,
+                i >= (trips.size - 1),
+                rng
+            )
 
             // Add estimated travel time
             currentMinute += trip.time ?: 0.0

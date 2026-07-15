@@ -619,64 +619,17 @@ class Omosim (
                 modeChoice.doModeChoice(agents, mainRng, dispatcher, modeSpeedUp, verbose)
                 if (withPath) {
                     setupHopper()
-                    AssignmentAllOrNothing(hopper!!, null).assign(agents, verbose, dispatcher)
+                    AssignmentAllOrNothing(hopper!!, null).assign(agents, verbose, dispatcher, mainRng)
                 }
             }
         }
 
         // Alternative route selection
         if (withPath and altPercentages.isNotEmpty()) {
-            altRouteSelection(agents)
+            setupHopper()
+            AssignmentAltRoute(hopper!!, altPercentages).assign(agents, verbose, dispatcher, mainRng)
         }
         return  agents
-    }
-
-    /**
-     * Choose alternative route according to route choice calibration.
-     *
-     * @param agents Agents with mode choice step completed
-     * @return Agents with alternative routes selected
-     */
-    private fun altRouteSelection(agents: List<MobiAgent>) : List<MobiAgent> {
-        // Determine number of time slices of calibration
-        val T = altPercentages.maxOf { (k, _) -> k.t } + 1
-
-        // Get alternatives and choose according to calibration
-        val visitor: TripVisitor = { trip, originActivity, destinationActivity, departureTime, _, _ ->
-            // Determine origin-destination-time triple
-            val mod = departureTime.minute + departureTime.hour * 60
-            val t = floor((mod % 1440.0) / 1440.0 * T).toInt()
-            val od = Pair(
-                originActivity.location.getAggLoc()!! as RealLocation,
-                destinationActivity.location.getAggLoc()!! as RealLocation
-            )
-            val odt = ODTTriple(od.first, od.second, t)
-
-            // For all car trips
-            if ((trip.mode == Mode.CAR_DRIVER) && (odt in altPercentages)){
-                // Find alternatives
-                val response = routeCarAlternatives(
-                    originActivity.location.getAggLoc()!! as RealLocation,
-                    destinationActivity.location.getAggLoc()!! as RealLocation,
-                    hopper!!
-                )
-                // Choose route according to calibration
-                if (!response.hasErrors()) {
-                    val probs = altPercentages[odt]!!
-                    val distr = createCumDist(probs.toDoubleArray())
-                    val path = response.all[sampleCumDist(distr, this.mainRng)]
-
-                    trip.lats = path.points.map { it.lat }
-                    trip.lons = path.points.map { it.lon }
-                }
-            }
-        }
-        for (agent in agents) {
-            for (diary in agent.mobilityDemand) {
-                diary.visitTrips(visitor)
-            }
-        }
-        return agents
     }
 
     /**

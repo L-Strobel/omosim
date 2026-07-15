@@ -8,6 +8,7 @@ import de.uniwuerzburg.omosim.calibration.objective.sseObjectiveGRB
 import de.uniwuerzburg.omosim.calibration.objective.sseObjective
 import de.uniwuerzburg.omosim.core.models.*
 import java.time.LocalTime
+import java.util.Random
 
 /**
  * Origin-destination pair at a given time t.
@@ -284,7 +285,7 @@ class RouteChoice(
             val origins = mutableListOf<Activity>()
             val destinations = mutableListOf<Activity>()
             val visitor: TripVisitor = { _: Trip, origin: Activity, destination: Activity,
-                                         departureTime: LocalTime, _: Weekday, _: Boolean ->
+                                         departureTime: LocalTime, _: Weekday, _: Boolean, _: Random? ->
                 startTimes.add(departureTime)
                 origins.add(origin)
                 destinations.add(destination)

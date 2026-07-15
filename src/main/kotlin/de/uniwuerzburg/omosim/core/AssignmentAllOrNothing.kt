@@ -20,7 +20,7 @@ class AssignmentAllOrNothing(
         val ignorePT = gtfsComponents == null // Skip public transit if no gtfs data is supplied
         var ptRouter: PtRouter? = gtfsComponents?.ptRouter
 
-        tripVisitor = { trip, originActivity, destinationActivity, departureTime, wd, finished ->
+        tripVisitor = { trip, originActivity, destinationActivity, departureTime, wd, finished, rng ->
             val origin = originActivity.location
             val destination = destinationActivity.location
 

@@ -6,6 +6,7 @@ import de.uniwuerzburg.omosim.utils.ProgressBar
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.util.Random
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.TimeSource
 
@@ -18,7 +19,8 @@ interface Assignment {
     fun assign(
         agents: List<MobiAgent>,
         verbose: Boolean,
-        dispatcher: CoroutineDispatcher
+        dispatcher: CoroutineDispatcher,
+        rng: Random,
     ) : List<MobiAgent> {
 
         // Progressbar setup
@@ -32,8 +34,9 @@ interface Assignment {
             runBlocking(dispatcher) {
                 for (agent in chunk) {
                     launch(dispatcher) {
+                        val coroutineRng = Random(rng.nextLong())
                         for (diary in agent.mobilityDemand) {
-                            diary.visitTrips(tripVisitor)
+                            diary.visitTrips(tripVisitor, coroutineRng)
                         }
                         val done = jobsDone.incrementAndGet()
                         if (verbose) {

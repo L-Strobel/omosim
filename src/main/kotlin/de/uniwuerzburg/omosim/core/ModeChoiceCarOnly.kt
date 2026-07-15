@@ -66,7 +66,7 @@ class ModeChoiceCarOnly(
     private fun tripsToCar(diary: Diary, rng: Random, modeSpeedUp: Map<Mode, Double>) {
         val visitor = {
                 trip: Trip, originActivity: Activity, destinationActivity: Activity,
-                _: LocalTime, _: Weekday, _: Boolean ->
+                _: LocalTime, _: Weekday, _: Boolean, _: Random? ->
             val route = if (
                     (originActivity.type == destinationActivity.type) &&
                     (

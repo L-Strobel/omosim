@@ -89,7 +89,7 @@ class ModeChoiceGTFS(
 
         val visitor = {
             trip: Trip, originActivity: Activity, destinationActivity: Activity,
-            departureTime: LocalTime, wd: Weekday, finished: Boolean ->
+            departureTime: LocalTime, wd: Weekday, finished: Boolean, _: Random? ->
             val departureInstant = ptSimDays[wd]!!.atTime(departureTime).atZone(timeZone.toZoneId()).toInstant()
 
             // Routes for possible trips

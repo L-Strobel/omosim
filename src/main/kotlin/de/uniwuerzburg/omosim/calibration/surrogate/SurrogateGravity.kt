@@ -396,7 +396,7 @@ class SurrogateGravity (
         omosim.doModeChoice(agents, ModeChoiceOption.FAST, false, false)
 
         // Determine counts at sensors
-        val visitor: TripVisitor = { _, _, destinationActivity, departureTime, _, _ ->
+        val visitor: TripVisitor = { _, _, destinationActivity, departureTime, _, _, _ ->
             val arr = distr[destinationActivity.type]!!
             val i = departureTime.determineTimeSlice()
             arr[i] = arr[i] + 1

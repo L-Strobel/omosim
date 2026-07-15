@@ -307,7 +307,7 @@ class TrafficCountCalibrationContext(
     ) : Map<TrafficSensor, DoubleArray> {
         // Determine counts at sensors
         val simCount = sensors.associateWith { Array(T) {0.0} }.toMutableMap()
-        val visitor: TripVisitor = { trip, originActivity, destinationActivity, departureTime, _, _ ->
+        val visitor: TripVisitor = { trip, originActivity, destinationActivity, departureTime, _, _, _ ->
             val t = departureTime.determineTimeSlice()
 
             if (trip.mode == Mode.CAR_DRIVER) {

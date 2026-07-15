@@ -79,7 +79,7 @@ class ModeChoiceFast(
 
         val visitor = {
             trip: Trip, originActivity: Activity, destinationActivity: Activity,
-            departureTime: LocalTime, wd: Weekday, finished: Boolean ->
+            departureTime: LocalTime, wd: Weekday, finished: Boolean, _: Random? ->
 
             // Routes for possible trips
             val rtDistances = mapOf(
