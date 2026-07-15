@@ -45,7 +45,7 @@ class RouteChoice(
         context.omosim.mainRng.setSeed(0) // Seed impact low with 100% of agents
 
         // Run Simulation
-        val agents = context.omosim.run(0.1, verbose = false)
+        val agents = context.omosim.run(0.1, start_wd = context.weekday, verbose = false)
         context.omosim.doModeChoice(agents, ModeChoiceOption.FAST, withPath = false, verbose = false)
 
         val odtCounts = getODTCounts(agents)

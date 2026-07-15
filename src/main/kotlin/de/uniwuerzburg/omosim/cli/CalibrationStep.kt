@@ -47,9 +47,6 @@ class CalibrationStep (
                     throw IllegalArgumentException()
                 }
             }
-            if (type == CalibrationType.ROUTE_CHOICE) {
-                throw IllegalArgumentException("Route Choice calibration currently not supported!")
-            }
 
             // ALG
             val alg = if (components[1] == "") {

@@ -300,7 +300,7 @@ you can leave the space between colons empty.
 
 #### Options per step:
 
-- TYPE: GRAVITY, MODE_CHOICE, EVALUATE, DEBUG
+- TYPE: GRAVITY, MODE_CHOICE, ROUTE_CHOICE, EVALUATE, DEBUG
 
 The following options can be set for only for *GRAVITY*:
 
@@ -312,7 +312,7 @@ The following options can be set for only for *GRAVITY*:
 
 The only supported order of steps currently is:
 
-(Gravity)* → Mode Choice
+(Gravity)* → Mode Choice → Route Choice
 
 Evaluate and debug can be put at any point, and steps can be repeated or excluded.
 
@@ -337,7 +337,8 @@ A calibration run will output files to the directory specified by the *--calibra
 These can be supplied to a normal run with the options:
 - *--calibration_file_gravity*: for gravity model calibration
 - *--calibration_file_mode_choice*: for mode choice model calibration
-
+- *--calibration_file_route_choice*: for route choice calibration
+- 
 ## Usage as Java library
 
 First, add the jar to your classpath.
