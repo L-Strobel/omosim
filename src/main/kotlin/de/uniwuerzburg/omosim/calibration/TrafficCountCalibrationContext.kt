@@ -128,7 +128,7 @@ class TrafficCountCalibrationContext(
                 }
                 CalibrationType.ROUTE_CHOICE -> {
                     RouteChoice(this)
-                        .calibrate(step.alg, step.parameters, gurobi = true)
+                        .calibrate(step.alg, step.parameters)
                     RouteChoiceCalibrationStore(omosim).write(routeChoiceOut, omosim.altPercentages)
                 }
                 CalibrationType.EVALUATE -> {
