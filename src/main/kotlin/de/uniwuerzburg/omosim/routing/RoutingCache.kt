@@ -132,8 +132,8 @@ class RoutingCache(
         val highestPriorities = priorityValues.mapIndexed {i, it -> i to it}.sortedBy { it.second }.takeLast(nLocations)
         val relevantLocations = highestPriorities.map { locations[it.first] }
 
+        val progressBar = ProgressBar("Calculating distance matrix", nLocations)
         runBlocking(dispatcher) {
-            val locsDone = AtomicInteger()
             for (origin in relevantLocations) {
                 if (origin !is RealLocation) {
                     continue
@@ -169,14 +169,11 @@ class RoutingCache(
                             }
                         }
                     }
-
-                    // Progressbar
-                    val done = locsDone.incrementAndGet()
-                    print("Calculating distance matrix: ${ProgressBar.show(done / nLocations.toDouble())}\r")
+                    progressBar.singleTaskComplete()
                 }
             }
         }
-        println("Calculating distance matrix: " + ProgressBar.done())
+        progressBar.done()
     }
 
     /**

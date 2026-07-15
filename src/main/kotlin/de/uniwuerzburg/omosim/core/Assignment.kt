@@ -26,8 +26,7 @@ interface Assignment {
         // Progressbar setup
         val timeSource = TimeSource.Monotonic
         val timestampStartInit = timeSource.markNow()
-        val jobsDone = AtomicInteger()
-        val totalJobs = (agents.size).toDouble()
+        val progressBar = ProgressBar("Assigning routes", agents.size, enabled = verbose)
 
         // Assign in parallel
         for (chunk in agents.chunked(AppConstants.nAllowedCoroutines)) { // Don't launch to many coroutines at once
@@ -38,16 +37,13 @@ interface Assignment {
                         for (diary in agent.mobilityDemand) {
                             diary.visitTrips(tripVisitor, coroutineRng)
                         }
-                        val done = jobsDone.incrementAndGet()
-                        if (verbose) {
-                            print("Assigning routes: ${ProgressBar.show(done / totalJobs)}\r")
-                        }
+                        progressBar.singleTaskComplete()
                     }
                 }
             }
         }
 
-        if(verbose) { println("Assigning routes: " + ProgressBar.done()) }
+        progressBar.done()
         logger.get()?.info("Assigning routes took: ${timeSource.markNow() - timestampStartInit}")
         return agents
     }

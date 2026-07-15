@@ -526,8 +526,7 @@ class Omosim (
 
         val timeSource = TimeSource.Monotonic
         val timestampStartInit = timeSource.markNow()
-        val jobsDone = AtomicInteger()
-        val totalJobs = (agents.size).toDouble()
+        val progressBar = ProgressBar("Activity generation", agents.size, enabled = verbose)
 
         for (chunk in agents.chunked(AppConstants.nAllowedCoroutines)) { // Don't launch to many coroutines at once
             runBlocking(dispatcher) {
@@ -535,14 +534,13 @@ class Omosim (
                     val coroutineRng = Random(mainRng.nextLong())
                     launch(dispatcher) {
                         runAgent(agent, start_wd, n_days, coroutineRng)
-                        val done = jobsDone.incrementAndGet()
-
-                        if (verbose) { print("Activity generation: ${ProgressBar.show(done / totalJobs)}\r") }
+                        progressBar.singleTaskComplete()
                     }
                 }
             }
         }
-        if (verbose) { println("Activity generation: " + ProgressBar.done()) }
+
+        progressBar.done()
         routingCache.toOOMCache() // Save routing cache
         logger.get()?.info("Activity generation took: ${timeSource.markNow() - timestampStartInit}")
         return agents

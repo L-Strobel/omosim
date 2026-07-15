@@ -44,8 +44,7 @@ class ModeChoiceFast(
     ) : List<MobiAgent> {
         val timeSource = TimeSource.Monotonic
         val timestampStartInit = timeSource.markNow()
-        val jobsDone = AtomicInteger()
-        val totalJobs = (agents.size).toDouble()
+        val progressBar = ProgressBar("Mode Choice", agents.size, enabled = verbose)
 
         for (chunk in agents.chunked(AppConstants.nAllowedCoroutines)) { // Don't launch to many coroutines at once
             runBlocking(dispatcher) {
@@ -53,13 +52,12 @@ class ModeChoiceFast(
                     val coroutineRng = Random(mainRng.nextLong())
                     launch(dispatcher) {
                         doModeChoiceFor(agent, coroutineRng)
-                        val done = jobsDone.incrementAndGet()
-                        if (verbose) { print("Mode Choice: ${ProgressBar.show(done / totalJobs)}\r") }
+                        progressBar.singleTaskComplete()
                     }
                 }
             }
         }
-        if (verbose) { println("Mode Choice: " + ProgressBar.done()) }
+        progressBar.done()
         logger.get()?.info("Mode Choice took: ${timeSource.markNow() - timestampStartInit}")
         return agents
     }
