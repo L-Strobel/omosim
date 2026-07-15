@@ -148,7 +148,7 @@ class Run : CliktCommand() {
                "CAR_ONLY: Select the car mode for every trip. " +
                "GTFS: Uses a logit model with public transit as an option. " +
                "FAST: Same as GTFS but without accounting for travel time. Less precise but computes significantly faster."
-    ).enum<ModeChoiceOption>().default(ModeChoiceOption.NONE)
+    ).enum<ModeChoiceOption>().default(ModeChoiceOption.FAST)
     private val return_path_coords by option(
         help = "Whether lat/lon coordinates of chosen trip paths are returned." +
                "Paths only exist for trips with defined modes and within the focus area + buffer."
