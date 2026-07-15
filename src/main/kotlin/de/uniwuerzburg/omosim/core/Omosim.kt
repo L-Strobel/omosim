@@ -6,11 +6,15 @@ import com.graphhopper.gtfs.PtRouter
 import de.uniwuerzburg.omosim.calibration.ODTTriple
 import de.uniwuerzburg.omosim.core.models.*
 import de.uniwuerzburg.omosim.io.ParameterReader
-import de.uniwuerzburg.omosim.io.geojson.*
+import de.uniwuerzburg.omosim.io.geojson.GeoJsonFeature
+import de.uniwuerzburg.omosim.io.geojson.GeoJsonFeatureCollection
+import de.uniwuerzburg.omosim.io.geojson.GeoJsonPoint
 import de.uniwuerzburg.omosim.io.geojson.property.BuildingProperties
+import de.uniwuerzburg.omosim.io.geojson.readGeoJsonGeom
 import de.uniwuerzburg.omosim.io.gtfs.clipGTFSFile
 import de.uniwuerzburg.omosim.io.gtfs.getPublicTransitSimDays
-import de.uniwuerzburg.omosim.io.json.*
+import de.uniwuerzburg.omosim.io.json.readJsonStream
+import de.uniwuerzburg.omosim.io.json.writeJsonStream
 import de.uniwuerzburg.omosim.io.osm.BuildingData
 import de.uniwuerzburg.omosim.io.osm.readOSM
 import de.uniwuerzburg.omosim.io.overture.readOverture
@@ -613,7 +617,10 @@ class Omosim (
             ModeChoiceOption.FAST -> {
                 val modeChoice = ModeChoiceFast(routingCache, parameterReader)
                 modeChoice.doModeChoice(agents, mainRng, dispatcher, modeSpeedUp, verbose)
-
+                if (withPath) {
+                    setupHopper()
+                    AssignmentAllOrNothing(hopper!!, null).assign(agents, verbose, dispatcher)
+                }
             }
         }
 
@@ -665,7 +672,7 @@ class Omosim (
             }
         }
         for (agent in agents) {
-           for (diary in agent.mobilityDemand) {
+            for (diary in agent.mobilityDemand) {
                 diary.visitTrips(visitor)
             }
         }
@@ -698,7 +705,7 @@ class Omosim (
     /**
      * Bundle of everything required for GTFS routing.
      */
-    private inner class GTFSComponents(
+    inner class GTFSComponents(
         focusArea: Geometry, fullArea: Geometry, cacheDir: Path, dispatcher: CoroutineDispatcher,
         osmFile: File
     ) {
