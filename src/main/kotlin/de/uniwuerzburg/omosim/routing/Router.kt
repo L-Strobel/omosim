@@ -55,9 +55,19 @@ fun routeWith (profile: String, origin: RealLocation, destination: RealLocation,
  * @param origin Location A
  * @param destination Location B
  * @param hopper GraphHopper object
+ * @param maxRoutes Maximum number of returned paths
+ * @param maxSlower Maximum amount that the alternative can be slower than the best route (e.g., 1.2 -> max. 20% slower)
+ * @param maxSimilarity Maximum share of the route that can be shared between alternatives (e.g., 0.7 -> max. 70% shared)
  * @return GHResponse (Wrapper around the best routes)
  */
-fun routeCarAlternatives (origin: RealLocation, destination: RealLocation, hopper: GraphHopper) : GHResponse {
+fun routeCarAlternatives (
+    origin: RealLocation,
+    destination: RealLocation,
+    hopper: GraphHopper,
+    maxRoutes: Int? = null,
+    maxSlower: Double? = null,
+    maxSimilarity: Double? = null
+) : GHResponse {
     val req = GHRequest(
         origin.latlonCoord.x,
         origin.latlonCoord.y,
@@ -65,6 +75,19 @@ fun routeCarAlternatives (origin: RealLocation, destination: RealLocation, hoppe
         destination.latlonCoord.y
     ).setAlgorithm(Parameters.Algorithms.ALT_ROUTE)
     req.profile = "car"
+
+    // Configure alternatives algorithm
+    val hints = req.hints
+    if (maxRoutes != null) {
+        hints.putObject("alternative_route.max_paths", maxRoutes)
+    }
+    if (maxSlower != null) {
+        hints.putObject("alternative_route.max_weight_factor", maxSlower)
+    }
+    if (maxSimilarity != null) {
+        hints.putObject("alternative_route.max_share_factor", maxSimilarity)
+    }
+
     return hopper.route(req)
 }
 

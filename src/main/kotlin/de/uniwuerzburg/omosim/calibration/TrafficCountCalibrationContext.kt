@@ -57,7 +57,9 @@ class TrafficCountCalibrationContext(
                 "Validate the --cal_traffic_count_file file. "
             )
         }
+        logger.info("Matching sensors to road network...")
         affectedSensors = affectedSensors()
+        logger.info("Matching sensors to road network... Done!")
     }
 
     /**
@@ -73,7 +75,36 @@ class TrafficCountCalibrationContext(
             (CalibrationType.ROUTE_CHOICE in steps.map { it.type }) or
             (omosim.altPercentages.isNotEmpty())
         ) {
-            affectedAltSensors = altAffectedSensors()
+            logger.info("Matching sensors to alternative routes...")
+            val rcSteps = steps.filter { it.type == CalibrationType.ROUTE_CHOICE }
+            val rcStep = rcSteps.first()
+
+            val altMaxRoutes = rcStep.parameters["altMaxRoutes"]?.toIntOrNull()
+            val altMaxSlower = rcStep.parameters["altMaxSlower"]?.toDoubleOrNull()
+            val altMaxSimilarity = rcStep.parameters["altMaxSimilarity"]?.toDoubleOrNull()
+
+            // Check if parameters for alt route are the same for all rc steps
+            if (!(
+                rcSteps.all { it.parameters["altMaxRoutes"]?.toIntOrNull() == altMaxRoutes } and
+                rcSteps.all { it.parameters["altMaxSlower"]?.toDoubleOrNull() == altMaxSlower } and
+                rcSteps.all { it.parameters["altMaxSimilarity"]?.toDoubleOrNull() == altMaxSimilarity }
+            )) {
+                logger.warn(
+                    "Having different parameters for altMaxRoutes, altMaxSlower, or altMaxSimilarity between" +
+                    " in different route choice calibration steps is not supported!" +
+                    " Will use only the parameters of the first step:" +
+                    " ($altMaxRoutes, $altMaxSlower, $altMaxSimilarity)")
+            }
+
+            affectedAltSensors = altAffectedSensors(
+                altMaxRoutes = rcStep.parameters["altMaxRoutes"]?.toIntOrNull() ?: 5,
+                altMaxSlower = rcStep.parameters["altMaxSlower"]?.toDoubleOrNull() ?: 1.35,
+                altMaxSimilarity = rcStep.parameters["altMaxSimilarity"]?.toDoubleOrNull() ?: 0.8
+            )
+            logger.info("Matching sensors to alternative routes... Done!")
+
+            val avgAlt = affectedAltSensors.map { it.value.size }.average()
+            logger.info("Average number of alternative routes: %.2f".format(avgAlt))
         }
 
         // Complete the steps in the given order
@@ -97,7 +128,7 @@ class TrafficCountCalibrationContext(
                 }
                 CalibrationType.ROUTE_CHOICE -> {
                     RouteChoice(this)
-                        .calibrate(step.alg, step.parameters)
+                        .calibrate(step.alg, step.parameters, gurobi = true)
                     RouteChoiceCalibrationStore(omosim).write(routeChoiceOut, omosim.altPercentages)
                 }
                 CalibrationType.EVALUATE -> {
@@ -229,8 +260,8 @@ class TrafficCountCalibrationContext(
         // SSE Result
         println(" ".repeat(cellWidth) +
                 " | " + " ".repeat(cellWidth) +
-                " | SSE " + "%.4g".format(sseCal).padStart(cellWidth)  +
-                " | SSE " + "%.4g".format(sseBase).padStart(cellWidth)  +
+                " | SSE " + "%.4g".format(sseCal).padStart(cellWidth - 4)  +
+                " | SSE " + "%.4g".format(sseBase).padStart(cellWidth - 4)  +
                 " | " + " ".repeat(cellWidth)
         )
         printTabHLine(cellWidth)
@@ -362,8 +393,19 @@ class TrafficCountCalibrationContext(
      * @return Key: origin-destination pair. Value: List of alternatives that contain lists of all sensors affected by
      * the alternative.
      */
-    private fun altAffectedSensors(leeway: Double = 30.0) : Map<Pair<RealLocation, RealLocation>, List<List<TrafficSensor>>> {
-        return affectedSensors(true, leeway = leeway)
+    private fun altAffectedSensors(
+        leeway: Double = 30.0,
+        altMaxRoutes: Int? = null,
+        altMaxSlower: Double? = null,
+        altMaxSimilarity: Double? = null
+    ) : Map<Pair<RealLocation, RealLocation>, List<List<TrafficSensor>>> {
+        return affectedSensors(
+            true,
+            leeway = leeway,
+            altMaxRoutes = altMaxRoutes,
+            altMaxSlower = altMaxSlower,
+            altMaxSimilarity = altMaxSimilarity
+        )
     }
 
     /**
@@ -392,7 +434,10 @@ class TrafficCountCalibrationContext(
     private fun affectedSensors(
         checkAlternatives: Boolean,
         geometryFactory: GeometryFactory = GeometryFactory(),
-        leeway: Double = 30.0
+        leeway: Double = 30.0,
+        altMaxRoutes: Int? = null,
+        altMaxSlower: Double? = null,
+        altMaxSimilarity: Double? = null
     ) : Map<Pair<RealLocation, RealLocation>, List<List<TrafficSensor>>> {
         // Create spatial index of sensor FOVs
         val sensorTree = HPRtree()
@@ -409,7 +454,14 @@ class TrafficCountCalibrationContext(
 
                             // Route the origin destination pair
                             val paths = if (checkAlternatives) {
-                                routeCarAlternatives(origin, destination, omosim.hopper!!).all
+                                routeCarAlternatives(
+                                    origin,
+                                    destination,
+                                    omosim.hopper!!,
+                                    altMaxRoutes,
+                                    altMaxSlower,
+                                    altMaxSimilarity
+                                ).all
                             } else {
                                 listOf( routeWith("car", origin, destination, omosim.hopper!!).best )
                             }
