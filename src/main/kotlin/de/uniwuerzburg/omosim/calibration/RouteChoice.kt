@@ -41,7 +41,9 @@ class RouteChoice(
      *
      * @param gurobi Use Gurobi solver. Must be installed on the system and findable by the gurobi java API.
      */
-    fun calibrate(algorithm: CalibrationAlgorithm?, parameters: Map<String, String>, gurobi: Boolean = false) {
+    fun calibrate(
+        algorithm: CalibrationAlgorithm?, parameters: Map<String, String>, gurobi: Boolean = false
+    ) : Map<ODTTriple, List<Double>> {
         context.omosim.mainRng.setSeed(0) // Seed impact low with 100% of agents
 
         // Run Simulation
@@ -50,7 +52,7 @@ class RouteChoice(
 
         val odtCounts = getODTCounts(agents)
 
-        context.omosim.altPercentages = if (gurobi) {
+        return if (gurobi) {
            optimize(odtCounts)
         } else {
             val model = buildModel(odtCounts) // Create route choice model

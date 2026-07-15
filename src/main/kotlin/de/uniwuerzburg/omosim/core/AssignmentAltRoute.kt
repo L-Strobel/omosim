@@ -2,6 +2,7 @@ package de.uniwuerzburg.omosim.core
 
 import com.graphhopper.GraphHopper
 import de.uniwuerzburg.omosim.calibration.ODTTriple
+import de.uniwuerzburg.omosim.calibration.RouteChoiceCalibrationStore
 import de.uniwuerzburg.omosim.core.models.MobiAgent
 import de.uniwuerzburg.omosim.core.models.Mode
 import de.uniwuerzburg.omosim.core.models.RealLocation
@@ -18,11 +19,11 @@ import kotlin.math.floor
 /**
  * Assigns alternative routes to car trips based on calibration.
  */
-class AssignmentAltRoute(hopper: GraphHopper, altPercentages:  Map<ODTTriple, List<Double>>) : Assignment {
+class AssignmentAltRoute(hopper: GraphHopper, calibration: RouteChoiceCalibrationStore) : Assignment {
     override val tripVisitor: TripVisitor
 
     init {
-        val T = altPercentages.maxOf { (k, _) -> k.t } + 1
+        val T = calibration.altPercentages.maxOf { (k, _) -> k.t } + 1
 
         // Get alternatives and choose according to calibration
         tripVisitor = { trip, originActivity, destinationActivity, departureTime, _, _, rng ->
@@ -37,13 +38,20 @@ class AssignmentAltRoute(hopper: GraphHopper, altPercentages:  Map<ODTTriple, Li
             val odt = ODTTriple(od.first, od.second, t)
 
             // For all car trips
-            if ((trip.mode == Mode.CAR_DRIVER) && (odt in altPercentages)){
+            if ((trip.mode == Mode.CAR_DRIVER) && (odt in calibration.altPercentages)){
                 // Find alternatives
-                val response = routeCarAlternatives(origin, destination, hopper)
+                val response = routeCarAlternatives(
+                    origin,
+                    destination,
+                    hopper,
+                    calibration.altMaxRoutes,
+                    calibration.altMaxSlower,
+                    calibration.altMaxSimilarity,
+                )
 
                 // Choose route according to calibration
                 if (!response.hasErrors()) {
-                    val probs = altPercentages[odt]!!
+                    val probs = calibration.altPercentages[odt]!!
                     val distr = createCumDist(probs.toDoubleArray())
                     val path = response.all[sampleCumDist(distr, rng!!)]
 

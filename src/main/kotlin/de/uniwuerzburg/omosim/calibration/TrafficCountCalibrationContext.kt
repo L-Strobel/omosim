@@ -49,6 +49,11 @@ class TrafficCountCalibrationContext(
     private val modeChoiceOut: File = Paths.get(calibrationOutputFolder.toString(), "mode_choice.json").toFile()
     private val routeChoiceOut: File = Paths.get(calibrationOutputFolder.toString(), "route_choice").toFile()
 
+    // Defaults for alternative route finding
+    var altMaxRoutes: Int = 5
+    var altMaxSlower: Double = 1.35
+    var altMaxSimilarity: Double = 0.8
+
     init {
         T = sensors.first().measurements.size // Set number of time slices
         if (!sensors.all { it.measurements.size == T }) {
@@ -73,33 +78,35 @@ class TrafficCountCalibrationContext(
         // If alternative routes need to be computed
         if (
             (CalibrationType.ROUTE_CHOICE in steps.map { it.type }) or
-            (omosim.altPercentages.isNotEmpty())
+            (omosim.routeChoiceCalibration != null)
         ) {
             logger.info("Matching sensors to alternative routes...")
             val rcSteps = steps.filter { it.type == CalibrationType.ROUTE_CHOICE }
             val rcStep = rcSteps.first()
 
-            val altMaxRoutes = rcStep.parameters["altMaxRoutes"]?.toIntOrNull()
-            val altMaxSlower = rcStep.parameters["altMaxSlower"]?.toDoubleOrNull()
-            val altMaxSimilarity = rcStep.parameters["altMaxSimilarity"]?.toDoubleOrNull()
+            rcStep.parameters["altMaxRoutes"]?.toIntOrNull()?.let { altMaxRoutes = it }
+            rcStep.parameters["altMaxSlower"]?.toDoubleOrNull()?.let { altMaxSlower = it }
+            rcStep.parameters["altMaxSimilarity"]?.toDoubleOrNull()?.let { altMaxSimilarity = it }
 
             // Check if parameters for alt route are the same for all rc steps
-            if (!(
-                rcSteps.all { it.parameters["altMaxRoutes"]?.toIntOrNull() == altMaxRoutes } and
-                rcSteps.all { it.parameters["altMaxSlower"]?.toDoubleOrNull() == altMaxSlower } and
-                rcSteps.all { it.parameters["altMaxSimilarity"]?.toDoubleOrNull() == altMaxSimilarity }
-            )) {
-                logger.warn(
-                    "Having different parameters for altMaxRoutes, altMaxSlower, or altMaxSimilarity between" +
-                    " in different route choice calibration steps is not supported!" +
-                    " Will use only the parameters of the first step:" +
-                    " ($altMaxRoutes, $altMaxSlower, $altMaxSimilarity)")
+            if (rcSteps.size > 1) {
+                if (!(
+                        rcSteps.all { it.parameters["altMaxRoutes"]?.toIntOrNull() == altMaxRoutes } and
+                        rcSteps.all { it.parameters["altMaxSlower"]?.toDoubleOrNull() == altMaxSlower } and
+                        rcSteps.all { it.parameters["altMaxSimilarity"]?.toDoubleOrNull() == altMaxSimilarity }
+                    )
+                ) {
+                    logger.warn(
+                        "Different parameters for altMaxRoutes, altMaxSlower, or altMaxSimilarity between" +
+                        " in different route choice calibration steps is not supported!" +
+                        " Will use only the parameters of the first step:" +
+                        " ($altMaxRoutes, $altMaxSlower, $altMaxSimilarity)"
+                    )
+                }
             }
 
             affectedAltSensors = altAffectedSensors(
-                altMaxRoutes = rcStep.parameters["altMaxRoutes"]?.toIntOrNull() ?: 5,
-                altMaxSlower = rcStep.parameters["altMaxSlower"]?.toDoubleOrNull() ?: 1.35,
-                altMaxSimilarity = rcStep.parameters["altMaxSimilarity"]?.toDoubleOrNull() ?: 0.8
+                altMaxRoutes = altMaxRoutes, altMaxSlower = altMaxSlower, altMaxSimilarity = altMaxSimilarity
             )
             logger.info("Matching sensors to alternative routes... Done!")
 
@@ -127,9 +134,18 @@ class TrafficCountCalibrationContext(
                     omosim.parameterReader.tourModeUtilityFile = modeChoiceOut
                 }
                 CalibrationType.ROUTE_CHOICE -> {
-                    RouteChoice(this)
-                        .calibrate(step.alg, step.parameters)
-                    RouteChoiceCalibrationStore(omosim).write(routeChoiceOut, omosim.altPercentages)
+                    val altPercentages = RouteChoice(this).calibrate(step.alg, step.parameters)
+                    omosim.routeChoiceCalibration = RouteChoiceCalibrationStore(
+                        altPercentages,
+                        altMaxRoutes,
+                        altMaxSlower,
+                        altMaxSimilarity
+                    )
+                    RouteChoiceCalibrationStore.write(
+                        omosim,
+                        routeChoiceOut,
+                        omosim.routeChoiceCalibration!!
+                    )
                 }
                 CalibrationType.EVALUATE -> {
                     evaluate(0.1)
@@ -163,7 +179,7 @@ class TrafficCountCalibrationContext(
         }
         finder.forcedTransitionMatrix.clear() // Gravity: transition matrix
         omosim.parameterReader.tourModeUtilityFile = null // Mode choice
-        omosim.altPercentages = mapOf() // Route choice
+        omosim.routeChoiceCalibration = null // Route choice
 
         // Run uncalibrated
         val simBase = runBatch(sharePop)
@@ -312,7 +328,12 @@ class TrafficCountCalibrationContext(
     @Suppress("SameParameterValue")
     fun runBatch(sharePop: Double) : Map<TrafficSensor, DoubleArray> {
        val agents = runBatchAgents(sharePop)
-       val scaledSimCount = determineSimCounts(agents, affectedSensors, omosim.altPercentages, affectedAltSensors)
+       val scaledSimCount = determineSimCounts(
+           agents,
+           affectedSensors,
+           omosim.routeChoiceCalibration?.altPercentages ?: mapOf(),
+           affectedAltSensors
+       )
        return scaledSimCount
     }
 

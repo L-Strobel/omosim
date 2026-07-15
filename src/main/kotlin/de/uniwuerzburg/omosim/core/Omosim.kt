@@ -4,6 +4,7 @@ import com.graphhopper.GraphHopper
 import com.graphhopper.gtfs.GraphHopperGtfs
 import com.graphhopper.gtfs.PtRouter
 import de.uniwuerzburg.omosim.calibration.ODTTriple
+import de.uniwuerzburg.omosim.calibration.RouteChoiceCalibrationStore
 import de.uniwuerzburg.omosim.core.models.*
 import de.uniwuerzburg.omosim.io.ParameterReader
 import de.uniwuerzburg.omosim.io.geojson.GeoJsonFeature
@@ -110,7 +111,7 @@ class Omosim (
     private val fullArea: Geometry
     val popStrata: List<PopStratum>
     val carOwnership: CarOwnership
-    var altPercentages: Map<ODTTriple, List<Double>> = mapOf()
+    var routeChoiceCalibration: RouteChoiceCalibrationStore? = null
     val parameterReader: ParameterReader
 
     init {
@@ -625,9 +626,11 @@ class Omosim (
         }
 
         // Alternative route selection
-        if (withPath and altPercentages.isNotEmpty()) {
+        if (withPath and (routeChoiceCalibration != null)) {
             setupHopper()
-            AssignmentAltRoute(hopper!!, altPercentages).assign(agents, verbose, dispatcher, mainRng)
+            AssignmentAltRoute(
+                hopper!!, routeChoiceCalibration!!
+            ).assign(agents, verbose, dispatcher, mainRng)
         }
         return  agents
     }

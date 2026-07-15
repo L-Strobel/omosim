@@ -262,13 +262,15 @@ class Run : CliktCommand() {
         // Apply Calibration
         if (calibration_file_gravity != null) {
             val finder = omosim.destinationFinder as DestinationFinderDefault
-            GravityCalibrationStore.read(calibration_file_gravity!!, omosim.grid, omosim.buildings, finder.locChoiceWeightFuns)
+            GravityCalibrationStore
+                .read(calibration_file_gravity!!, omosim.grid, omosim.buildings, finder.locChoiceWeightFuns)
         }
         if (calibration_file_mode_choice != null) {
             omosim.parameterReader.tourModeUtilityFile = calibration_file_mode_choice
         }
         if (calibration_file_route_choice != null) {
-            omosim.altPercentages = RouteChoiceCalibrationStore(omosim).read(calibration_file_route_choice!!, omosim.grid)
+            omosim.routeChoiceCalibration = RouteChoiceCalibrationStore
+                .read(omosim,calibration_file_route_choice!!, omosim.grid)
         }
 
         calibrationParameters?.let {
