@@ -57,9 +57,9 @@ class TrafficCountCalibrationContext(
                 "Validate the --cal_traffic_count_file file. "
             )
         }
-        logger.info("Matching sensors to road network...")
+        logger.info("Matching sensors to fastest routes...")
         affectedSensors = affectedSensors()
-        logger.info("Matching sensors to road network... Done!")
+        logger.info("Matching sensors to fastest routes... Done!")
     }
 
     /**
