@@ -212,7 +212,7 @@ Example:
 ]
 ```
 
-## Parameterization
+## Parametrization
 
 The default parameters *publication2023* are calibrated based on the household travel survey "Mobilität in Deutschland 2017",
 see [OMOD: An open-source tool for creating disaggregated mobility demand based on OpenStreetMap](https://doi.org/10.1016/j.compenvurbsys.2023.102029)
