@@ -210,8 +210,8 @@ class TrafficCountCalibrationContext(
         cellWidth: Int = 15
     ) {
         // Calculate MSE
-        val mseCal  = mse(simCal)
-        val mseBase = mse(simBase)
+        val sseCal  = sse(simCal)
+        val sseBase = sse(simBase)
 
         // Print table
         println("Evaluate Traffic Counts:")
@@ -226,11 +226,11 @@ class TrafficCountCalibrationContext(
         )
         printTabHLine(cellWidth)
 
-        // MSE Result
+        // SSE Result
         println(" ".repeat(cellWidth) +
                 " | " + " ".repeat(cellWidth) +
-                " | " + "%.4g".format(mseCal).padStart(cellWidth)  +
-                " | " + "%.4g".format(mseBase).padStart(cellWidth)  +
+                " | SSE " + "%.4g".format(sseCal).padStart(cellWidth)  +
+                " | SSE " + "%.4g".format(sseBase).padStart(cellWidth)  +
                 " | " + " ".repeat(cellWidth)
         )
         printTabHLine(cellWidth)
@@ -466,17 +466,6 @@ class TrafficCountCalibrationContext(
         }.toMap()
 
         return affectedSensors
-    }
-
-    /**
-     * Compute the mean square error between simulation and measurements across all sensors and time steps.
-     *
-     * @param simCount Simulated traffic at sensor and time step
-     * @return Mean squared error
-     */
-    @Suppress("MemberVisibilityCanBePrivate")
-    fun mse(simCount: Map<TrafficSensor, DoubleArray>) : Double {
-        return sse(simCount) / (sensors.size * T)
     }
 
     /**
