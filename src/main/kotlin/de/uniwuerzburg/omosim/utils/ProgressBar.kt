@@ -2,7 +2,6 @@ package de.uniwuerzburg.omosim.utils
 
 import com.google.common.util.concurrent.AtomicDouble
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.concurrent.atomics.AtomicIntArray
 
 /**
  * Progress bar
@@ -24,10 +23,10 @@ class ProgressBar(
     init {
         pauseLength = if (increments != null) {
             increments
-        } else if (System.console() != null) {
-            0.05 // 5 %, Headless
+        } else if (System.console() == null) {
+            5.0 // 5 %, likely Headless or IDE
         } else {
-            0.001 // 0.1%, in Terminal
+            0.1 // 0.1%, likely Terminal
         }
     }
 
