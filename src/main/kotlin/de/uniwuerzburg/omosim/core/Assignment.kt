@@ -25,7 +25,8 @@ interface Assignment {
     ) : List<MobiAgent> {
         dispatcher.runParallel(
             agents, rng, progressBar = true, processName = "Assigning routes", logger = logger.get()
-        ) { agent, taskRng ->
+        ) { agent, seed ->
+            val taskRng = Random(seed)
             for (diary in agent.mobilityDemand) {
                 diary.visitTrips(tripVisitor, taskRng)
             }
