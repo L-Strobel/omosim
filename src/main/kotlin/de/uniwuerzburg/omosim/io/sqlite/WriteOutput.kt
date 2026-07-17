@@ -1,5 +1,6 @@
 package de.uniwuerzburg.omosim.io.sqlite
 
+import de.uniwuerzburg.omosim.core.models.Mode
 import de.uniwuerzburg.omosim.io.json.OutputActivity
 import de.uniwuerzburg.omosim.io.json.OutputEntry
 import de.uniwuerzburg.omosim.io.json.OutputTrip
@@ -11,6 +12,7 @@ import org.locationtech.jts.io.twkb.TWKBWriter
 import java.io.File
 import java.sql.DriverManager
 import java.sql.SQLException
+import java.sql.Statement
 import java.sql.Types.INTEGER
 
 enum class RouteGeomTypes {
@@ -108,6 +110,21 @@ fun writeSQLite(
         )
         conn.createStatement().execute(tripTableSQL)
 
+        // Trip table
+        conn.createStatement().execute("DROP TABLE IF EXISTS ptleg;")
+        val ptLegTableSQL = (
+        "CREATE TABLE ptleg (" +
+                "	id INTEGER PRIMARY KEY," +
+                "	trip INTEGER NOT NULL," +
+                "	mode text," +
+                "	distanceKilometer REAL," +
+                "	timeMinute REAL," +
+                "	departureStop text," +
+                "	FOREIGN KEY(trip) REFERENCES trip(id)" +
+                ");"
+        )
+        conn.createStatement().execute(ptLegTableSQL)
+
         // Run parameters table
         conn.createStatement().execute("DROP TABLE IF EXISTS runParameters;")
         val paramsTableSQL = (
@@ -127,7 +144,7 @@ fun writeSQLite(
         )
         val dayPStmt = conn.prepareStatement(
         "INSERT INTO day" +
-            "(id,dayType)" +
+            "(id, dayType)" +
             " VALUES(?,?)"
         )
         val knownDayIds = mutableSetOf<Int>()
@@ -140,7 +157,13 @@ fun writeSQLite(
         val tripPStmt = conn.prepareStatement(
         "INSERT INTO trip" +
             "(person, day, legID, startTime, mode, distanceKilometer, timeMinute, route)" +
-            " VALUES(?,?,?,?,?,?,?,?)"
+            " VALUES(?,?,?,?,?,?,?,?)",
+            Statement.RETURN_GENERATED_KEYS
+        )
+        val ptLegPStmt = conn.prepareStatement(
+        "INSERT INTO ptleg" +
+            "(trip, mode, distanceKilometer, timeMinute, departureStop)" +
+            " VALUES(?,?,?,?,?)"
         )
         val runParamPStmt = conn.prepareStatement(
         "INSERT INTO runParameters" +
@@ -245,6 +268,27 @@ fun writeSQLite(
                             tripPStmt.setNull(8, java.sql.Types.VARCHAR)
                         }
                         tripPStmt.executeUpdate()
+                        val tripId = tripPStmt.generatedKeys.getInt(1)
+
+                        if ((leg.mode == Mode.PUBLIC_TRANSIT) and (leg.ptLegs?.isNotEmpty() == true)) {
+                            // Public transit leg table
+                            for (ptLeg in leg.ptLegs!!) {
+                                ptLegPStmt.setInt(1, tripId)
+                                ptLegPStmt.setString(2, ptLeg.mode.toString())
+                                if (ptLeg.distanceKilometer != null) {
+                                    ptLegPStmt.setDouble(3, ptLeg.distanceKilometer)
+                                } else {
+                                    ptLegPStmt.setNull(3, java.sql.Types.DOUBLE)
+                                }
+                                ptLegPStmt.setDouble(4, ptLeg.timeMinute)
+                                if (ptLeg.departureStop != null) {
+                                    ptLegPStmt.setString(5, ptLeg.departureStop)
+                                } else {
+                                    ptLegPStmt.setNull(5, java.sql.Types.VARCHAR)
+                                }
+                                ptLegPStmt.executeUpdate()
+                            }
+                        }
                     }
                 }
             }

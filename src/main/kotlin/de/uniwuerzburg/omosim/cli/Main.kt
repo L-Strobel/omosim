@@ -393,7 +393,7 @@ class Run : CliktCommand() {
             if (success) {
                 logger.get()?.info("Saving results to ${outFn}... Done!")
             } else {
-                logger.get()?.error("Couldn't save results to ${outFn}... Done!")
+                logger.get()?.error("Error! Couldn't save results to $outFn")
             }
         }
     }
