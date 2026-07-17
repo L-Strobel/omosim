@@ -4,7 +4,7 @@ import com.graphhopper.GraphHopper
 import com.graphhopper.gtfs.PtRouter
 import de.uniwuerzburg.omosim.core.models.*
 import de.uniwuerzburg.omosim.io.ParameterReader
-import de.uniwuerzburg.omosim.routing.*
+import de.uniwuerzburg.omosim.routing.Route
 import de.uniwuerzburg.omosim.utils.ProgressBar
 import de.uniwuerzburg.omosim.utils.createCumDist
 import de.uniwuerzburg.omosim.utils.sampleCumDist
@@ -14,7 +14,6 @@ import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.time.TimeSource
