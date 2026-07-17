@@ -4,11 +4,11 @@ import com.graphhopper.GraphHopper
 import com.graphhopper.GraphHopperConfig
 import com.graphhopper.config.CHProfile
 import com.graphhopper.config.Profile
-import com.graphhopper.util.GHUtility
-import com.graphhopper.util.TranslationMap
 import com.graphhopper.gtfs.GraphHopperGtfs
 import com.graphhopper.gtfs.PtRouter
 import com.graphhopper.gtfs.PtRouterImpl
+import com.graphhopper.util.GHUtility
+import com.graphhopper.util.TranslationMap
 
 /**
  * Create GraphHopper object.
@@ -16,8 +16,9 @@ import com.graphhopper.gtfs.PtRouterImpl
  * @param cacheLoc Path where the cache should be stored
  * @return GraphHopper object
  */
-fun createGraphHopper(osmLoc: String, cacheLoc: String) : GraphHopper {
+fun createGraphHopper(osmLoc: String, cacheLoc: String, nWorker: Int? = null) : GraphHopper {
     logger.info("Initializing GraphHopper... (If the osm.pbf is large this can take some time)")
+
     val hopper = GraphHopper()
     hopper.osmFile = osmLoc
     hopper.graphHopperLocation = cacheLoc
@@ -35,6 +36,11 @@ fun createGraphHopper(osmLoc: String, cacheLoc: String) : GraphHopper {
     )
     hopper.setProfiles(profiles)
 
+    if (nWorker != null) {
+        hopper.readerConfig.workerThreads = nWorker
+        hopper.chPreparationHandler.preparationThreads = nWorker
+    }
+
     hopper.chPreparationHandler.setCHProfiles(
         CHProfile("car"),
         CHProfile("foot"),
@@ -51,7 +57,7 @@ fun createGraphHopper(osmLoc: String, cacheLoc: String) : GraphHopper {
  * @param cacheLoc Path where the cache should be stored
  * @return PtRouter and GraphHopperGTFS object
  */
-fun createGraphHopperGTFS(osmLoc: String, gtfsLoc: String, cacheLoc: String) : Pair<PtRouter, GraphHopperGtfs> {
+fun createGraphHopperGTFS(osmLoc: String, gtfsLoc: String, cacheLoc: String, nWorker: Int? = null) : Pair<PtRouter, GraphHopperGtfs> {
     logger.info("Initializing GraphHopperGTFS... (RAM intensive. Best use the smallest possible osm.pbf)")
     val ghConfig = GraphHopperConfig()
     ghConfig.putObject("graph.location", cacheLoc)
@@ -63,6 +69,9 @@ fun createGraphHopperGTFS(osmLoc: String, gtfsLoc: String, cacheLoc: String) : P
         "foot_access, foot_priority, foot_average_speed, hike_rating," +
         "country, road_class, foot_road_access, mtb_rating"
     )
+    if (nWorker != null) {
+        ghConfig.putObject("datareader.worker_threads", nWorker)
+    }
 
     // Profiles
     ghConfig.setProfiles(
@@ -72,11 +81,16 @@ fun createGraphHopperGTFS(osmLoc: String, gtfsLoc: String, cacheLoc: String) : P
     )
 
     val hopperGtfs = GraphHopperGtfs(ghConfig)
+    hopperGtfs.init(ghConfig)
+
     hopperGtfs.chPreparationHandler.setCHProfiles(
         CHProfile("foot"),
     )
 
-    hopperGtfs.init(ghConfig)
+    if (nWorker != null) {
+        hopperGtfs.chPreparationHandler.preparationThreads = nWorker
+    }
+
     hopperGtfs.importOrLoad()
     val ptRouter = PtRouterImpl.Factory(
         ghConfig,

@@ -95,7 +95,7 @@ class Omosim (
     val kdTree: KdTree
     @Suppress("MemberVisibilityCanBePrivate")
     val buildings: List<Building>
-    var hopper: GraphHopper?
+    var hopper: GraphHopper? = null
     val grid: List<Cell>
     private val zones: List<AggLocation> // Grid + DummyLocations for commuting locations
     val activityGenerator: ActivityGenerator
@@ -175,13 +175,8 @@ class Omosim (
         }
 
         // Create graphhopper
-        hopper = if (routingMode == RoutingMode.GRAPHHOPPER) {
-            createGraphHopper(
-                osmFile.toString(),
-                Paths.get(cacheDir.toString(), "routing-graph-cache", osmFile.name).toString()
-            )
-        } else {
-            null
+        if (routingMode == RoutingMode.GRAPHHOPPER) {
+            setupHopper()
         }
 
         // Create routing cache
@@ -641,7 +636,8 @@ class Omosim (
         if (hopper == null) {
             hopper = createGraphHopper(
                 osmFile.toString(),
-                Paths.get(cacheDir.toString(), "routing-graph-cache", osmFile.name).toString()
+                Paths.get(cacheDir.toString(), "routing-graph-cache", osmFile.name).toString(),
+                nWorker
             )
         }
     }
@@ -704,7 +700,8 @@ class Omosim (
             val gtfsPair = createGraphHopperGTFS(
                 osmFile.toString(),
                 clippedGtfsPath.toString(),
-                Paths.get(gtfsCachePath.toString(), "gtfs-routing-graph-cache", osmFile.name).toString()
+                Paths.get(gtfsCachePath.toString(), "gtfs-routing-graph-cache", osmFile.name).toString(),
+                nWorker
             )
             ptRouter = gtfsPair.first
             gtfsHopper = gtfsPair.second
