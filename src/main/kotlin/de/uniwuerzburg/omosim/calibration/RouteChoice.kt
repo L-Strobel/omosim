@@ -1,5 +1,6 @@
 package de.uniwuerzburg.omosim.calibration
 
+import com.google.common.collect.Comparators.min
 import com.gurobi.gurobi.*
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUV
@@ -9,6 +10,7 @@ import de.uniwuerzburg.omosim.calibration.objective.sseObjective
 import de.uniwuerzburg.omosim.core.models.*
 import java.time.LocalTime
 import java.util.Random
+import kotlin.math.max
 
 /**
  * Origin-destination pair at a given time t.
@@ -42,12 +44,16 @@ class RouteChoice(
      * @param gurobi Use Gurobi solver. Must be installed on the system and findable by the gurobi java API.
      */
     fun calibrate(
-        algorithm: CalibrationAlgorithm?, parameters: Map<String, String>, gurobi: Boolean = false
+        algorithm: CalibrationAlgorithm?, parameters: Map<String, String>, gurobi: Boolean = true
     ) : Map<ODTTriple, List<Double>> {
-        context.omosim.mainRng.setSeed(0) // Seed impact low with 100% of agents
+        // Seed impact low with 100% of agents
+        // Should be different from the one used for other batch runs to avoid overfitting
+        context.omosim.mainRng.setSeed(11)
 
         // Run Simulation
-        val agents = context.omosim.run(0.1, start_wd = context.weekday, verbose = false)
+        val n = context.omosim.grid.size
+        val nAgents = min(2e6.toInt(), max(n * n * T, 1e4.toInt()))
+        val agents = context.omosim.run(nAgents, start_wd = context.weekday, verbose = false)
         context.omosim.doModeChoice(agents, ModeChoiceOption.FAST, withPath = false, verbose = false)
 
         val odtCounts = getODTCounts(agents)
@@ -305,7 +311,7 @@ class RouteChoice(
                     continue
                 }
 
-                val t =  startTime.determineTimeSlice()
+                val t = startTime.determineTimeSlice()
                 val odt = ODTTriple(origin, destination, t)
                 n[odt] = (n[odt] ?: 0.0) + context.totalPopulation / agents.size
             }
