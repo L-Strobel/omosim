@@ -9,7 +9,9 @@ import de.uniwuerzburg.omosim.core.models.RealLocation
 import de.uniwuerzburg.omosim.core.models.TripVisitor
 import de.uniwuerzburg.omosim.routing.routeCarAlternatives
 import de.uniwuerzburg.omosim.utils.createCumDist
+import de.uniwuerzburg.omosim.utils.runParallel
 import de.uniwuerzburg.omosim.utils.sampleCumDist
+import kotlinx.coroutines.CoroutineDispatcher
 import java.util.Random
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -20,7 +22,7 @@ import kotlin.math.floor
  * Assigns alternative routes to car trips based on calibration.
  */
 class AssignmentAltRoute(hopper: GraphHopper, calibration: RouteChoiceCalibrationStore) : Assignment {
-    override val tripVisitor: TripVisitor
+    val tripVisitor: TripVisitor
 
     init {
         val T = calibration.altPercentages.maxOf { (k, _) -> k.t } + 1
@@ -60,5 +62,29 @@ class AssignmentAltRoute(hopper: GraphHopper, calibration: RouteChoiceCalibratio
                 }
             }
         }
+    }
+
+    /**
+     * Assign routes to agent trips. Unnecessary if the routes have already been determined during mode choice.
+     */
+    override fun assign(
+        agents: List<MobiAgent>,
+        verbose: Boolean,
+        dispatcher: CoroutineDispatcher,
+        rng: Random,
+    ) : List<MobiAgent> {
+        dispatcher.runParallel(
+            agents,
+            rng,
+            progressBar = true,
+            processName = "Assigning routes (Calibrated Alternatives)",
+            logger = logger.get()
+        ) { agent, seed ->
+            val taskRng = Random(seed)
+            for (diary in agent.mobilityDemand) {
+                diary.visitTrips(tripVisitor, taskRng)
+            }
+        }
+        return agents
     }
 }
