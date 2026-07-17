@@ -46,7 +46,6 @@ class RouteChoice(
     fun calibrate(
         algorithm: CalibrationAlgorithm?, parameters: Map<String, String>, gurobi: Boolean = true
     ) : Map<ODTTriple, List<Double>> {
-        // Seed impact low with 100% of agents
         // Should be different from the one used for other batch runs to avoid overfitting
         context.omosim.mainRng.setSeed(11)
 
