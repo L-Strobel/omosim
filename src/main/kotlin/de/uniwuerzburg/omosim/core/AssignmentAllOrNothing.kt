@@ -63,7 +63,7 @@ class AssignmentAllOrNothing(
         dispatcher.runParallel(
             agents,
             rng,
-            progressBar = true,
+            progressBar = verbose,
             processName = "Assigning routes (All-or-Nothing)",
             logger = logger.get()
         ) { agent, seed ->

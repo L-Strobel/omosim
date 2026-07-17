@@ -76,7 +76,7 @@ class AssignmentAltRoute(hopper: GraphHopper, calibration: RouteChoiceCalibratio
         dispatcher.runParallel(
             agents,
             rng,
-            progressBar = true,
+            progressBar = verbose,
             processName = "Assigning routes (Calibrated Alternatives)",
             logger = logger.get()
         ) { agent, seed ->

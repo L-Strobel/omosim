@@ -1,9 +1,11 @@
 package de.uniwuerzburg.omosim.core
 
 import com.graphhopper.GraphHopper
+import de.uniwuerzburg.omosim.cli.main
 import de.uniwuerzburg.omosim.core.models.*
 import de.uniwuerzburg.omosim.routing.Route
 import de.uniwuerzburg.omosim.utils.ProgressBar
+import de.uniwuerzburg.omosim.utils.runParallel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -33,26 +35,18 @@ class ModeChoiceCarOnly(
     override fun doModeChoice(
         agents: List<MobiAgent>, mainRng: Random, dispatcher: CoroutineDispatcher, modeSpeedUp: Map<Mode, Double>, verbose: Boolean
     ) : List<MobiAgent> {
-        val timeSource = TimeSource.Monotonic
-        val timestampStartInit = timeSource.markNow()
-        val progressBar = ProgressBar("Mode Choice", agents.size, enabled = verbose)
-
-        for (chunk in agents.chunked(AppConstants.nAllowedCoroutines)) { // Don't launch to many coroutines at once
-            runBlocking(dispatcher) {
-                for (agent in chunk) {
-                    val coroutineRng = Random(mainRng.nextLong())
-                    launch(dispatcher) {
-                        for (diary in agent.mobilityDemand) {
-                            tripsToCar(diary, coroutineRng, modeSpeedUp)
-                        }
-                        progressBar.singleTaskComplete()
-                    }
-                }
+        dispatcher.runParallel(
+            agents,
+            mainRng,
+            progressBar = verbose,
+            processName = "Mode Choice (Car Only)",
+            logger = logger.get()
+        ) { agent, seed ->
+            val taskRng = Random(seed)
+            for (diary in agent.mobilityDemand) {
+                tripsToCar(diary, taskRng, modeSpeedUp)
             }
         }
-
-        progressBar.done()
-        logger.get()?.info("Mode Choice took: ${timeSource.markNow() - timestampStartInit}")
         return agents
     }
 
