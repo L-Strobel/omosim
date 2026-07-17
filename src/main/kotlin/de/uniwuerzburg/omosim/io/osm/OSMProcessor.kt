@@ -396,7 +396,6 @@ class OSMProcessor(idTrackerType: IdTrackerType,
 
             if (!geom.isEmpty) {
                 for (type in types) {
-
                     mapObjects.add(MapObject(entity.id, type, geom, levels))
                 }
             }
