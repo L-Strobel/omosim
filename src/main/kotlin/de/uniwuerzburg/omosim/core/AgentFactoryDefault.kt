@@ -151,9 +151,7 @@ class AgentFactoryDefault (
         dispatcher.runParallel(
             homes.withIndex().toList(),
             rng,
-            progressBar = false,
-            processName = "Creating population",
-            logger = logger.get()
+            processName = "Creating population"
         ) { (id, home), seed ->
             val taskRng = Random(seed)
             agentsTmp[id] = createAgent(id, home, home.getAggLoc()!!, zones, taskRng)
