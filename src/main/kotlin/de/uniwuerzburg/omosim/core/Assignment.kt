@@ -3,6 +3,7 @@ package de.uniwuerzburg.omosim.core
 import de.uniwuerzburg.omosim.core.models.MobiAgent
 import de.uniwuerzburg.omosim.core.models.TripVisitor
 import de.uniwuerzburg.omosim.utils.ProgressBar
+import de.uniwuerzburg.omosim.utils.runParallel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -22,29 +23,13 @@ interface Assignment {
         dispatcher: CoroutineDispatcher,
         rng: Random,
     ) : List<MobiAgent> {
-
-        // Progressbar setup
-        val timeSource = TimeSource.Monotonic
-        val timestampStartInit = timeSource.markNow()
-        val progressBar = ProgressBar("Assigning routes", agents.size, enabled = verbose)
-
-        // Assign in parallel
-        for (chunk in agents.chunked(AppConstants.nAllowedCoroutines)) { // Don't launch to many coroutines at once
-            runBlocking(dispatcher) {
-                for (agent in chunk) {
-                    launch(dispatcher) {
-                        val coroutineRng = Random(rng.nextLong())
-                        for (diary in agent.mobilityDemand) {
-                            diary.visitTrips(tripVisitor, coroutineRng)
-                        }
-                        progressBar.singleTaskComplete()
-                    }
-                }
+        dispatcher.runParallel(
+            agents, rng, progressBar = true, processName = "Assigning routes", logger = logger.get()
+        ) { agent, taskRng ->
+            for (diary in agent.mobilityDemand) {
+                diary.visitTrips(tripVisitor, taskRng)
             }
         }
-
-        progressBar.done()
-        logger.get()?.info("Assigning routes took: ${timeSource.markNow() - timestampStartInit}")
         return agents
     }
 }
