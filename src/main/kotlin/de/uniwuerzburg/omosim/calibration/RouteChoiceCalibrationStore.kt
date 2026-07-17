@@ -109,6 +109,10 @@ class RouteChoiceCalibrationStore(
                 unpacked[odt] = p.map { it.toDouble() }.toList()
             }
 
+            if (failures > 0) {
+                logger.warn("Route choice calibration: couldn't match $failures calibrated od pairs to grid.")
+            }
+
             return RouteChoiceCalibrationStore(
                 unpacked,
                 data.altMaxRoutes,

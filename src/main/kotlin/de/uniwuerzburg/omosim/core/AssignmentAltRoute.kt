@@ -13,6 +13,7 @@ import de.uniwuerzburg.omosim.utils.runParallel
 import de.uniwuerzburg.omosim.utils.sampleCumDist
 import kotlinx.coroutines.CoroutineDispatcher
 import java.util.Random
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.toDoubleArray
@@ -23,6 +24,8 @@ import kotlin.math.floor
  */
 class AssignmentAltRoute(hopper: GraphHopper, calibration: RouteChoiceCalibrationStore) : Assignment {
     val tripVisitor: TripVisitor
+    var hits = AtomicInteger(0)
+    var misses = AtomicInteger(0)
 
     init {
         val T = calibration.altPercentages.maxOf { (k, _) -> k.t } + 1
@@ -40,25 +43,31 @@ class AssignmentAltRoute(hopper: GraphHopper, calibration: RouteChoiceCalibratio
             val odt = ODTTriple(od.first, od.second, t)
 
             // For all car trips
-            if ((trip.mode == Mode.CAR_DRIVER) && (odt in calibration.altPercentages)){
-                // Find alternatives
-                val response = routeCarAlternatives(
-                    origin,
-                    destination,
-                    hopper,
-                    calibration.altMaxRoutes,
-                    calibration.altMaxSlower,
-                    calibration.altMaxSimilarity,
-                )
+            if (trip.mode == Mode.CAR_DRIVER) {
+                if (odt in calibration.altPercentages) {
+                    hits.incrementAndGet()
 
-                // Choose route according to calibration
-                if (!response.hasErrors()) {
-                    val probs = calibration.altPercentages[odt]!!
-                    val distr = createCumDist(probs.toDoubleArray())
-                    val path = response.all[sampleCumDist(distr, rng!!)]
+                    // Find alternatives
+                    val response = routeCarAlternatives(
+                        origin,
+                        destination,
+                        hopper,
+                        calibration.altMaxRoutes,
+                        calibration.altMaxSlower,
+                        calibration.altMaxSimilarity,
+                    )
 
-                    trip.lats = path.points.map { it.lat }
-                    trip.lons = path.points.map { it.lon }
+                    // Choose route according to calibration
+                    if (!response.hasErrors()) {
+                        val probs = calibration.altPercentages[odt]!!
+                        val distr = createCumDist(probs.toDoubleArray())
+                        val path = response.all[sampleCumDist(distr, rng!!)]
+
+                        trip.lats = path.points.map { it.lat }
+                        trip.lons = path.points.map { it.lon }
+                    }
+                } else {
+                    misses.incrementAndGet()
                 }
             }
         }
@@ -85,6 +94,10 @@ class AssignmentAltRoute(hopper: GraphHopper, calibration: RouteChoiceCalibratio
                 diary.visitTrips(tripVisitor, taskRng)
             }
         }
+        val shareHit = hits.get() / (hits.get() + misses.get()).toDouble() * 100
+        logger.get()?.info(
+            "Assigning routes (Calibrated Alternatives). Calibrated %.2f %% of car trips".format(shareHit)
+        )
         return agents
     }
 }
