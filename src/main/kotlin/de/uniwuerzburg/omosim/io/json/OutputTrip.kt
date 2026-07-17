@@ -16,5 +16,6 @@ data class OutputTrip (
     val distanceKilometer: Double?,
     val timeMinute: Double?,
     val lats: List<Double>?,
-    val lons: List<Double>?
+    val lons: List<Double>?,
+    val ptLegs: List<OutputPTLeg>?
 ) : OutputLeg

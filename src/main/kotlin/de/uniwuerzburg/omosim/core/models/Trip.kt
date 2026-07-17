@@ -1,5 +1,7 @@
 package de.uniwuerzburg.omosim.core.models
 
+import de.uniwuerzburg.omosim.io.json.OutputPTLeg
+
 /**
  * A trip.
  *
@@ -16,5 +18,6 @@ data class Trip (
     var time: Double? = null,        // Unit: Minute
     var mode: Mode = Mode.UNDEFINED,
     var lats: List<Double>? = null,
-    var lons: List<Double>? = null
+    var lons: List<Double>? = null,
+    var ptLegs: List<OutputPTLeg>? = null
 )

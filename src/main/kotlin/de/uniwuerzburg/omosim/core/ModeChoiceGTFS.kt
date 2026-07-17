@@ -221,7 +221,8 @@ class ModeChoiceGTFS(
                         trip.routes[mode]!!.time,
                         mode = mode,
                         lats = trip.routes[mode]!!.lats,
-                        lons = trip.routes[mode]!!.lons
+                        lons = trip.routes[mode]!!.lons,
+                        ptLegs = trip.routes[mode]!!.ptLegs
                     )
                 )
             }

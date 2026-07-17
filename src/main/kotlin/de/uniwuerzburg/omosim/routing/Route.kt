@@ -7,6 +7,7 @@ import de.uniwuerzburg.omosim.core.models.ActivityType
 import de.uniwuerzburg.omosim.core.models.LocationOption
 import de.uniwuerzburg.omosim.core.models.Mode
 import de.uniwuerzburg.omosim.core.models.RealLocation
+import de.uniwuerzburg.omosim.io.json.OutputPTLeg
 import java.time.Instant
 import java.util.*
 import kotlin.math.ln
@@ -16,6 +17,7 @@ class Route (
     var time: Double,               // Unit: minutes
     val lats: List<Double>?,
     val lons: List<Double>?,
+    val ptLegs: List<OutputPTLeg>? = null,
     val onlyWalk: Boolean = false
 ) {
     companion object {
@@ -39,30 +41,64 @@ class Route (
                 if (response.hasErrors()) {
                     routeFallback(mode, origin, destination)
                 } else {
-                    fromGHResponse(response, withPath)
+                    fromGHResponse(mode, response, withPath)
                 }
             }
             return addConstantTimeCost(mode, route)
         }
 
-        private fun fromGHResponse(response: GHResponse, withPath: Boolean) : Route {
-            val (lats, lons) = if (withPath) {
-                Pair(
-                    response.best.points.map { it.lat },
-                    response.best.points.map { it.lon }
-                )
-            } else {
-                Pair(null, null)
-            }
+        private fun fromGHResponse(mode: Mode, response: GHResponse, withPath: Boolean) : Route {
+            val best = response.best
+            val legs = best.legs
 
             // Check if only walking occurred
-            val onlyWalk = response.best.legs.all { it.type == "walk" }
+            val onlyWalk = legs.all { it.type == "walk" }
+
+            // Route
+            var ptLegs: List<OutputPTLeg>? = null
+            var lats: List<Double>? = null
+            var lons: List<Double>? = null
+            if (withPath) {
+                lats = best.points.map { it.lat }
+                lons = best.points.map { it.lon }
+
+                if ((mode == Mode.PUBLIC_TRANSIT) and !onlyWalk and legs.isNotEmpty()) {
+                    ptLegs = mutableListOf()
+                    for (leg in legs) {
+                        val legMode = when (leg.type) {
+                            "walk" -> Mode.FOOT
+                            "pt" -> Mode.PUBLIC_TRANSIT
+                            else -> {
+                                logger.debug(
+                                    "Found unexpected pt leg mode ${leg.type}. Setting to ${Mode.PUBLIC_TRANSIT.name}."
+                                )
+                                Mode.PUBLIC_TRANSIT
+                            }
+                        }
+                        val time = ((leg.arrivalTime.time - leg.departureTime.time) / 1000 / 60).toDouble()
+                        val dStop = if (legMode == Mode.PUBLIC_TRANSIT) leg.departureLocation else null
+
+                        // GTFS routing currently always returns 0.0 for distance
+                        val distance = if ((leg.distance == 0.0) and (time > 0.0)) null else leg.distance / 1000
+
+                        ptLegs.add(
+                            OutputPTLeg(
+                                mode = legMode,
+                                timeMinute = time,
+                                distanceKilometer = distance,
+                                departureStop = dStop
+                            )
+                        )
+                    }
+                }
+            }
 
             return Route (
-                response.best.distance / 1000,
-                (response.best.time / 1000 / 60).toDouble(),
+                best.distance / 1000,
+                (best.time / 1000 / 60).toDouble(),
                 lats,
                 lons,
+                ptLegs,
                 onlyWalk
             )
         }

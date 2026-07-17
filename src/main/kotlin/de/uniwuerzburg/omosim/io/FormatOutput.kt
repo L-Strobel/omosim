@@ -31,7 +31,14 @@ fun formatOutput(agent: MobiAgent) : OutputEntry {
             val trip = diary.trips[i]
             legs.add(
                 OutputTrip(
-                    id, trip.mode, currentTime.toString(), trip.distance, trip.time, trip.lats, trip.lons
+                    id,
+                    trip.mode,
+                    currentTime.toString(),
+                    trip.distance,
+                    trip.time,
+                    trip.lats,
+                    trip.lons,
+                    trip.ptLegs
                 )
             )
             id += 1
