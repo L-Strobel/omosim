@@ -3,7 +3,6 @@ package de.uniwuerzburg.omosim.core
 import com.graphhopper.GraphHopper
 import com.graphhopper.gtfs.GraphHopperGtfs
 import com.graphhopper.gtfs.PtRouter
-import de.uniwuerzburg.omosim.calibration.ODTTriple
 import de.uniwuerzburg.omosim.calibration.RouteChoiceCalibrationStore
 import de.uniwuerzburg.omosim.core.models.*
 import de.uniwuerzburg.omosim.io.ParameterReader
@@ -20,12 +19,15 @@ import de.uniwuerzburg.omosim.io.osm.BuildingData
 import de.uniwuerzburg.omosim.io.osm.readOSM
 import de.uniwuerzburg.omosim.io.overture.readOverture
 import de.uniwuerzburg.omosim.io.readCensus
-import de.uniwuerzburg.omosim.routing.*
-import de.uniwuerzburg.omosim.utils.*
+import de.uniwuerzburg.omosim.routing.RoutingCache
+import de.uniwuerzburg.omosim.routing.RoutingMode
+import de.uniwuerzburg.omosim.routing.createGraphHopper
+import de.uniwuerzburg.omosim.routing.createGraphHopperGTFS
+import de.uniwuerzburg.omosim.utils.CRSTransformer
+import de.uniwuerzburg.omosim.utils.fastCovers
+import de.uniwuerzburg.omosim.utils.runParallel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.index.kdtree.KdNode
@@ -37,9 +39,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.LocalDate
 import java.util.*
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.exists
-import kotlin.math.floor
 import kotlin.time.TimeSource
 
 /**
@@ -169,7 +169,7 @@ class Omosim (
         }
 
         // Create grid (used for speed up)
-        grid = makeClusterGrid(gridPrecision, buildings, geometryFactory, transformer)
+        grid = makeClusterGrid(gridPrecision, buildings, geometryFactory, transformer, dispatcher)
         for (cell in grid) {
             cell.buildings.forEach { it.cell = cell }
         }
@@ -519,25 +519,20 @@ class Omosim (
     ) : List<MobiAgent> {
         logger.on = verbose
 
-        val timeSource = TimeSource.Monotonic
-        val timestampStartInit = timeSource.markNow()
-        val progressBar = ProgressBar("Activity generation", agents.size, enabled = verbose)
-
-        for (chunk in agents.chunked(AppConstants.nAllowedCoroutines)) { // Don't launch to many coroutines at once
-            runBlocking(dispatcher) {
-                for (agent in chunk) {
-                    val coroutineRng = Random(mainRng.nextLong())
-                    launch(dispatcher) {
-                        runAgent(agent, start_wd, n_days, coroutineRng)
-                        progressBar.singleTaskComplete()
-                    }
-                }
-            }
+        dispatcher.runParallel(
+            agents,
+            mainRng,
+            progressBar = verbose,
+            processName = "Activity generation",
+            logger = logger.get()
+        ) { agent, seed ->
+            val taskRng = Random(seed)
+            runAgent(agent, start_wd, n_days, taskRng)
         }
 
-        progressBar.done()
+        logger.get()?.info("Storing routing cache...")
         routingCache.toOOMCache() // Save routing cache
-        logger.get()?.info("Activity generation took: ${timeSource.markNow() - timestampStartInit}")
+        logger.get()?.info("Storing routing cache... Done!")
         return agents
     }
 

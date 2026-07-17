@@ -4,6 +4,7 @@ import de.uniwuerzburg.omosim.core.models.*
 import de.uniwuerzburg.omosim.utils.*
 import kotlinx.coroutines.*
 import java.util.*
+import kotlin.collections.toList
 
 /**
  * Creates agents by determining socio-demographic features as well as work and school locations.
@@ -146,20 +147,18 @@ class AgentFactoryDefault (
     private fun createAgentsFromHomes(
         homes: List<LocationOption>, zones: List<AggLocation>, rng: Random
     ) : List<MobiAgent> {
-        val agents = ArrayList<MobiAgent>(homes.size)
-        for (chunk in homes.withIndex().chunked(AppConstants.nAllowedCoroutines)) {
-            runBlocking(dispatcher) {
-                val agentsFutures = mutableListOf<Deferred<MobiAgent>>()
-                for ((id, home) in chunk) {
-                    val coroutineRng = Random(rng.nextLong())
-                    val agent = async {
-                        createAgent(id, home, home.getAggLoc()!!, zones, coroutineRng)
-                    }
-                    agentsFutures.add(agent)
-                }
-                agents.addAll(agentsFutures.awaitAll())
-            }
+        val agentsTmp = arrayOfNulls<MobiAgent>(homes.size)
+        dispatcher.runParallel(
+            homes.withIndex().toList(),
+            rng,
+            progressBar = false,
+            processName = "Creating population",
+            logger = logger.get()
+        ) { (id, home), seed ->
+            val taskRng = Random(seed)
+            agentsTmp[id] = createAgent(id, home, home.getAggLoc()!!, zones, taskRng)
         }
+        val agents = agentsTmp.mapTo(ArrayList(homes.size)) { it!! }
         agents.shuffle(rng)
         return agents
     }

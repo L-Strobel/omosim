@@ -3,6 +3,8 @@ package de.uniwuerzburg.omosim.core
 import de.uniwuerzburg.omosim.core.models.Building
 import de.uniwuerzburg.omosim.core.models.Cell
 import de.uniwuerzburg.omosim.utils.CRSTransformer
+import de.uniwuerzburg.omosim.utils.runParallel
+import kotlinx.coroutines.CoroutineDispatcher
 import org.apache.commons.math3.ml.clustering.CentroidCluster
 import org.apache.commons.math3.ml.clustering.Clusterable
 import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer
@@ -11,6 +13,7 @@ import org.apache.commons.math3.ml.distance.EuclideanDistance
 import org.apache.commons.math3.random.JDKRandomGenerator
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
+import java.util.*
 import kotlin.math.min
 import kotlin.math.pow
 
@@ -97,30 +100,37 @@ fun <T: Clusterable> bisectingKMeans(precision: Double, points: Collection<T>, m
  *
  * @return routing cells
  */
-fun cluster(precision: Double, buildings: List<Building>, geometryFactory: GeometryFactory,
-            transformer: CRSTransformer, startID: Int = 0
+fun cluster(
+    precision: Double,
+    buildings: List<Building>,
+    geometryFactory: GeometryFactory,
+    transformer: CRSTransformer,
+    dispatcher:  CoroutineDispatcher,
+    startID: Int = 0
 ) : List<Cell> {
     val centroids = bisectingKMeans(precision, buildings)
 
-    var id = startID
-    val grid = mutableListOf<Cell>()
-    for (centroid in centroids) {
+    val grid = arrayOfNulls<Cell?>(centroids.size)
+    dispatcher.runParallel(
+        centroids.withIndex().toList(),
+        Random()
+    ) { (i, centroid), seed ->
         val cellBuildings = centroid.points
         val featureCentroid = Coordinate(centroid.center.point[0], centroid.center.point[1])
 
         val latlonCoord = transformer.toLatLon( geometryFactory.createPoint(featureCentroid) ).coordinate
 
         val cell = Cell(
-            id = id,
+            id = i + startID,
             coord = featureCentroid,
             latlonCoord = latlonCoord,
             buildings = cellBuildings,
         )
 
-        grid.add(cell)
-        id += 1
+        grid[i] = cell
     }
-    return grid.toList()
+
+    return grid.map { it!! }.toList()
 }
 
 /**
@@ -136,13 +146,22 @@ fun cluster(precision: Double, buildings: List<Building>, geometryFactory: Geome
  *
  * @return routing cells
  */
-fun makeClusterGrid(focusAreaPrecision: Double, buildings: List<Building>,
-                    geometryFactory: GeometryFactory, transformer: CRSTransformer
+fun makeClusterGrid(
+    focusAreaPrecision: Double,
+    buildings: List<Building>,
+    geometryFactory: GeometryFactory,
+    transformer: CRSTransformer,
+    dispatcher: CoroutineDispatcher
 ) : List<Cell> {
     // Get cluster in focus area
     val focusAreaBuildings = buildings.filter { it.inFocusArea }
-    val cells = cluster(focusAreaPrecision, buildings.filter { it.inFocusArea }, geometryFactory, transformer)
-        .toMutableList()
+    val cells = cluster(
+        focusAreaPrecision,
+        buildings.filter { it.inFocusArea },
+        geometryFactory,
+        transformer,
+        dispatcher
+    ).toMutableList()
 
     // Get cluster in buffer area with gradually declining resolution
     val bufferBuildings = buildings.filter { !it.inFocusArea }
@@ -171,7 +190,13 @@ fun makeClusterGrid(focusAreaPrecision: Double, buildings: List<Building>,
         val startID = cells.maxOf { it.id } + 1
         cells.addAll(
             cluster(
-                focusAreaPrecision*nClusterDivisor, buildingsAtDistance, geometryFactory, transformer, startID)
+                focusAreaPrecision * nClusterDivisor,
+                buildingsAtDistance,
+                geometryFactory,
+                transformer,
+                dispatcher,
+                startID
+            )
         )
     }
 
