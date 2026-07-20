@@ -3,11 +3,14 @@ package de.uniwuerzburg.omosim.core
 import de.uniwuerzburg.omosim.core.models.*
 import de.uniwuerzburg.omosim.io.json.ActivityChain
 import de.uniwuerzburg.omosim.io.json.ActivityGroup
+import de.uniwuerzburg.omosim.utils.cleanMatrix
 import de.uniwuerzburg.omosim.utils.createCumDist
 import de.uniwuerzburg.omosim.utils.sampleCumDist
 import de.uniwuerzburg.omosim.utils.sampleNDGaussianFast
 import org.apache.commons.math3.linear.Array2DRowRealMatrix
 import org.apache.commons.math3.linear.CholeskyDecomposition
+import org.apache.commons.math3.linear.NonSymmetricMatrixException
+import org.apache.commons.math3.linear.RealMatrix
 import java.util.*
 
 /**
@@ -208,12 +211,31 @@ class ActivityGeneratorDefault (activityGroups: List<ActivityGroup>): ActivityGe
         val covariances: List<Array<DoubleArray>>
     ) {
         // Lower triangular matrices of covariance matrices. Precomputed for faster sampling.
-        val covLs = covariances.map {
-            CholeskyDecomposition(Array2DRowRealMatrix(it), 0.1, 1.0E-10).l
-        }
+        var covLs: MutableList<RealMatrix> = mutableListOf()
 
         init {
             require(covariances.size == means.size) { "Dimension mismatch !" }
+
+            // Precompute covL
+            for (cov in covariances) {
+                try {
+                    val covL = CholeskyDecomposition(
+                        Array2DRowRealMatrix(cov),
+                        0.1,
+                        1.0E-10
+                    ).l
+                    covLs.add(covL)
+                } catch (e: NonSymmetricMatrixException) {
+                    logger.get()?.debug(e.message)
+                    cleanMatrix(cov, 1e-13) // Remove values: abs(x) < 10-13
+                    val covL = CholeskyDecomposition(
+                        Array2DRowRealMatrix(cov),
+                        0.1,
+                        1.0E-10
+                    ).l
+                    covLs.add(covL)
+                }
+            }
         }
     }
 }
