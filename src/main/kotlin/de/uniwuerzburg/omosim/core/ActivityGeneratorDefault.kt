@@ -226,8 +226,9 @@ class ActivityGeneratorDefault (activityGroups: List<ActivityGroup>): ActivityGe
                     ).l
                     covLs.add(covL)
                 } catch (e: NonSymmetricMatrixException) {
-                    logger.get()?.debug(e.message)
-                    cleanMatrix(cov, 1e-13) // Remove values: abs(x) < 10-13
+                    val eps = 1e-13
+                    logger.get()?.debug(e.message + ". Setting values abs(x) < $eps to zero and trying again.")
+                    cleanMatrix(cov, eps) // Remove values: abs(x) < 10-13
                     val covL = CholeskyDecomposition(
                         Array2DRowRealMatrix(cov),
                         0.1,
