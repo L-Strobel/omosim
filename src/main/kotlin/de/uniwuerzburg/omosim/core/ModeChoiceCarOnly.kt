@@ -1,18 +1,12 @@
 package de.uniwuerzburg.omosim.core
 
 import com.graphhopper.GraphHopper
-import de.uniwuerzburg.omosim.cli.main
 import de.uniwuerzburg.omosim.core.models.*
 import de.uniwuerzburg.omosim.routing.Route
-import de.uniwuerzburg.omosim.utils.ProgressBar
 import de.uniwuerzburg.omosim.utils.runParallel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.time.LocalTime
 import java.util.*
-import java.util.concurrent.atomic.AtomicInteger
-import kotlin.time.TimeSource
 
 /**
  * Turn every trip into a char trip.

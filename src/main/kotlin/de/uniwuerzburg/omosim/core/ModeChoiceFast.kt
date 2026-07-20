@@ -5,14 +5,10 @@ import de.uniwuerzburg.omosim.io.ParameterReader
 import de.uniwuerzburg.omosim.routing.Route
 import de.uniwuerzburg.omosim.routing.RoutingCache
 import de.uniwuerzburg.omosim.routing.calcDistanceBeeline
-import de.uniwuerzburg.omosim.utils.ProgressBar
 import de.uniwuerzburg.omosim.utils.runParallel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.time.LocalTime
 import java.util.*
-import kotlin.time.TimeSource
 
 /**
  * Do mode choice with the mode options: FOOT, BICYCLE, CAR_DRIVER, CAR_PASSENGER, PUBLIC_TRANSIT
