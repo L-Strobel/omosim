@@ -73,10 +73,7 @@ class ModeChoiceCarOnly(
             }
 
             trip.mode = Mode.CAR_DRIVER
-            trip.time = route.time / modeSpeedUp.getOrDefault(Mode.CAR_DRIVER, 1.0)
-            trip.distance = route.distance
-            trip.lats = route.lats
-            trip.lons = route.lons
+            trip.updateWith(route, modeSpeedUp)
         }
 
         diary.visitTrips(visitor)
