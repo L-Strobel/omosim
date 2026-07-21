@@ -6,7 +6,9 @@ import de.uniwuerzburg.omosim.calibration.RouteChoiceCalibrationStore
 import de.uniwuerzburg.omosim.core.models.MobiAgent
 import de.uniwuerzburg.omosim.core.models.Mode
 import de.uniwuerzburg.omosim.core.models.RealLocation
+import de.uniwuerzburg.omosim.core.models.Trip
 import de.uniwuerzburg.omosim.core.models.TripVisitor
+import de.uniwuerzburg.omosim.routing.Route
 import de.uniwuerzburg.omosim.routing.routeCarAlternatives
 import de.uniwuerzburg.omosim.utils.createCumDist
 import de.uniwuerzburg.omosim.utils.runParallel
@@ -22,16 +24,27 @@ import kotlin.math.floor
 /**
  * Assigns alternative routes to car trips based on calibration.
  */
-class AssignmentAltRoute(hopper: GraphHopper, calibration: RouteChoiceCalibrationStore) : Assignment {
-    val tripVisitor: TripVisitor
+class AssignmentAltRoute(
+    val hopper: GraphHopper,
+    val calibration: RouteChoiceCalibrationStore
+) : Assignment {
     var hits = AtomicInteger(0)
     var misses = AtomicInteger(0)
 
-    init {
+    /**
+     * Assign routes to agent trips. Unnecessary if the routes have already been determined during mode choice.
+     */
+    override fun assign(
+        agents: List<MobiAgent>,
+        verbose: Boolean,
+        dispatcher: CoroutineDispatcher,
+        rng: Random,
+        modeSpeedUp: Map<Mode, Double>
+    ) : List<MobiAgent> {
         val T = calibration.altPercentages.maxOf { (k, _) -> k.t } + 1
 
         // Get alternatives and choose according to calibration
-        tripVisitor = { trip, originActivity, destinationActivity, departureTime, _, _, rng ->
+        val tripVisitor: TripVisitor = { trip, originActivity, destinationActivity, departureTime, _, _, rng ->
             // Calibration uses aggregated locations
             val origin = originActivity.location.getAggLoc()!! as RealLocation
             val destination = destinationActivity.location.getAggLoc()!! as RealLocation
@@ -63,25 +76,20 @@ class AssignmentAltRoute(hopper: GraphHopper, calibration: RouteChoiceCalibratio
                         val distr = createCumDist(probs.toDoubleArray())
                         val path = response.all[sampleCumDist(distr, rng!!)]
 
-                        trip.lats = path.points.map { it.lat }
-                        trip.lons = path.points.map { it.lon }
+                        val route = Route (
+                            path.distance / 1000,
+                            (path.time / 1000 / 60).toDouble(),
+                            path.points.map { it.lat },
+                            path.points.map { it.lon }
+                        )
+                        trip.updateWith(route, modeSpeedUp)
                     }
                 } else {
                     misses.incrementAndGet()
                 }
             }
         }
-    }
 
-    /**
-     * Assign routes to agent trips. Unnecessary if the routes have already been determined during mode choice.
-     */
-    override fun assign(
-        agents: List<MobiAgent>,
-        verbose: Boolean,
-        dispatcher: CoroutineDispatcher,
-        rng: Random,
-    ) : List<MobiAgent> {
         dispatcher.runParallel(
             agents,
             rng,

@@ -1,6 +1,7 @@
 package de.uniwuerzburg.omosim.core.models
 
 import de.uniwuerzburg.omosim.io.json.OutputPTLeg
+import de.uniwuerzburg.omosim.routing.Route
 
 /**
  * A trip.
@@ -20,4 +21,12 @@ data class Trip (
     var lats: List<Double>? = null,
     var lons: List<Double>? = null,
     var ptLegs: List<OutputPTLeg>? = null
-)
+) {
+    fun updateWith(route: Route, modeSpeedUp: Map<Mode, Double>) {
+        this.distance = route.distance
+        this.time = route.time / modeSpeedUp.getOrDefault(this.mode, 1.0)
+        this.lats = route.lats
+        this.lons = route.lons
+        this.ptLegs = route.ptLegs
+    }
+}

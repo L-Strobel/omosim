@@ -1,7 +1,10 @@
 package de.uniwuerzburg.omosim.core
 
 import de.uniwuerzburg.omosim.core.models.MobiAgent
+import de.uniwuerzburg.omosim.core.models.Mode
+import de.uniwuerzburg.omosim.core.models.Trip
 import de.uniwuerzburg.omosim.core.models.TripVisitor
+import de.uniwuerzburg.omosim.routing.Route
 import de.uniwuerzburg.omosim.utils.ProgressBar
 import de.uniwuerzburg.omosim.utils.runParallel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -20,5 +23,6 @@ interface Assignment {
         verbose: Boolean,
         dispatcher: CoroutineDispatcher,
         rng: Random,
+        modeSpeedUp: Map<Mode, Double>
     ) : List<MobiAgent>
 }
