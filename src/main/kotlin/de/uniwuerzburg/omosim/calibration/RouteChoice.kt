@@ -1,16 +1,17 @@
 package de.uniwuerzburg.omosim.calibration
 
-import com.google.common.collect.Comparators.min
 import com.gurobi.gurobi.*
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUV
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.*
-import de.uniwuerzburg.omosim.calibration.objective.sseObjectiveGRB
+import de.uniwuerzburg.omosim.calibration.objective.SMOriginDestination
 import de.uniwuerzburg.omosim.calibration.objective.sseObjective
+import de.uniwuerzburg.omosim.calibration.objective.sseObjectiveGRB
+import de.uniwuerzburg.omosim.calibration.surrogate.SurrogateGravity
+import de.uniwuerzburg.omosim.calibration.surrogate.TrafficCountVMatrixBuilderTF
 import de.uniwuerzburg.omosim.core.models.*
 import java.time.LocalTime
-import java.util.Random
-import kotlin.math.max
+import java.util.*
 
 /**
  * Origin-destination pair at a given time t.
@@ -44,19 +45,19 @@ class RouteChoice(
      * @param gurobi Use Gurobi solver. Must be installed on the system and findable by the gurobi java API.
      */
     fun calibrate(
-        algorithm: CalibrationAlgorithm?, parameters: Map<String, String>, gurobi: Boolean = true
+        algorithm: CalibrationAlgorithm?,
+        parameters: Map<String, String>,
+        gurobi: Boolean = true,
+        surrogate: Boolean = true
     ) : Map<ODTTriple, List<Double>> {
-        // Should be different from the one used for other batch runs to avoid overfitting
-        context.omosim.mainRng.setSeed(11)
+        // Compute expected origin-destination matrix
+        val odtCounts = if (surrogate) {
+            getODTCountsSM()
+        } else {
+            getODTCountsSimulation()
+        }
 
-        // Run Simulation
-        val n = context.omosim.grid.size
-        val nAgents = min(2e6.toInt(), max(n * n * T, 1e4.toInt()))
-        val agents = context.omosim.run(nAgents, start_wd = context.weekday, verbose = false)
-        context.omosim.doModeChoice(agents, ModeChoiceOption.FAST, withPath = false, verbose = false)
-
-        val odtCounts = getODTCounts(agents)
-
+        // Optimize routes
         return if (gurobi) {
            optimize(odtCounts)
         } else {
@@ -275,15 +276,76 @@ class RouteChoice(
         return unpacked
     }
 
+    private fun getODTCountsSM() : Map<ODTTriple, Double> {
+        val n = context.omosim.grid.size
+        val activity = ActivityType.WORK // Shouldn't matter
+
+        // Build surrogate
+        val model = SurrogateGravity(context).buildTF(
+            activity,
+            SMOriginDestination(context),
+            TrafficCountVMatrixBuilderTF(context)
+        )
+
+        // Compute expected origin-destination matrix
+        val x0 = getX0(activity)
+        val e = model.evaluate(x0)
+
+        // Unpack matrix
+        val odtCounts = mutableMapOf<ODTTriple, Double>()
+        for ((i, v) in e.withIndex()) {
+            val r = i % n
+            val c = i / n % n
+            val t = i / n / n
+
+            val o = context.omosim.grid[r]
+            val d = context.omosim.grid[c]
+
+            val odt = ODTTriple(o, d, t)
+            odtCounts[odt] = v
+        }
+        return odtCounts
+    }
+
+    private fun getX0(activity: ActivityType) : DoubleArray { // TODO dedup
+        val grid = context.omosim.grid
+        val dcFunction = context.finder.locChoiceWeightFuns[activity]!!
+        val x0 = DoubleArray(grid.size - 1) { 1.0 }
+
+        // Get previous scalers
+        for ((gi, cell) in grid.dropLast(1).withIndex()) {
+            x0[gi] = cell.getAttractionScaler(dcFunction)
+        }
+
+        // Normalize using the last element as a pivot
+        val lastValue = grid.last().getAttractionScaler(dcFunction)
+        if (lastValue != 1.0) {
+            for (i in x0.indices) {
+                x0[i] /= lastValue
+            }
+        }
+
+        return x0
+    }
+
     /**
-     * Determine how often a specific origin-destination-time triple occurs.
-     * @param agents OMoSim run result
+     * Determine how often a specific origin-destination-time triple occurs with a simulaiton
+     * @param sharePop Share of population to used to estimate the expected origin-destination Matrix.
+     * Must be quite high because of the many different possibilities for origin-destination-timestep combinations.
      * @return Occurrence
      */
-    private fun getODTCounts(
-        agents: List<MobiAgent>
+    private fun getODTCountsSimulation(
+        sharePop: Double = 1.0
     ) : Map<ODTTriple, Double> {
-        val n = mutableMapOf<ODTTriple, Double>()
+        // Should be different from the one used for other batch runs to avoid overfitting
+        context.omosim.mainRng.setSeed(11)
+
+        // Run Simulation
+        val agents = context.omosim.run(sharePop, start_wd = context.weekday, verbose = false)
+        context.omosim.doModeChoice(agents, ModeChoiceOption.FAST, withPath = false, verbose = false)
+
+        // Get counts
+        val odtCount = mutableMapOf<ODTTriple, Double>()
         for (agent in agents) {
             val demand = agent.mobilityDemand.first() // Get demand for first day
 
@@ -312,10 +374,10 @@ class RouteChoice(
 
                 val t = startTime.determineTimeSlice()
                 val odt = ODTTriple(origin, destination, t)
-                n[odt] = (n[odt] ?: 0.0) + context.totalPopulation / agents.size
+                odtCount[odt] = (odtCount[odt] ?: 0.0) + context.totalPopulation / agents.size
             }
         }
-        return n
+        return odtCount
     }
 }
 
