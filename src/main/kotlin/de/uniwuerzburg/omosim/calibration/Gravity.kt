@@ -70,32 +70,36 @@ class Gravity(
         }
     }
 
-    private fun getX0(activities: List<ActivityType>) : DoubleArray {
-        val x0s = mutableListOf<DoubleArray>()
-        for (activity in activities) {
-            x0s.add(getX0(activity))
-        }
-        return x0s.flatMap { it.toList() }.toDoubleArray()
-    }
-
-    private fun getX0(activity: ActivityType) : DoubleArray {
-        val dcFunction = context.finder.locChoiceWeightFuns[activity]!!
-        val x0 = DoubleArray(grid.size - 1) { 1.0 }
-
-        // Get previous scalers
-        for ((gi, cell) in grid.dropLast(1).withIndex()) {
-            x0[gi] = cell.getAttractionScaler(dcFunction)
-        }
-
-        // Normalize using the last element as a pivot
-        val lastValue = grid.last().getAttractionScaler(dcFunction)
-        if (lastValue != 1.0) {
-            for (i in x0.indices) {
-                x0[i] /= lastValue
+    companion object {
+        fun getX0(activities: List<ActivityType>, context: TrafficCountCalibrationContext) : DoubleArray {
+            val x0s = mutableListOf<DoubleArray>()
+            for (activity in activities) {
+                x0s.add(getX0(activity, context))
             }
+            return x0s.flatMap { it.toList() }.toDoubleArray()
         }
 
-        return x0
+        fun getX0(activity: ActivityType, context: TrafficCountCalibrationContext) : DoubleArray {
+            val grid = context.omosim.grid
+            val dcFunction = context.finder.locChoiceWeightFuns[activity]!!
+
+            val x0 = DoubleArray(grid.size - 1) { 1.0 }
+
+            // Get previous scalers
+            for ((gi, cell) in grid.dropLast(1).withIndex()) {
+                x0[gi] = cell.getAttractionScaler(dcFunction)
+            }
+
+            // Normalize using the last element as a pivot
+            val lastValue = grid.last().getAttractionScaler(dcFunction)
+            if (lastValue != 1.0) {
+                for (i in x0.indices) {
+                    x0[i] /= lastValue
+                }
+            }
+
+            return x0
+        }
     }
 
     /**
@@ -171,7 +175,7 @@ class Gravity(
         )  {
             for (activity in activities) {
                 val model = buildModel(activity)
-                val x0 = getX0(activity)
+                val x0 = getX0(activity, context)
                 val d = BFGS.run(model, x0, parameters=parameters)
                 updateCalibration(d, activity)
             }
@@ -183,7 +187,7 @@ class Gravity(
         )  {
             for (activity in activities) {
                 val model = buildModel(activity)
-                val x0 = getX0(activity)
+                val x0 = getX0(activity, context)
                 val d = MinBc.run(model, x0, parameters=parameters)
                 updateCalibration(d, activity)
             }
@@ -195,7 +199,7 @@ class Gravity(
         ){
             for (activity in activities) {
                 val model = buildModel(activity)
-                val x0 = getX0(activity)
+                val x0 = getX0(activity, context)
                 val d = GradientDescent.run(model, x0, parameters=parameters)
                 updateCalibration(d, activity)
             }
@@ -251,7 +255,7 @@ class Gravity(
         ) {
             for (activity in activities) {
                 val objective = o.surrogateObj(activity)
-                val x0 = getX0(activity)
+                val x0 = getX0(activity, context)
                 val d = SPSA.run(x0, objective, parameters = parameters)
                 updateCalibration(d, activity)
             }
@@ -260,7 +264,7 @@ class Gravity(
             activities: List<ActivityType>, parameters: Map<String, String>? = null
         ) {
             val objective = o.batchObj(activities)
-            val x0 = getX0(activities)
+            val x0 = getX0(activities, context)
             val d = SPSA.run(x0, objective, parameters = parameters)
             updateCalibration(d, activities)
         }
@@ -270,7 +274,7 @@ class Gravity(
         ) {
             for (activity in activities) {
                 val objective = o.batchObj(activity)
-                val x0 = getX0(activity)
+                val x0 = getX0(activity, context)
                 val d = SPSA.run(x0, objective, parameters = parameters)
                 updateCalibration(d, activity)
             }
@@ -285,7 +289,7 @@ class Gravity(
             for (activity in activities) {
                 val model = buildModelMV(activity)
                 val objective = o.surrogateObjWSPSA(model, context.sensors)
-                val x0 = getX0(activity)
+                val x0 = getX0(activity, context)
                 val d = WSPSA.run(
                     x0, objective, measurements, model, parameters = parameters
                 )
@@ -300,7 +304,7 @@ class Gravity(
             for (activity in activities) {
                 val model = buildModelMV(activity)
                 val objective = o.batchObjWSPSA(activity)
-                val x0 = getX0(activity)
+                val x0 = getX0(activity, context)
                 val d = WSPSA.run(x0, objective, measurements, model, parameters = parameters)
                 updateCalibration(d, activity)
             }

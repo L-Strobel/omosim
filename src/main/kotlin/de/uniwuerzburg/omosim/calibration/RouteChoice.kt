@@ -288,7 +288,7 @@ class RouteChoice(
         )
 
         // Compute expected origin-destination matrix
-        val x0 = getX0(activity)
+        val x0 = Gravity.getX0(activity, context)
         val e = model.evaluate(x0)
 
         // Unpack matrix
@@ -305,27 +305,6 @@ class RouteChoice(
             odtCounts[odt] = v
         }
         return odtCounts
-    }
-
-    private fun getX0(activity: ActivityType) : DoubleArray { // TODO dedup
-        val grid = context.omosim.grid
-        val dcFunction = context.finder.locChoiceWeightFuns[activity]!!
-        val x0 = DoubleArray(grid.size - 1) { 1.0 }
-
-        // Get previous scalers
-        for ((gi, cell) in grid.dropLast(1).withIndex()) {
-            x0[gi] = cell.getAttractionScaler(dcFunction)
-        }
-
-        // Normalize using the last element as a pivot
-        val lastValue = grid.last().getAttractionScaler(dcFunction)
-        if (lastValue != 1.0) {
-            for (i in x0.indices) {
-                x0[i] /= lastValue
-            }
-        }
-
-        return x0
     }
 
     /**
