@@ -608,7 +608,8 @@ class Omosim (
                 modeChoice.doModeChoice(agents, mainRng, dispatcher, modeSpeedUp, verbose)
                 if (withPath) {
                     setupHopper()
-                    AssignmentAllOrNothing(hopper!!, null).assign(agents, verbose, dispatcher, mainRng)
+                    AssignmentAllOrNothing(hopper!!, null)
+                        .assign(agents, verbose, dispatcher, mainRng, modeSpeedUp)
                 }
             }
         }
@@ -616,9 +617,8 @@ class Omosim (
         // Alternative route selection
         if (withPath and (routeChoiceCalibration != null)) {
             setupHopper()
-            AssignmentAltRoute(
-                hopper!!, routeChoiceCalibration!!
-            ).assign(agents, verbose, dispatcher, mainRng)
+            AssignmentAltRoute(hopper!!, routeChoiceCalibration!!)
+                .assign(agents, verbose, dispatcher, mainRng, modeSpeedUp)
         }
         return  agents
     }
