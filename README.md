@@ -96,9 +96,9 @@ Default output format (see [JsonExample.json](doc/outputFormats/JsonExample.json
                            "startTime": "05:46",                  
                            "distanceKilometer": 0.8055083766387303,  // Trip distance. Unit: Kilometer
                            "timeMinute": 17.0,                       // Trip duration. Unit: Minute
-                           "lats": [ 49.7704712, ... ],  // Trip path coordinates. Only returned when --return_path_coords y 
+                           "lats": [ 49.7704712, ... ],              // Trip path coordinates. Only returned when --return_path_coords y 
                            "lons": [ 9.9266363, ... ],
-                           "ptLegs": [ // Public transit legs. Only not null when mode == PUBLIC_TRANSIT, --return_path_coords y, and --mode_choice GTFS
+                           "ptLegs": [                               // Public transit legs. Only not null when mode == PUBLIC_TRANSIT, --return_path_coords y, and --mode_choice GTFS
                                {
                                    "mode": "FOOT",                          
                                    "timeMinute": 9.0,                       
@@ -108,7 +108,7 @@ Default output format (see [JsonExample.json](doc/outputFormats/JsonExample.json
                                {
                                    "mode": "PUBLIC_TRANSIT",
                                    "timeMinute": 8.0,
-                                   "distanceKilometer": null,        // Distance of public transit legs is currently not available
+                                   "distanceKilometer": null,                      // Distance of public transit legs is currently not available
                                    "departureStop": "Würzburg DJK-Sportzentrum"    // Name of stop in GTFS file
                                },
                                ...
@@ -357,7 +357,7 @@ These can be supplied to a normal run with the options:
 - *--calibration_file_gravity*: for gravity model calibration
 - *--calibration_file_mode_choice*: for mode choice model calibration
 - *--calibration_file_route_choice*: for route choice calibration
-- 
+
 ## Usage as Java library
 
 First, add the jar to your classpath.
@@ -557,7 +557,7 @@ class App {
                                 road network (including foot paths). Defaults
                                 to <osm_file>. Only set this explicitly if
                                 routing data should be taken from a different
-                                osm file when POI and building data.
+                                osm file then POI and building data.
   -h, --help                    Show this message and exit
 ```
 
