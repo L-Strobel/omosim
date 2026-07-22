@@ -227,7 +227,7 @@ class Run : CliktCommand() {
         help = "Path to an osm.pbf file that is used for the road network (including foot paths). " +
                "Defaults to <osm_file>. " +
                "Only set this explicitly if routing data should be taken from a different osm file when POI and building data. "
-    ).file(mustExist = true, mustBeReadable = true).default(osm_file)
+    ).file(mustExist = true, mustBeReadable = true).defaultLazy { osm_file }
 
     override fun run() {
         if ((census == null) && (agentNumberDefinition is ShareOfPop) && (calibrationParameters == null)) {
