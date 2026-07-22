@@ -56,7 +56,8 @@ class RouteChoice(
     ) : Map<ODTTriple, List<Double>> {
         // Compute expected origin-destination matrix
         val odtCounts = if (surrogate) {
-            getODTCountsSM()
+            val rawCounts = getODTCountsSM()
+            trimCounts(rawCounts, 10.0) // TODO
         } else {
             getODTCountsSimulation()
         }
@@ -234,8 +235,7 @@ class RouteChoice(
     }
 
     private fun buildModelTF(
-        odtCounts: Map<ODTTriple, Double>,
-        eTresh: Double = 10.0 // Ignore expected origin-destination terms below this value
+        odtCounts: Map<ODTTriple, Double>
     ) : DifferentiableModelUV {
         println("Build TF")
 
@@ -245,7 +245,6 @@ class RouteChoice(
             for (t in 0 until T) {
                 val odt = ODTTriple(od.first, od.second, t)
                 if (odt in odtCounts) {
-                    if (odtCounts[odt]!! < eTresh) { continue }
                     nVar += alternatives.size
                 }
             }
@@ -266,12 +265,11 @@ class RouteChoice(
             for (t in 0 until T) {
                 val odt = ODTTriple(od.first, od.second, t)
                 if (odt in odtCounts) {
-                    if (odtCounts[odt]!! < eTresh) { continue }
                     val count = tf.constant( odtCounts[odt]!!.toFloat() )
                     val w = tf.slice(
                         core.x,
                         tf.constant(intArrayOf(iVar) ),
-                        tf.constant(intArrayOf(iVar + alternatives.size) )
+                        tf.constant(intArrayOf(alternatives.size) )
                     )
 
                     val sum = tf.reduceSum(w, tf.constant(intArrayOf(0)))
@@ -295,9 +293,13 @@ class RouteChoice(
         val m = mutableListOf<Float>()
         for (sensor in context.sensors) {
             for (t in 0 until T) {
-                val indices = tf.constant( affectedIndices[sensor]!![t].toIntArray() )
-                val sensorEs = tf.gather(eVec, indices,tf.constant(0) )
-                val simCount = tf.reduceSum(sensorEs, tf.constant(0))
+                val simCount = if (affectedIndices[sensor]!![t].isEmpty()) {
+                    tf.constant(0f)
+                } else {
+                    val indices = tf.constant( affectedIndices[sensor]!![t].toIntArray() )
+                    val sensorEs = tf.gather(eVec, indices,tf.constant(0) )
+                    tf.reduceSum(sensorEs, tf.constant(0))
+                }
                 s.add(simCount)
                 m.add(sensor.measurements[t].toFloat())
             }
@@ -440,6 +442,16 @@ class RouteChoice(
             }
         }
         return odtCount
+    }
+
+    /**
+     * Remove counts below a certain threshhold
+     *
+     * @param odtCounts Counts to trim
+     * @param limit Threshold
+     */
+    private fun trimCounts(odtCounts: Map<ODTTriple, Double>, limit: Double): Map<ODTTriple, Double> {
+        return odtCounts.filter {(k, v) -> v > limit}
     }
 }
 
