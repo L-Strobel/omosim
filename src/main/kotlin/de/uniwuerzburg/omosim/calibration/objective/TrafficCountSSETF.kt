@@ -1,6 +1,5 @@
 package de.uniwuerzburg.omosim.calibration.objective
 
-import de.uniwuerzburg.omosim.calibration.CalibrationConstants
 import de.uniwuerzburg.omosim.calibration.TrafficCountCalibrationContext
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelCore
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelUV
@@ -22,7 +21,6 @@ class TrafficCountSSETF(
         expectedTrips: Map<ActivityType, Operand<TFloat32>>,
         tripStartDistr: Map<ActivityType, DoubleArray>
     ) : TfModelUV {
-        val tf = core.tf
         val simCount = getSimCountsFromDemandTF(context, core, expectedTrips, tripStartDistr)
         val obj = sseObjectiveTF(core, context.sensors, simCount)
         return TfModelUV(core, obj)

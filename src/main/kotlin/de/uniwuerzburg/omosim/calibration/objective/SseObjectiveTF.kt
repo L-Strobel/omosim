@@ -2,9 +2,6 @@ package de.uniwuerzburg.omosim.calibration.objective
 
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants
 import de.uniwuerzburg.omosim.calibration.TrafficSensor
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.LinearTerm
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.QuadraticTerm
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.Term
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelCore
 import org.tensorflow.Operand
 import org.tensorflow.types.TFloat32

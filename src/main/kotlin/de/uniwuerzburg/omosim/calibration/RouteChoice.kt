@@ -18,7 +18,6 @@ import org.tensorflow.Operand
 import org.tensorflow.types.TFloat32
 import java.time.LocalTime
 import java.util.*
-import kotlin.math.log
 
 /**
  * Origin-destination pair at a given time t.
@@ -54,13 +53,17 @@ class RouteChoice(
     fun calibrate(
         algorithm: CalibrationAlgorithm?,
         parameters: Map<String, String>,
-        gurobi: Boolean = false,
+        gurobi: Boolean = true,
         surrogate: Boolean = true
     ) : Map<ODTTriple, List<Double>> {
         // Compute expected origin-destination matrix
         val odtCounts = if (surrogate) {
             val rawCounts = getODTCountsSM()
-            trimCounts(rawCounts, 0.1)
+            if (gurobi) {
+                rawCounts // Gurobi implementation is more memory efficient here. Doesn't need to trim od-matrix.
+            } else {
+                trimCounts(rawCounts, 0.1)
+            }
         } else {
             getODTCountsSimulation()
         }
