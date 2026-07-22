@@ -14,7 +14,7 @@ fun getSimCountsFromDemandTF(
     core: TfModelCore,
     expectedTrips: Map<ActivityType, Operand<TFloat32>>,
     tripStartDistr: Map<ActivityType, DoubleArray>
-) : MutableMap<TrafficSensor, MutableList<Operand<TFloat32>>> {
+) : Map<TrafficSensor, List<Operand<TFloat32>>> {
     val tf = core.tf
     val totalPopulation = tf.constant(context.totalPopulation.toFloat())
 
@@ -60,5 +60,5 @@ fun getSimCountsFromDemandTF(
             simCount[sensor]!![t] = tf.reduceSum(gathered, tf.constant(0))
         }
     }
-    return  simCount
+    return simCount
 }

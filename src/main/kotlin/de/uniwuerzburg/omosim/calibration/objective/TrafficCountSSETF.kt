@@ -24,22 +24,7 @@ class TrafficCountSSETF(
     ) : TfModelUV {
         val tf = core.tf
         val simCount = getSimCountsFromDemandTF(context, core, expectedTrips, tripStartDistr)
-
-        // Objective
-        val s = mutableListOf<Operand<TFloat32>>()
-        val m = mutableListOf<Float>()
-        for (sensor in context.sensors) {
-            for (t in 0 until CalibrationConstants.T) {
-                s.add(simCount[sensor]!![t])
-                m.add(sensor.measurements[t].toFloat())
-            }
-        }
-        val vSim = tf.stack(s)
-        val vMeasured = tf.constant(m.toFloatArray())
-        val diff = tf.math.sub(vSim, vMeasured)
-        val sqrDiff = tf.math.square(diff)
-        val obj = tf.reduceSum(sqrDiff, tf.constant(0))
-
+        val obj = sseObjectiveTF(core, context.sensors, simCount)
         return TfModelUV(core, obj)
     }
 }
