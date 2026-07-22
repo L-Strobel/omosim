@@ -5,6 +5,7 @@ plugins {
     kotlin("plugin.serialization") version "2.4.10"
     id("com.gradleup.shadow") version "8.3.11"
     id("java")
+    id("jacoco")
     id("org.jetbrains.dokka") version "2.2.0"
     id("maven-publish")
     id("org.jetbrains.kotlinx.benchmark") version "0.4.17"
@@ -99,6 +100,16 @@ benchmark {
 
 tasks.test {
     useJUnitPlatform()
+    finalizedBy("jacocoTestReport")
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
 }
 
 sourceSets {
