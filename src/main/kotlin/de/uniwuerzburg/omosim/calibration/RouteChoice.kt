@@ -2,6 +2,7 @@ package de.uniwuerzburg.omosim.calibration
 
 import com.gurobi.gurobi.*
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
+import de.uniwuerzburg.omosim.calibration.CalibrationConstants.TENSOR_FLOW
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.DifferentiableModelUV
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.*
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelCore
@@ -17,6 +18,7 @@ import org.tensorflow.Operand
 import org.tensorflow.types.TFloat32
 import java.time.LocalTime
 import java.util.*
+import kotlin.math.log
 
 /**
  * Origin-destination pair at a given time t.
@@ -67,7 +69,12 @@ class RouteChoice(
         return if (gurobi) {
            optimize(odtCounts)
         } else {
-            val model = buildModelTF(odtCounts) // Create route choice model
+            // Create route choice model
+            val model = if (TENSOR_FLOW) {
+                buildModelTF(odtCounts)
+            } else {
+                buildModel(odtCounts)
+            }
             val x0 = buildX0(odtCounts)
 
             // Set bounds to [0, 1] independent of user specification
@@ -362,6 +369,13 @@ class RouteChoice(
         val activity = ActivityType.WORK // Shouldn't matter
 
         // Build surrogate
+        if (!TENSOR_FLOW) {
+            logger.warn(
+                "TENSOR_FLOW is set to false and surrogate is selected for route choice." +
+                "Only a TensorFlow surrogate is currently supported for route choice." +
+                "Using tensorflow surrogate anyway."
+            )
+        }
         val model = SurrogateGravity(context).buildTF(
             activity,
             SMOriginDestination(context),
