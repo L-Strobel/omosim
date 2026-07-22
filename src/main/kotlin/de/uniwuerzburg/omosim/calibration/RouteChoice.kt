@@ -67,6 +67,7 @@ class RouteChoice(
         } else {
             val model = buildModelTF(odtCounts) // Create route choice model, TODO Check times. Was like 1min with native
             val x0 = buildX0(odtCounts)
+            println("Done2")
 
             // Set bounds to [0, 1] independent of user specification
             val parametersCorrected = parameters.toMutableMap()
@@ -233,14 +234,18 @@ class RouteChoice(
     }
 
     private fun buildModelTF(
-        odtCounts: Map<ODTTriple, Double>
+        odtCounts: Map<ODTTriple, Double>,
+        eTresh: Double = 10.0 // Ignore expected origin-destination terms below this value
     ) : DifferentiableModelUV {
+        println("Build TF")
+
         // Setup. Initialize differentiable model
         var nVar = 0
         for ((od, alternatives) in context.affectedAltSensors.entries) {
             for (t in 0 until T) {
                 val odt = ODTTriple(od.first, od.second, t)
                 if (odt in odtCounts) {
+                    if (odtCounts[odt]!! < eTresh) { continue }
                     nVar += alternatives.size
                 }
             }
@@ -249,48 +254,51 @@ class RouteChoice(
         val tf = core.tf
 
         // Initialize simulated traffic counts
-        val simCount = mutableMapOf<TrafficSensor, List<MutableList<Operand<TFloat32>>>>()
+        val affectedIndices = mutableMapOf<TrafficSensor, List<MutableList<Int>>>()
         for (sensor in context.sensors) {
-            simCount[sensor] = List(T) { mutableListOf() }
+            affectedIndices[sensor] = List(T) { mutableListOf() }
         }
 
         // Add contribution of each odt to simulated counts
         var iVar = 0 // Keep track of which variable represents the current route choice decision.
+        val eList = mutableListOf<Operand<TFloat32>>()
         for ((od, alternatives) in context.affectedAltSensors.entries) {
             for (t in 0 until T) {
                 val odt = ODTTriple(od.first, od.second, t)
                 if (odt in odtCounts) {
-                    val count = odtCounts[odt]!!
-                    val pAs = mutableListOf<Operand<TFloat32>>()
+                    if (odtCounts[odt]!! < eTresh) { continue }
+                    val count = tf.constant( odtCounts[odt]!!.toFloat() )
+                    val w = tf.slice(
+                        core.x,
+                        tf.constant(intArrayOf(iVar) ),
+                        tf.constant(intArrayOf(iVar + alternatives.size) )
+                    )
+
+                    val sum = tf.reduceSum(w, tf.constant(intArrayOf(0)))
+                    val p = tf.math.div(w, sum)
+                    val e = tf.math.mul(p, count)
+                    eList.add(e)
+
                     for (alternative in alternatives) {
-                        // Probability of choosing that alternative
-                        val exTripsAlternative = core.getVariable(iVar)
-                        iVar += 1
-                        pAs.add(exTripsAlternative)
-                    }
-                    val pSum = tf.math.addN(pAs)
-
-                    for ((i, alternative) in alternatives.withIndex()) {
-                        // Ensure that p is a proper probability distribution
-                        val pTerm = tf.math.div(pAs[i], pSum)
-                        val fCount = tf.constant(count.toFloat())
-                        val eTerm = tf.math.mul(pTerm, fCount)
-
-                        // Add to simulated count
                         for (sensor in alternative) {
-                            simCount[sensor]!![t].add(eTerm)
+                            affectedIndices[sensor]!![t].add(iVar)
                         }
+                        iVar += 1
                     }
                 }
             }
         }
+        val eVec = tf.concat(eList, tf.constant(0))
 
         // Objective
         val s = mutableListOf<Operand<TFloat32>>()
         val m = mutableListOf<Float>()
         for (sensor in context.sensors) {
             for (t in 0 until T) {
-                s.add( tf.math.addN( simCount[sensor]!![t] ) )
+                val indices = tf.constant( affectedIndices[sensor]!![t].toIntArray() )
+                val sensorEs = tf.gather(eVec, indices,tf.constant(0) )
+                val simCount = tf.reduceSum(sensorEs, tf.constant(0))
+                s.add(simCount)
                 m.add(sensor.measurements[t].toFloat())
             }
         }
@@ -299,7 +307,7 @@ class RouteChoice(
         val diff = tf.math.sub(vSim, vMeasured)
         val sqrDiff = tf.math.square(diff)
         val obj = tf.reduceSum(sqrDiff, tf.constant(0))
-
+        println("Done")
         return TfModelUV(core, obj)
     }
 
