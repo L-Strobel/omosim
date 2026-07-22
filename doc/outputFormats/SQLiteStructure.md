@@ -32,6 +32,10 @@
 | 3   | age             | INTEGER | 0       |            | 0  |
 | 4   | sex             | TEXT    | 1       |            | 0  |
 | 5   | carAccess       | INT     | 1       |            | 0  |
+| 6   | homeLat         | REAL    | 1       |            | 0  |
+| 7   | homeLon         | REAL    | 1       |            | 0  |
+| 8   | homeDummyLoc    | INT     | 1       |            | 0  |
+| 9   | homeInFocus     | INT     | 1       |            | 0  |
 
 ## trip
 | cid | name              | type    | notnull | dflt_value | pk |
@@ -45,6 +49,16 @@
 | 6   | distanceKilometer | REAL    | 0       |            | 0  |
 | 7   | timeMinute        | REAL    | 0       |            | 0  |
 | 8   | route             | BLOB    | 0       |            | 0  |
+
+## ptLeg
+| cid | name              | type    | notnull | dflt_value | pk |
+|-----|-------------------|---------|---------|------------|----|
+| 0   | id                | INTEGER | 0       |            | 1  |
+| 1   | trip              | INTEGER | 1       |            | 0  |
+| 2   | mode              | TEXT    | 0       |            | 0  |
+| 3   | distanceKilometer | REAL    | 0       |            | 0  |
+| 4   | timeMinute        | REAL    | 0       |            | 0  |
+| 5   | departureStop     | TEXT    | 0       |            | 0  |
 
 ## runParameters
 

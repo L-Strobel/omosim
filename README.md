@@ -46,7 +46,7 @@ You need Java 21 or later.
 4. Run Omosim:
 
    ```
-   java -jar omosim-2.3.0-all.jar Path/to/GeoJson Path/to/osm.pbf 
+   java -jar omosim-2.6.3-all.jar Path/to/GeoJson Path/to/osm.pbf 
    ```
 
 There are multiple optional cli arguments, such as the number of agents, the number of days, or the population definition.
@@ -69,6 +69,10 @@ Default output format (see [JsonExample.json](doc/outputFormats/JsonExample.json
            "age": null,                      // Int?
            "sex": "UNDEFINED",               // Options:  MALE, FEMALE, UNDEFINED
            "carAccess": false,               // Boolean
+           "homeLat": 49.770390415910654,    // Home Latitude
+           "homeLon": 9.926447964597246,     // Home Longitude
+           "homeDummyLoc": false,            // True if home location is outside of simulated area (GeoJson + Buffer) (Currently always false)
+           "homeInFocus": true               // Is home location inside the area defined by the GeoJson?
            "mobilityDemand": [               // Generated mobility demand
                {
                    "day": 0,                 // Zero indexed day number
@@ -80,20 +84,35 @@ Default output format (see [JsonExample.json](doc/outputFormats/JsonExample.json
                            "activityType": "HOME",                // Options: HOME, WORK, SCHOOL, SHOPPING, OTHER
                            "startTime": "00:00",                  
                            "stayTimeMinute": 346.3270257434699,   // Time spent at location. Unit: Minutes. Always Null for the last activity: means "until end of day"
-                           "lat": 49.770390415910654,             // Latitude
-                           "lon": 9.926447964597246,              // Longitude
-                           "dummyLoc": false,                     // Placeholder for calibration: currently always false
-                           "inFocusArea": true                    // Is that location inside the area defined by the GeoJson?
+                           "lat": 49.770390415910654,             //
+                           "lon": 9.926447964597246,              //
+                           "dummyLoc": false,                     // See homeDummyLoc
+                           "inFocusArea": true                    // See homeInFocus
                        },
                        {
                            "type": "Trip",
                            "legID": 1,
-                           "mode": "BICYCLE",                        // Transport mode of trip. Options: CAR_DRIVER, CAR_PASSENGER, PUBLIC_TRANSIT, BICYCLE, FOOT, UNDEFINED
+                           "mode": "PUBLIC_TRANSIT",                 // Transport mode of trip. Options: CAR_DRIVER, CAR_PASSENGER, PUBLIC_TRANSIT, BICYCLE, FOOT, UNDEFINED
                            "startTime": "05:46",                  
-                           "distanceKilometer": 5.9415048636329315,  // Trip distance. Unit: Kilometer
-                           "timeMinute": 21.0,                       // Trip duration. Unit: Minute
-                           "lats": [ 49.7704712, 49.7714712, 49.77499469890436 ],  // Trip path coordinates. Only returned when --return_path_coords y 
-                           "lons": [ 9.9266363, 9.9264601, 9.874013608000029]
+                           "distanceKilometer": 0.8055083766387303,  // Trip distance. Unit: Kilometer
+                           "timeMinute": 17.0,                       // Trip duration. Unit: Minute
+                           "lats": [ 49.7704712, ... ],  // Trip path coordinates. Only returned when --return_path_coords y 
+                           "lons": [ 9.9266363, ... ],
+                           "ptLegs": [ // Public transit legs. Only not null when mode == PUBLIC_TRANSIT, --return_path_coords y, and --mode_choice GTFS
+                               {
+                                   "mode": "FOOT",                          
+                                   "timeMinute": 9.0,                       
+                                   "distanceKilometer": 0.8055083766387303,
+                                   "departureStop": null
+                               },
+                               {
+                                   "mode": "PUBLIC_TRANSIT",
+                                   "timeMinute": 8.0,
+                                   "distanceKilometer": null,        // Distance of public transit legs is currently not available
+                                   "departureStop": "Würzburg DJK-Sportzentrum"    // Name of stop in GTFS file
+                               },
+                               ...
+                               ]
                            ]
                        },
                        {
@@ -450,9 +469,9 @@ class App {
                                 with defined modes and within the focus area +
                                 buffer.
   --parametrization=<text>      Parameter set to use (see options under
-                                omosim/src/main/resources/parametrization). Individual
-                                parameter files can be overwritten with by
-                                setting them to custom files with the
+                                omosim/src/main/resources/parametrization).
+                                Individual parameter files can be overwritten
+                                with by setting them to custom files with the
                                 commands:--population_file,
                                 --activity_group_file, --tour_utilities_file,
                                 --tour_utilities_file,--trip_utilities_file,
@@ -531,6 +550,14 @@ class App {
   --calibration_file_route_choice=<path>
                                 [EXPERIMENTAL] Calibration file to use for
                                 route choice. Generated by a calibration run.
+  --sqlite_route_geometry_datatype=(WKT|WKB|TWKB)
+                                Datatype of route column in trip table for
+                                SQLite output.
+  --osm_file_roads=<path>       Path to an osm.pbf file that is used for the
+                                road network (including foot paths). Defaults
+                                to <osm_file>. Only set this explicitly if
+                                routing data should be taken from a different
+                                osm file when POI and building data.
   -h, --help                    Show this message and exit
 ```
 

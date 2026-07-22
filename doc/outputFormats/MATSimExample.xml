@@ -1,39 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE population SYSTEM "http://www.matsim.org/files/dtd/population_v6.dtd">
-<population desc="Generated with omosim: https://github.com/L-Strobel/omosim. RunParameters: AREA_GEOJSON=C:\Users\leo\data\würzburg.geojson,OSM_FILE=C:\Users\leo\data\bayern-latest.osm.pbf,--n_agents=2,--share_pop=null,--n_days=1,--start_wd=UNDEFINED,--out=doc\outputFormats\MATSimExample.xml,--routing_mode=GRAPHHOPPER,--od=null,--census=C:\Users\leo\data\CensusDE26.geojson,--grid_precision=150.0,--buffer=0.0,--seed=null,--cache_dir=omosim_cache,--populate_buffer_area=false,--distance_matrix_cache_size=400000000,--mode_choice=GTFS,--return_path_coords=true,--population_file=null,--n_worker=10,--gtfs_file=C:\Users\leo\data\ger,--matsim_output_crs=EPSG:4326">
+<population desc="Generated with omosim: https://github.com/L-Strobel/omosim. RunParameters: AREA_GEOJSON=C:\Users\leo\data\würzburg.geojson,OSM_FILE=C:\Users\leo\data\bayern-latest.osm.pbf,--n_agents=5,--share_pop=null,--n_days=1,--start_wd=UNDEFINED,--out=[JsonExample.json, SQLiteExample.db, MATSimExample.xml],--routing_mode=GRAPHHOPPER,--od=null,--census=C:\Users\leo\data\CensusDE26-DE11-DE25.geojson,--grid_precision=150.0,--buffer=0.0,--seed=null,--cache_dir=omosim_cache,--populate_buffer_area=false,--distance_matrix_cache_size=400000000,--mode_choice=GTFS,--return_path_coords=true,--parametrization=publication2023,--population_file=null,--activity_group_file=null,--tour_utilities_file=null,--trip_utilities_file=null,--trip_utilities_file_for_calibration=null,--destination_choice_file=null,--n_worker=16,--gtfs_file=C:\Users\leo\data\ger03022025.zip,--mapdata_overture=null,--matsim_output_crs=EPSG:4326,--mode_speed_up={},--calibration_file_gravity=null,--calibration_file_mode_choice=null,--calibration_file_route_choice=null,--sqlite_route_geometry_datatype=TWKB,--osm_file_roads=C:\Users\leo\data\bayern-latest.osm.pbf,--help=false">
     <attributes>
         <attribute class="java.lang.String" name="coordinateReferenceSystem">EPSG:4326</attribute>
     </attributes>
+    <person id="2">
+        <attributes>
+            <attribute class="never" name="car_avail"/>
+        </attributes>
+        <plan selected="yes">
+            <activity end_time="09:53:07" type="h" x="49.79606926943213" y="9.91283093521192"/>
+            <leg mode="car_passenger"/>
+            <activity max_dur="00:11:58" type="s" x="49.79640708635519" y="9.928191551816878"/>
+            <leg mode="walk"/>
+            <activity max_dur="01:03:48" type="l" x="49.79426605242339" y="9.931287725504667"/>
+            <leg mode="walk"/>
+            <activity max_dur="02:31:25" type="h" x="49.79606926943213" y="9.91283093521192"/>
+            <leg mode="bike"/>
+            <activity max_dur="01:09:52" type="l" x="49.79710596682639" y="9.926069235184682"/>
+            <leg mode="bike"/>
+            <activity type="h" x="49.79606926943213" y="9.91283093521192"/>
+        </plan>
+    </person>
+    <person id="0">
+        <attributes>
+            <attribute class="always" name="car_avail"/>
+        </attributes>
+        <plan selected="yes">
+            <activity end_time="08:49:11" type="h" x="49.7856153321597" y="9.936144347557699"/>
+            <leg mode="bike"/>
+            <activity max_dur="00:00:00" type="l" x="49.791033044462" y="9.928601279703564"/>
+            <leg mode="bike"/>
+            <activity max_dur="01:39:23" type="h" x="49.7856153321597" y="9.936144347557699"/>
+            <leg mode="car"/>
+            <activity max_dur="00:46:38" type="s" x="49.77756651878564" y="9.936186750297768"/>
+            <leg mode="car"/>
+            <activity type="h" x="49.7856153321597" y="9.936144347557699"/>
+        </plan>
+    </person>
+    <person id="4">
+        <attributes>
+            <attribute class="never" name="car_avail"/>
+        </attributes>
+        <plan selected="yes">
+            <activity end_time="12:48:20" type="h" x="49.80595861039085" y="9.94445244896705"/>
+            <leg mode="bike"/>
+            <activity max_dur="04:51:12" type="s" x="49.797213697950106" y="9.935084130232209"/>
+            <leg mode="bike"/>
+            <activity type="h" x="49.80595861039085" y="9.94445244896705"/>
+        </plan>
+    </person>
     <person id="1">
         <attributes>
             <attribute class="always" name="car_avail"/>
         </attributes>
         <plan selected="yes">
-            <activity end_time="07:52:47" type="h" x="49.7878374466128" y="9.944220185793547"/>
+            <activity end_time="06:55:19" type="h" x="49.78707484328099" y="9.957116074996437"/>
             <leg mode="car"/>
-            <activity max_dur="00:00:00" type="l" x="49.79558196358391" y="9.932962251087352"/>
+            <activity max_dur="09:42:21" type="w" x="49.798633376792225" y="9.929118704280121"/>
             <leg mode="car"/>
-            <activity max_dur="02:32:55" type="l" x="49.7956366505735" y="9.932512056981261"/>
-            <leg mode="car"/>
-            <activity max_dur="00:39:17" type="l" x="49.787435110480935" y="9.931969952315571"/>
-            <leg mode="car"/>
-            <activity type="h" x="49.7878374466128" y="9.944220185793547"/>
+            <activity type="h" x="49.78707484328099" y="9.957116074996437"/>
         </plan>
     </person>
-    <person id="0">
+    <person id="3">
         <attributes>
-            <attribute class="never" name="car_avail"/>
+            <attribute class="always" name="car_avail"/>
         </attributes>
         <plan selected="yes">
-            <activity end_time="11:06:03" type="h" x="49.794996357379205" y="9.960644198231199"/>
-            <leg mode="bike"/>
-            <activity max_dur="03:02:46" type="l" x="49.79368015010356" y="9.930745883525253"/>
-            <leg mode="bike"/>
-            <activity max_dur="02:46:06" type="h" x="49.794996357379205" y="9.960644198231199"/>
-            <leg mode="bike"/>
-            <activity max_dur="03:17:26" type="l" x="49.79267523370359" y="9.945548827725371"/>
-            <leg mode="bike"/>
-            <activity type="h" x="49.794996357379205" y="9.960644198231199"/>
+            <activity end_time="08:30:56" type="h" x="49.81823810000536" y="9.967026449992417"/>
+            <leg mode="car"/>
+            <activity max_dur="02:16:05" type="l" x="49.79570140909352" y="9.932004611731449"/>
+            <leg mode="car"/>
+            <activity type="h" x="49.81823810000536" y="9.967026449992417"/>
         </plan>
     </person>
 </population>
