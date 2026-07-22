@@ -55,7 +55,11 @@ fun writeSQLite(
             "	mobilityGroup text NOT NULL," +
             "	age INTEGER," +
             "	sex text NOT NULL," +
-            "	carAccess INT NOT NULL" +
+            "	carAccess INT NOT NULL," +
+            "	homeLat REAL NOT NULL," +
+            "	homeLon REAL NOT NULL," +
+            "	homeDummyLoc INT NOT NULL," +
+            "	homeInFocus INT NOT NULL" +
             ");"
         )
         conn.createStatement().execute(personTableSQL)
@@ -139,8 +143,8 @@ fun writeSQLite(
         // Prepare statements
         val personPStmt = conn.prepareStatement(
         "INSERT INTO person" +
-            "(id, homogenousGroup, mobilityGroup, age, sex, carAccess)" +
-            " VALUES(?,?,?,?,?,?)"
+            "(id, homogenousGroup, mobilityGroup, age, sex, carAccess, homeLat, homeLon, homeDummyLoc, homeInFocus)" +
+            " VALUES(?,?,?,?,?,?,?,?,?,?)"
         )
         val dayPStmt = conn.prepareStatement(
         "INSERT INTO day" +
@@ -192,6 +196,10 @@ fun writeSQLite(
             }
             personPStmt.setString(5, entry.sex.toString())
             personPStmt.setBoolean(6, entry.carAccess)
+            personPStmt.setDouble(7, entry.homeLat)
+            personPStmt.setDouble(8, entry.homeLon)
+            personPStmt.setBoolean(9, entry.homeDummyLoc)
+            personPStmt.setBoolean(10, entry.homeInFocus)
             personPStmt.executeUpdate()
 
             for (day in entry.mobilityDemand) {
