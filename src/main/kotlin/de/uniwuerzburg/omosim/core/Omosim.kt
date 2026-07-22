@@ -89,7 +89,8 @@ class Omosim (
     tripModeUtilityFile: File? = null,
     tripModeUtilityCalibrationFile: File? = null,
     locationChoiceFile: File? = null,
-    carOwnershipUtilityFile: File? = null
+    carOwnershipUtilityFile: File? = null,
+    private val osmFileRoads: File = osmFile,
 ) {
     @Suppress("MemberVisibilityCanBePrivate")
     val kdTree: KdTree
@@ -630,8 +631,8 @@ class Omosim (
         // Get a GraphHopper if none exists
         if (hopper == null) {
             hopper = createGraphHopper(
-                osmFile.toString(),
-                Paths.get(cacheDir.toString(), "routing-graph-cache", osmFile.name).toString(),
+                osmFileRoads.toString(),
+                Paths.get(cacheDir.toString(), "routing-graph-cache", osmFileRoads.name).toString(),
                 nWorker
             )
         }
@@ -643,7 +644,7 @@ class Omosim (
     private fun setupGTFS() {
         // Prepare the GTFS data
         if (gtfsComponents == null) {
-            gtfsComponents = GTFSComponents(focusArea, fullArea, cacheDir, dispatcher, osmFile)
+            gtfsComponents = GTFSComponents(focusArea, fullArea, cacheDir, dispatcher, osmFileRoads)
         }
     }
 

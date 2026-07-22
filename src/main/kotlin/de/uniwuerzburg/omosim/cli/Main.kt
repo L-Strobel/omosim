@@ -223,6 +223,11 @@ class Run : CliktCommand() {
     private val sqlite_route_geometry_datatype by option(
         help = "Datatype of route column in trip table for SQLite output."
     ).enum<RouteGeomTypes>().default(RouteGeomTypes.TWKB)
+    private val osm_file_roads by option(
+        help = "Path to an osm.pbf file that is used for the road network (including foot paths). " +
+               "Defaults to <osm_file>. " +
+               "Only set this explicitly if routing data should be taken from a different osm file when POI and building data. "
+    ).file(mustExist = true, mustBeReadable = true).default(osm_file)
 
     override fun run() {
         if ((census == null) && (agentNumberDefinition is ShareOfPop) && (calibrationParameters == null)) {
@@ -256,7 +261,8 @@ class Run : CliktCommand() {
             tourModeUtilityFile = tour_utilities_file,
             tripModeUtilityFile = trip_utilities_file,
             tripModeUtilityCalibrationFile = trip_utilities_file_for_calibration,
-            locationChoiceFile = destination_choice_file
+            locationChoiceFile = destination_choice_file,
+            osmFileRoads = osm_file_roads
         )
 
         // Apply Calibration
