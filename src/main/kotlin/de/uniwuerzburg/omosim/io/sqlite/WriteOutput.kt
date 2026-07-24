@@ -4,6 +4,7 @@ import de.uniwuerzburg.omosim.core.models.Mode
 import de.uniwuerzburg.omosim.io.json.OutputActivity
 import de.uniwuerzburg.omosim.io.json.OutputEntry
 import de.uniwuerzburg.omosim.io.json.OutputTrip
+import de.uniwuerzburg.omosim.io.logger
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.io.WKBWriter
@@ -308,7 +309,7 @@ fun writeSQLite(
         conn.commit()
         conn.close()
     } catch (e: SQLException) {
-        println(e.message)
+        logger.error(e.message)
         return false
     }
     return true
