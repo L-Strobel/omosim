@@ -53,7 +53,7 @@ class RouteChoice(
     fun calibrate(
         algorithm: CalibrationAlgorithm?,
         parameters: Map<String, String>,
-        gurobi: Boolean = true,
+        gurobi: Boolean = false,
         surrogate: Boolean = true
     ) : Map<ODTTriple, List<Double>> {
         // Compute expected origin-destination matrix
