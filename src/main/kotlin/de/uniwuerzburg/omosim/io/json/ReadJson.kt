@@ -6,9 +6,11 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.inputStream
+import kotlin.io.path.readText
 
 inline fun <reified T>readJson(path: Path): T {
-    return readJson(path.toFile())
+    return readJson(path.readText(Charsets.UTF_8))
 }
 
 inline fun <reified T> readJson(file: File): T {
@@ -31,5 +33,5 @@ inline fun <reified T> readJsonStream(file: File): T {
 
 @OptIn(ExperimentalSerializationApi::class)
 inline fun <reified T> readJsonStream(path: Path): T {
-    return jsonHandler.decodeFromStream(path.toFile().inputStream())
+    return jsonHandler.decodeFromStream(path.inputStream())
 }

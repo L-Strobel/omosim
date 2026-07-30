@@ -256,16 +256,23 @@ class Omosim (
      * @param cache IF false this function will always load the data anew.
      * @return List of buildings with all necessary features
      */
-    private fun getBuildings(focusArea: Geometry, fullArea: Geometry,
-                             osmFile: File, bufferRadius: Double = 0.0,
-                             transformer: CRSTransformer, geometryFactory: GeometryFactory,
-                             censusFile: File?, cacheDir: Path, cache: Boolean,
-                             locChoiceWeightFuns: Map<ActivityType, LocationChoiceDCWeightFun>,
-                             mapType: MapDataSource = MapDataSource.OSM, nWorker:Int?
+    fun getBuildings(
+        focusArea: Geometry,
+        fullArea: Geometry,
+        osmFile: File,
+        bufferRadius: Double = 0.0,
+        transformer: CRSTransformer,
+        geometryFactory: GeometryFactory,
+        censusFile: File?,
+        cacheDir: Path,
+        cache: Boolean,
+        locChoiceWeightFuns: Map<ActivityType, LocationChoiceDCWeightFun>,
+        mapType: MapDataSource = MapDataSource.OSM,
+        nWorker: Int?
     ) : List<Building> {
         // Is cached?
         val bound = focusArea.envelopeInternal
-        val cachePath = Paths.get(cacheDir.toString(),
+        val cachePath = cacheDir.resolve(
             "AreaBounds${listOf(bound.minX, bound.maxX, bound.minY, bound.maxY)
                 .toString().replace(" ", "")}" +
                     "Buffer${bufferRadius}" +
@@ -274,7 +281,7 @@ class Omosim (
         )
 
         // Check cache
-        val collection: GeoJsonFeatureCollection<BuildingProperties> =  if (cache and cachePath.toFile().exists()) {
+        val collection: GeoJsonFeatureCollection<BuildingProperties> =  if (cache and Files.exists(cachePath)) {
             readJsonStream(cachePath)
         } else {
             // Load data

@@ -74,6 +74,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.1")
     testImplementation("org.junit.jupiter:junit-jupiter:6.1.1")
     testImplementation("org.tensorflow:tensorflow-core-platform:1.1.0")
+    testImplementation("com.google.jimfs:jimfs:1.3.0")
 
     // Libraries that come with heavy platform specific binaries
     implementation("org.tensorflow:tensorflow-core-platform:1.1.0")
