@@ -106,9 +106,10 @@ fun cluster(
     geometryFactory: GeometryFactory,
     transformer: CRSTransformer,
     dispatcher:  CoroutineDispatcher,
-    startID: Int = 0
+    startID: Int = 0,
+    minCluster: Int = 4
 ) : List<Cell> {
-    val centroids = bisectingKMeans(precision, buildings)
+    val centroids = bisectingKMeans(precision, buildings, minCluster)
 
     val grid = arrayOfNulls<Cell?>(centroids.size)
     dispatcher.runParallel(
@@ -151,16 +152,18 @@ fun makeClusterGrid(
     buildings: List<Building>,
     geometryFactory: GeometryFactory,
     transformer: CRSTransformer,
-    dispatcher: CoroutineDispatcher
+    dispatcher: CoroutineDispatcher,
+    minClusterPerGroup: Int = 4
 ) : List<Cell> {
     // Get cluster in focus area
     val focusAreaBuildings = buildings.filter { it.inFocusArea }
     val cells = cluster(
         focusAreaPrecision,
-        buildings.filter { it.inFocusArea },
+        focusAreaBuildings,
         geometryFactory,
         transformer,
-        dispatcher
+        dispatcher,
+        minCluster = minClusterPerGroup
     ).toMutableList()
 
     // Get cluster in buffer area with gradually declining resolution
@@ -195,7 +198,8 @@ fun makeClusterGrid(
                 geometryFactory,
                 transformer,
                 dispatcher,
-                startID
+                startID,
+                minCluster = minClusterPerGroup
             )
         )
     }
