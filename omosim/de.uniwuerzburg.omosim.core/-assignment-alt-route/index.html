@@ -43,7 +43,7 @@
         </button>
         <div class="navigation-controls--break ui-kit_mobile-only"></div>
         <div class="library-version" id="library-version">
-2.5.0        </div>
+2.6.3        </div>
         <div class="navigation-controls">
         <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
                 <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true"
@@ -107,7 +107,7 @@
   <div class="breadcrumbs"><a href="../../../index.html">omosim</a><span class="delimiter">/</span><a href="../index.html">de.uniwuerzburg.omosim.core</a><span class="delimiter">/</span><span class="current">AssignmentAltRoute</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Assignment</span><wbr></wbr><span>Alt</span><wbr></wbr><span><span>Route</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">AssignmentAltRoute</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">hopper<span class="token operator">: </span><span data-unresolved-link="com.graphhopper/GraphHopper///PointingToDeclaration/">GraphHopper</span><span class="token punctuation">, </span></span><span class="parameter ">calibration<span class="token operator">: </span><a href="../../de.uniwuerzburg.omosim.calibration/-route-choice-calibration-store/index.html">RouteChoiceCalibrationStore</a></span></span><span class="token punctuation">)</span> : <a href="../-assignment/index.html">Assignment</a></div><p class="paragraph">Assigns alternative routes to car trips based on calibration.</p></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">AssignmentAltRoute</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>hopper<span class="token operator">: </span><span data-unresolved-link="com.graphhopper/GraphHopper///PointingToDeclaration/">GraphHopper</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>calibration<span class="token operator">: </span><a href="../../de.uniwuerzburg.omosim.calibration/-route-choice-calibration-store/index.html">RouteChoiceCalibrationStore</a></span></span><span class="token punctuation">)</span> : <a href="../-assignment/index.html">Assignment</a></div><p class="paragraph">Assigns alternative routes to car trips based on calibration.</p></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
@@ -133,17 +133,62 @@
       </div>
       <div data-togglable="PROPERTY">
         <h2 class="tableheader">Properties</h2>
-        <div class="table"><a data-name="1025935892%2FProperties%2F-251573632" anchor-label="tripVisitor" id="1025935892%2FProperties%2F-251573632" data-filterable-set=":/main"></a>
+        <div class="table"><a data-name="1868850131%2FProperties%2F-251573632" anchor-label="calibration" id="1868850131%2FProperties%2F-251573632" data-filterable-set=":/main"></a>
           <div class="table-row table-row_content" data-filterable-current=":/main" data-filterable-set=":/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="trip-visitor.html"><span>trip</span><wbr></wbr><span><span>Visitor</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1025935892%2FProperties%2F-251573632"></span>
+                  <div><a href="calibration.html"><span><span>calibration</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1868850131%2FProperties%2F-251573632"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="trip-visitor.html">tripVisitor</a><span class="token operator">: </span><a href="../../de.uniwuerzburg.omosim.core.models/-trip-visitor/index.html">TripVisitor</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="calibration.html">calibration</a><span class="token operator">: </span><a href="../../de.uniwuerzburg.omosim.calibration/-route-choice-calibration-store/index.html">RouteChoiceCalibrationStore</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="757679549%2FProperties%2F-251573632" anchor-label="hits" id="757679549%2FProperties%2F-251573632" data-filterable-set=":/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":/main" data-filterable-set=":/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="hits.html"><span><span>hits</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="757679549%2FProperties%2F-251573632"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":/main"><div class="symbol monospace"><span class="token keyword">var </span><a href="hits.html">hits</a><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/atomic/AtomicInteger.html">AtomicInteger</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1687895223%2FProperties%2F-251573632" anchor-label="hopper" id="-1687895223%2FProperties%2F-251573632" data-filterable-set=":/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":/main" data-filterable-set=":/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="hopper.html"><span><span>hopper</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1687895223%2FProperties%2F-251573632"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="hopper.html">hopper</a><span class="token operator">: </span><span data-unresolved-link="com.graphhopper/GraphHopper///PointingToDeclaration/">GraphHopper</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1344322963%2FProperties%2F-251573632" anchor-label="misses" id="1344322963%2FProperties%2F-251573632" data-filterable-set=":/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":/main" data-filterable-set=":/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="misses.html"><span><span>misses</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1344322963%2FProperties%2F-251573632"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":/main"><div class="symbol monospace"><span class="token keyword">var </span><a href="misses.html">misses</a><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/atomic/AtomicInteger.html">AtomicInteger</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -152,17 +197,17 @@
       </div>
       <div data-togglable="FUNCTION">
         <h2 class="tableheader">Functions</h2>
-        <div class="table"><a data-name="-66247491%2FFunctions%2F-251573632" anchor-label="assign" id="-66247491%2FFunctions%2F-251573632" data-filterable-set=":/main"></a>
+        <div class="table"><a data-name="1110916854%2FFunctions%2F-251573632" anchor-label="assign" id="1110916854%2FFunctions%2F-251573632" data-filterable-set=":/main"></a>
           <div class="table-row table-row_content" data-filterable-current=":/main" data-filterable-set=":/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="../-assignment/assign.html"><span><span>assign</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-66247491%2FFunctions%2F-251573632"></span>
+                  <div><a href="assign.html"><span><span>assign</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1110916854%2FFunctions%2F-251573632"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../-assignment/assign.html"><span class="token function">assign</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">agents<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../de.uniwuerzburg.omosim.core.models/-mobi-agent/index.html">MobiAgent</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">verbose<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">dispatcher<span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines/CoroutineDispatcher///PointingToDeclaration/">CoroutineDispatcher</span><span class="token punctuation">, </span></span><span class="parameter ">rng<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Random.html">Random</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../de.uniwuerzburg.omosim.core.models/-mobi-agent/index.html">MobiAgent</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Assign routes to agent trips. Unnecessary if the routes have already been determined during mode choice.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="assign.html"><span class="token function">assign</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">agents<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../de.uniwuerzburg.omosim.core.models/-mobi-agent/index.html">MobiAgent</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">verbose<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">dispatcher<span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines/CoroutineDispatcher///PointingToDeclaration/">CoroutineDispatcher</span><span class="token punctuation">, </span></span><span class="parameter ">rng<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Random.html">Random</a><span class="token punctuation">, </span></span><span class="parameter ">modeSpeedUp<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="../../de.uniwuerzburg.omosim.core.models/-mode/index.html">Mode</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../de.uniwuerzburg.omosim.core.models/-mobi-agent/index.html">MobiAgent</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Assign routes to agent trips. Unnecessary if the routes have already been determined during mode choice.</p></div></div></div>
                 </div>
               </div>
             </div>
