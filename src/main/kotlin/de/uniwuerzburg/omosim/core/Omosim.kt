@@ -25,6 +25,7 @@ import de.uniwuerzburg.omosim.routing.createGraphHopper
 import de.uniwuerzburg.omosim.routing.createGraphHopperGTFS
 import de.uniwuerzburg.omosim.utils.CRSTransformer
 import de.uniwuerzburg.omosim.utils.fastCovers
+import de.uniwuerzburg.omosim.utils.getTimeZone
 import de.uniwuerzburg.omosim.utils.runParallel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +33,6 @@ import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.index.kdtree.KdNode
 import org.locationtech.jts.index.kdtree.KdTree
-import us.dustinj.timezonemap.TimeZoneMap
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -709,17 +709,5 @@ class Omosim (
             ptRouter = gtfsPair.first
             gtfsHopper = gtfsPair.second
         }
-    }
-
-    /**
-     * Determine time zone at the center of the focus area.
-     */
-    private fun getTimeZone(focusArea: Geometry) : TimeZone {
-        val map = TimeZoneMap.forRegion(
-            focusArea.envelopeInternal.minX, focusArea.envelopeInternal.minY,
-            focusArea.envelopeInternal.maxX, focusArea.envelopeInternal.maxY
-        )
-        val tzString = map.getOverlappingTimeZone(focusArea.centroid.x, focusArea.centroid.y)?.zoneId
-        return  TimeZone.getTimeZone(tzString)
     }
 }
