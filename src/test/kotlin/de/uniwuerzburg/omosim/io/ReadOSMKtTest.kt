@@ -12,7 +12,7 @@ import java.io.File
 
 internal class ReadOSMKtTest {
     fun readOSMTestBase(fn: String) {
-        val areaString = Omosim::class.java.classLoader.getResource("test_area.geojson")!!.readText(Charsets.UTF_8)
+        val areaString = Omosim::class.java.classLoader.getResource("tinyTown/test_area.geojson")!!.readText(Charsets.UTF_8)
         val osmFile = File(Omosim::class.java.classLoader.getResource(fn)!!.file)
         val geometryFactory = GeometryFactory()
 
@@ -34,17 +34,17 @@ internal class ReadOSMKtTest {
 
     @Test
     fun readOSMTest() {
-        readOSMTestBase("test.osm")
+        readOSMTestBase("tinyTown/test.osm")
     }
 
     @Test
     fun readOSMTestGZ() {
-        readOSMTestBase("test.osm.gz")
+        readOSMTestBase("tinyTown/test.osm.gz")
     }
 
     @Test
     fun readOSMTestBZ2() {
-        readOSMTestBase("test.osm.bz2")
+        readOSMTestBase("tinyTown/test.osm.bz2")
     }
 
     /**
@@ -52,6 +52,6 @@ internal class ReadOSMKtTest {
      */
     @Test
     fun readOSMTestPBF() {
-        readOSMTestBase("test.osm.pbf")
+        readOSMTestBase("tinyTown/test.osm.pbf")
     }
 }

@@ -16,8 +16,8 @@ class ReadCensusKtTest {
     private val geometryFactory = GeometryFactory()
 
     private fun setup() : Pair<List<BuildingData>, CRSTransformer> {
-        val areaString = Omosim::class.java.classLoader.getResource("test_area.geojson")!!.readText(Charsets.UTF_8)
-        val osmFile = File(Omosim::class.java.classLoader.getResource("test.osm.pbf")!!.file)
+        val areaString = Omosim::class.java.classLoader.getResource("tinyTown/test_area.geojson")!!.readText(Charsets.UTF_8)
+        val osmFile = File(Omosim::class.java.classLoader.getResource("tinyTown/test.osm.pbf")!!.file)
 
         // Read OSM-File
         val areaColl: GeoJsonNoProperties = jsonHandler.decodeFromString(areaString)
@@ -40,7 +40,7 @@ class ReadCensusKtTest {
     @Test
     fun readCensusPerfectFitTest() {
         val (buildings, transformer) = setup()
-        val censusFile = File(Omosim::class.java.classLoader.getResource("testCensusPerfectFit.geojson")!!.file)
+        val censusFile = File(Omosim::class.java.classLoader.getResource("tinyTown/testCensusPerfectFit.geojson")!!.file)
 
         // Read Census file
         readCensus(buildings, transformer, geometryFactory, censusFile, Random())
@@ -53,7 +53,7 @@ class ReadCensusKtTest {
     @Test
     fun readCensusLooseTest() {
         val (buildings, transformer) = setup()
-        val censusFile = File(Omosim::class.java.classLoader.getResource("testCensusPerfectFit.geojson")!!.file)
+        val censusFile = File(Omosim::class.java.classLoader.getResource("tinyTown/testCensusPerfectFit.geojson")!!.file)
 
         // Read Census file
         readCensus(buildings, transformer, geometryFactory, censusFile, Random())
