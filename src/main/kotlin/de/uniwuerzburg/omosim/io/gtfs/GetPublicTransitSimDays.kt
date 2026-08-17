@@ -19,7 +19,10 @@ fun getPublicTransitSimDays( calendarTXTPath: Path ) : Map<Weekday, LocalDate> {
 
     // Parse header
     val header = reader.readLine()
-    val idxMap = header.split(delimiter).withIndex().associate { (i, v) -> v to i }
+    val idxMap = header.split(delimiter).withIndex()
+        .associate { (i, v) ->
+            v.trim().removeSurrounding("\"") to i
+        }
     val wdIdxMap = mapOf(
         1 to idxMap["monday"]!!,
         2 to idxMap["tuesday"]!!,
@@ -36,7 +39,9 @@ fun getPublicTransitSimDays( calendarTXTPath: Path ) : Map<Weekday, LocalDate> {
     // Determine weekdays with most active services
     val days = mutableMapOf<LocalDate, Int>()
     reader.lineSequence().forEach { record ->
-        val values = record.split(delimiter)
+        val values = record
+            .split(delimiter)
+            .map { it.trim().removeSurrounding("\"") }
         val startDate = LocalDate.parse(values[idxMap["start_date"]!!], parser)
         val endDate = LocalDate.parse(values[idxMap["end_date"]!!], parser)
         var currentDate = startDate

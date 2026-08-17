@@ -148,9 +148,8 @@ private fun filterGTFSFile(
     filter: GTFSFilter,
     dispatcher: CoroutineDispatcher
 ) : List<Set<String>> {
-    val outputStream = outputPath.outputStream()
+    val writer = outputPath.bufferedWriter()
     val reader = inputStream.bufferedReader(Charsets.UTF_8)
-    val writer = outputStream.bufferedWriter()
 
     // Regex for csv separator. ',' but not in quotations.
     val delimiter = Regex(""",(?=(?:[^"]*"[^"]*")*[^"]*${'$'})""")
@@ -158,7 +157,10 @@ private fun filterGTFSFile(
     // Parse header
     var header = reader.readLine()
     header = header.removePrefix("\uFEFF") // Remove BOM
-    val idxMap = header.split(delimiter).withIndex().associate { (i, v) -> v to i }
+    val idxMap = header
+        .split(delimiter).withIndex().associate { (i, v) ->
+            v.trim().removeSurrounding("\"") to i
+        }
     writer.appendLine(header)
 
     // Index of cols to extract
@@ -167,10 +169,12 @@ private fun filterGTFSFile(
     // Read and parse body in parallel
     val (extractedData, filteredRecords) = runBlocking(dispatcher) {
         channelFlow {
-            reader.lineSequence().chunked(100_000).forEach { recordChunk ->
+            for (recordChunk in reader.lineSequence().chunked(100_000)) {
                 launch {
                     for (record in recordChunk) {
-                        val values = record.split(delimiter)
+                        val values = record
+                            .split(delimiter)
+                            .map { it.trim().removeSurrounding("\"") }
                         if (filter.filter(values, idxMap)) {
                             val extractedValues = extractIdxs.map { values[it] }
                             send(Pair(extractedValues, record))
@@ -203,7 +207,6 @@ private fun filterGTFSFile(
     writer.close()
     reader.close()
     inputStream.close()
-    outputStream.close()
     return extractedSets
 }
 

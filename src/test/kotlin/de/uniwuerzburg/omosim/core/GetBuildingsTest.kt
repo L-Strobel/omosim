@@ -3,21 +3,36 @@ package de.uniwuerzburg.omosim.core
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import de.uniwuerzburg.omosim.core.models.MapDataSource
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.locationtech.jts.geom.GeometryFactory
 import java.io.File
+import java.nio.file.FileSystem
+import java.nio.file.Path
 
 class GetBuildingsTest {
+    val geometryFactory = GeometryFactory()
     val areaFile = File(Omosim::class.java.classLoader.getResource("tinyTown/test_area.geojson")!!.file)
     val osmFile  = File(Omosim::class.java.classLoader.getResource("tinyTown/test.osm.pbf")!!.file)
-    val omosim   = Omosim(areaFile, osmFile, cache = false)
-    val geometryFactory = GeometryFactory()
+    lateinit var omosim: Omosim
+    lateinit var fs: FileSystem
+    lateinit var memCacheDir: Path
+
+    @BeforeEach
+    fun setup() {
+        fs = Jimfs.newFileSystem(Configuration.unix())
+        memCacheDir = fs.getPath("/cache/") // TODO replace with tmp dir aswell
+        omosim = Omosim(areaFile, osmFile, cacheDir = memCacheDir)
+    }
+
+    @AfterEach
+    fun teardown() {
+        fs.close()
+    }
 
     @Test
     fun getBuildingsTest() {
-        val fileSystem = Jimfs.newFileSystem(Configuration.unix())
-        val memCacheDir = fileSystem.getPath("/cache/")
-
         val buildings = omosim.getBuildings(
             omosim.focusArea,
             omosim.focusArea,
@@ -39,9 +54,6 @@ class GetBuildingsTest {
 
     @Test
     fun getBuildingsFromCacheTest() {
-        val fileSystem = Jimfs.newFileSystem(Configuration.unix())
-        val memCacheDir = fileSystem.getPath("/cache/")
-
         // Fill cache
         omosim.getBuildings(
             omosim.focusArea,
