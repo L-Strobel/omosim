@@ -22,7 +22,7 @@ class GetBuildingsTest {
     @BeforeEach
     fun setup() {
         fs = Jimfs.newFileSystem(Configuration.unix())
-        memCacheDir = fs.getPath("/cache/") // TODO replace with tmp dir aswell
+        memCacheDir = fs.getPath("/cache/")
         omosim = Omosim(areaFile, osmFile, cacheDir = memCacheDir)
     }
 

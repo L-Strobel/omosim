@@ -7,8 +7,9 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
-import java.nio.file.Paths
+import java.nio.file.Path
 
 class OmosimTest {
     val areaFile = File(Omosim::class.java.classLoader.getResource("smallTown/boundary.geojson")!!.file)
@@ -17,19 +18,18 @@ class OmosimTest {
     lateinit var omosim: Omosim
 
     @BeforeEach
-    fun setup() { // @TempDir tempDir: Path
-        val cacheDir = Paths.get("omosim_cache/") // TODO replace with temp dir
+    fun setup(@TempDir tempDir: Path) {
         omosim = Omosim(
             areaFile,
             osmFile,
             gtfsFile = gtfsFile,
-            cacheDir = cacheDir
+            cacheDir = tempDir
         )
     }
 
     @AfterEach
     fun teardown() {
-        // TODO close everything that prevents temp dir deletion
+        System.gc() // Workaround: Removes remaining file handles of GraphHopperGTFS
     }
 
     @Test
