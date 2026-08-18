@@ -19,7 +19,6 @@ import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.LineString
 import org.locationtech.jts.geom.MultiLineString
 import org.locationtech.jts.index.hprtree.HPRtree
-import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.math.pow
@@ -34,7 +33,7 @@ import kotlin.math.pow
  * @param omosim Simulator
  */
 class TrafficCountCalibrationContext(
-    trafficCountDataFile: File,
+    trafficCountDataFile: Path,
     override val omosim: Omosim,
     override val weekday: Weekday,
     population: Double? = null,
@@ -45,9 +44,9 @@ class TrafficCountCalibrationContext(
     val affectedSensors: Map<Pair<RealLocation, RealLocation>, List<TrafficSensor>>
     var affectedAltSensors: Map<Pair<RealLocation, RealLocation>, List<List<TrafficSensor>>> = mapOf()
     override val totalPopulation: Double = population ?: initTotalPopulation()
-    private val gravityOut: File = Paths.get(calibrationOutputFolder.toString(), "gravity.json").toFile()
-    private val modeChoiceOut: File = Paths.get(calibrationOutputFolder.toString(), "mode_choice.json").toFile()
-    private val routeChoiceOut: File = Paths.get(calibrationOutputFolder.toString(), "route_choice").toFile()
+    private val gravityOut: Path = Paths.get(calibrationOutputFolder.toString(), "gravity.json")
+    private val modeChoiceOut: Path = Paths.get(calibrationOutputFolder.toString(), "mode_choice.json")
+    private val routeChoiceOut: Path = Paths.get(calibrationOutputFolder.toString(), "route_choice")
 
     // Defaults for alternative route finding
     var altMaxRoutes: Int = 5

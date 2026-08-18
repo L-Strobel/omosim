@@ -2,17 +2,8 @@ package de.uniwuerzburg.omosim.core
 
 import de.uniwuerzburg.omosim.core.models.MobiAgent
 import de.uniwuerzburg.omosim.core.models.Mode
-import de.uniwuerzburg.omosim.core.models.Trip
-import de.uniwuerzburg.omosim.core.models.TripVisitor
-import de.uniwuerzburg.omosim.routing.Route
-import de.uniwuerzburg.omosim.utils.ProgressBar
-import de.uniwuerzburg.omosim.utils.runParallel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import java.util.Random
-import java.util.concurrent.atomic.AtomicInteger
-import kotlin.time.TimeSource
+import java.util.*
 
 interface Assignment {
     /**

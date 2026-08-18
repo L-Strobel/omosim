@@ -8,8 +8,8 @@ import org.geotools.referencing.CRS
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.Point
-import java.io.File
 import java.io.IOException
+import java.nio.file.Path
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.parsers.ParserConfigurationException
 import javax.xml.transform.OutputKeys
@@ -17,9 +17,11 @@ import javax.xml.transform.TransformerException
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
+import kotlin.io.path.nameWithoutExtension
+import kotlin.io.path.outputStream
 
 fun writeSingleDay(
-    output: List<OutputEntry>, file: File, day: Int, outputCRS: String = "EPSG:4326",
+    output: List<OutputEntry>, file: Path, day: Int, outputCRS: String = "EPSG:4326",
     runParams: Map<String, String>
 ) : Boolean {
     // CRS transformer
@@ -143,7 +145,7 @@ fun writeSingleDay(
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4")
 
             // send DOM to file
-            transformer.transform(DOMSource(doc), StreamResult(file))
+            transformer.transform(DOMSource(doc), StreamResult(file.outputStream()))
 
         } catch (te: TransformerException) {
             println(te.message)
@@ -160,14 +162,15 @@ fun writeSingleDay(
 }
 
 fun writeMatSim(
-    output: List<OutputEntry>, file: File, nDays: Int, outputCRS: String, runParams: Map<String, String>
+    output: List<OutputEntry>, file: Path, nDays: Int, outputCRS: String, runParams: Map<String, String>
 ) : Boolean {
     var success = true
     if (nDays == 1) {
         success = writeSingleDay(output, file, 0, outputCRS, runParams)
     } else {
         for (day in 0 until nDays) {
-            val dayFile = File(file.parent, file.nameWithoutExtension + "_day$day.xml" )
+
+            val dayFile = file.parent.resolve(file.nameWithoutExtension + "_day$day.xml")
             success = success && writeSingleDay(output, dayFile, day, outputCRS, runParams)
         }
     }

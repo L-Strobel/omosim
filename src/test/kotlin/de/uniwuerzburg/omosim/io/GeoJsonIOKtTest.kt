@@ -5,14 +5,14 @@ import de.uniwuerzburg.omosim.io.geojson.readGeoJsonGeom
 import org.junit.jupiter.api.Test
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
-import java.io.File
+import java.nio.file.Paths
 
 internal class GeoJsonIOKtTest {
     private val geometryFactory = GeometryFactory()
 
     @Test
     fun readGeoJsonTestPoint() {
-        val file = File(Omosim::class.java.classLoader.getResource("geoJsonPointTest.geojson")!!.file)
+        val file = Paths.get(Omosim::class.java.classLoader.getResource("geoJsonPointTest.geojson")!!.toURI())
         val geom = readGeoJsonGeom(file, geometryFactory)
         val coord = Coordinate( 48.76447901844995, 11.625266400072974)
         assert(geom == geometryFactory.createPoint( coord ))
@@ -20,7 +20,7 @@ internal class GeoJsonIOKtTest {
 
     @Test
     fun readGeoJsonTestPolygon() {
-        val file = File(Omosim::class.java.classLoader.getResource("geoJsonPolygonTest.geojson")!!.file)
+        val file = Paths.get(Omosim::class.java.classLoader.getResource("geoJsonPolygonTest.geojson")!!.toURI())
         val geom = readGeoJsonGeom(file, geometryFactory)
         val coords = mutableListOf<Coordinate>()
         coords.add( Coordinate( 48.76447901844995, 11.625266400072974) )
@@ -34,7 +34,7 @@ internal class GeoJsonIOKtTest {
 
     @Test
     fun readGeoJsonTestCollection() {
-        val file = File(Omosim::class.java.classLoader.getResource("geoJsonCollectionTest.geojson")!!.file)
+        val file = Paths.get(Omosim::class.java.classLoader.getResource("geoJsonCollectionTest.geojson")!!.toURI())
         val geom = readGeoJsonGeom(file, geometryFactory).union()
         val coords = mutableListOf<Coordinate>()
         coords.add( Coordinate( 48.76447901844995, 11.625266400072974) )

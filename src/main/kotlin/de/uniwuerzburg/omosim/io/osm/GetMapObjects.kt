@@ -4,10 +4,10 @@ package de.uniwuerzburg.omosim.io.osm
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.openstreetmap.osmosis.core.filter.common.IdTrackerType
-import java.io.File
+import java.nio.file.Path
 
 fun getMapObjects (
-    fullArea: Geometry, osmFile: File, geometryFactory: GeometryFactory): MutableList<MapObject> {
+    fullArea: Geometry, osmFile: Path, geometryFactory: GeometryFactory): MutableList<MapObject> {
     // Prepare osmosis pipeline
     val reader = OSMSourceFactory.forPath(osmFile)
     val processor = OSMProcessor(IdTrackerType.Dynamic, geometryFactory)

@@ -8,12 +8,12 @@ import de.uniwuerzburg.omosim.io.osm.readOSM
 import de.uniwuerzburg.omosim.utils.CRSTransformer
 import org.junit.jupiter.api.Test
 import org.locationtech.jts.geom.GeometryFactory
-import java.io.File
+import java.nio.file.Paths
 
 internal class ReadOSMKtTest {
     fun readOSMTestBase(fn: String) {
         val areaString = Omosim::class.java.classLoader.getResource("tinyTown/test_area.geojson")!!.readText(Charsets.UTF_8)
-        val osmFile = File(Omosim::class.java.classLoader.getResource(fn)!!.file)
+        val osmFile = Paths.get(Omosim::class.java.classLoader.getResource(fn)!!.toURI())
         val geometryFactory = GeometryFactory()
 
         val areaColl: GeoJsonNoProperties = jsonHandler.decodeFromString(areaString)

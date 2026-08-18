@@ -9,7 +9,7 @@ import de.uniwuerzburg.omosim.io.osm.readOSM
 import de.uniwuerzburg.omosim.utils.CRSTransformer
 import org.junit.jupiter.api.Test
 import org.locationtech.jts.geom.GeometryFactory
-import java.io.File
+import java.nio.file.Paths
 import java.util.*
 
 class ReadCensusKtTest {
@@ -17,7 +17,7 @@ class ReadCensusKtTest {
 
     private fun setup() : Pair<List<BuildingData>, CRSTransformer> {
         val areaString = Omosim::class.java.classLoader.getResource("tinyTown/test_area.geojson")!!.readText(Charsets.UTF_8)
-        val osmFile = File(Omosim::class.java.classLoader.getResource("tinyTown/test.osm.pbf")!!.file)
+        val osmFile = Paths.get(Omosim::class.java.classLoader.getResource("tinyTown/test.osm.pbf")!!.toURI())
 
         // Read OSM-File
         val areaColl: GeoJsonNoProperties = jsonHandler.decodeFromString(areaString)
@@ -40,7 +40,7 @@ class ReadCensusKtTest {
     @Test
     fun readCensusPerfectFitTest() {
         val (buildings, transformer) = setup()
-        val censusFile = File(Omosim::class.java.classLoader.getResource("tinyTown/testCensusPerfectFit.geojson")!!.file)
+        val censusFile = Paths.get(Omosim::class.java.classLoader.getResource("tinyTown/testCensusPerfectFit.geojson")!!.toURI())
 
         // Read Census file
         readCensus(buildings, transformer, geometryFactory, censusFile, Random())
@@ -53,7 +53,7 @@ class ReadCensusKtTest {
     @Test
     fun readCensusLooseTest() {
         val (buildings, transformer) = setup()
-        val censusFile = File(Omosim::class.java.classLoader.getResource("tinyTown/testCensusPerfectFit.geojson")!!.file)
+        val censusFile = Paths.get(Omosim::class.java.classLoader.getResource("tinyTown/testCensusPerfectFit.geojson")!!.toURI())
 
         // Read Census file
         readCensus(buildings, transformer, geometryFactory, censusFile, Random())

@@ -6,9 +6,12 @@ import com.google.common.cache.LoadingCache
 import com.graphhopper.GraphHopper
 import com.graphhopper.util.exceptions.PointNotFoundException
 import de.uniwuerzburg.omosim.core.models.LocationOption
-import de.uniwuerzburg.omosim.utils.ProgressBar
 import de.uniwuerzburg.omosim.core.models.RealLocation
-import kotlinx.coroutines.*
+import de.uniwuerzburg.omosim.utils.ProgressBar
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.locationtech.jts.geom.Coordinate
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -19,7 +22,6 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.min
 import kotlin.math.sqrt
 

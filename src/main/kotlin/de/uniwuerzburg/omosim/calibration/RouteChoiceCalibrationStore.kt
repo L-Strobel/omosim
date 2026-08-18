@@ -5,6 +5,9 @@ import de.uniwuerzburg.omosim.core.models.Cell
 import de.uniwuerzburg.omosim.core.models.LocationOption
 import org.locationtech.jts.geom.Coordinate
 import java.io.*
+import java.nio.file.Path
+import kotlin.io.path.inputStream
+import kotlin.io.path.outputStream
 
 class RouteChoiceCalibrationStore(
     val altPercentages: Map<ODTTriple, List<Double>>,
@@ -23,7 +26,7 @@ class RouteChoiceCalibrationStore(
 
         fun write(
             omosim: Omosim,
-            file: File,
+            file: Path,
             calibration: RouteChoiceCalibrationStore
         ) {
             val areaCacheID = getAreaCacheID(omosim)
@@ -51,17 +54,17 @@ class RouteChoiceCalibrationStore(
             )
 
             // Save
-            val fos = FileOutputStream(file)
+            val fos = file.outputStream()
             val oos = ObjectOutputStream(fos)
             oos.writeObject(formated)
             fos.close()
             oos.close()
         }
 
-        fun read(omosim: Omosim, file: File, grid: List<Cell>) : RouteChoiceCalibrationStore? {
+        fun read(omosim: Omosim, file: Path, grid: List<Cell>) : RouteChoiceCalibrationStore? {
             val areaCacheID = getAreaCacheID(omosim)
 
-            val fis = FileInputStream(file)
+            val fis = file.inputStream()
             val ois = ObjectInputStream(fis)
             val data = ois.readObject() as StorageFormat
             fis.close()

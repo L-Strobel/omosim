@@ -7,10 +7,10 @@ import de.uniwuerzburg.omosim.core.models.Cell
 import de.uniwuerzburg.omosim.io.json.readJson
 import de.uniwuerzburg.omosim.io.json.writeJson
 import kotlinx.serialization.Serializable
-import java.io.File
+import java.nio.file.Path
 
 /**
- * Json format for the calibration result of the gravity model.
+ * JSON format for the calibration result of the gravity model.
  *
  * @param osmID OSM-ID of a building
  * @param scalers Scaling factors for each activity type that has been calibrated
@@ -29,7 +29,7 @@ class GravityCalibrationStore (
          * @param dcFunctions Destination choice functions for which the attraction is to be saved.
          */
         fun write(
-            file: File,
+            file: Path,
             buildings: List<Building>,
             dcFunctions: Map<ActivityType,LocationChoiceDCWeightFun>
         ) {
@@ -62,7 +62,7 @@ class GravityCalibrationStore (
          * @param dcFunctions Destination choice functions to which the calibration is applied.
          */
         fun read(
-            file: File,
+            file: Path,
             cells: List<Cell>,
             buildings: List<Building>,
             dcFunctions: Map<ActivityType, LocationChoiceDCWeightFun>

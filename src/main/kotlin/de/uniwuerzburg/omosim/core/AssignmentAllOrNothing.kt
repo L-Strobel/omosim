@@ -5,12 +5,11 @@ import com.graphhopper.gtfs.PtRouter
 import de.uniwuerzburg.omosim.core.Omosim.GTFSComponents
 import de.uniwuerzburg.omosim.core.models.MobiAgent
 import de.uniwuerzburg.omosim.core.models.Mode
-import de.uniwuerzburg.omosim.core.models.Trip
 import de.uniwuerzburg.omosim.core.models.TripVisitor
 import de.uniwuerzburg.omosim.routing.Route
 import de.uniwuerzburg.omosim.utils.runParallel
 import kotlinx.coroutines.CoroutineDispatcher
-import java.util.Random
+import java.util.*
 
 /**
  * Assigns the best route according to GraphHopper

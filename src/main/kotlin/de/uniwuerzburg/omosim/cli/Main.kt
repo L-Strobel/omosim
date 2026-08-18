@@ -20,9 +20,10 @@ import de.uniwuerzburg.omosim.io.matsim.writeMatSim
 import de.uniwuerzburg.omosim.io.sqlite.RouteGeomTypes
 import de.uniwuerzburg.omosim.io.sqlite.writeSQLite
 import de.uniwuerzburg.omosim.routing.RoutingMode
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
+import kotlin.io.path.extension
+import kotlin.io.path.nameWithoutExtension
 import de.uniwuerzburg.omosim.calibration.logger as calLogger
 
 sealed interface AgentNumberDefinition
@@ -47,7 +48,7 @@ class CalibrationOptions : OptionGroup (
 ) {
     val calibration_traffic_count_file by option(
         help = "[EXPERIMENTAL] Traffic count data that serves as ground truth."
-    ).file(mustExist = true, mustBeReadable = true).required()
+    ).path(mustExist = true, mustBeReadable = true).required()
     val calibration_steps by option(
         help = "[EXPERIMENTAL] Defines one calibration step to undertake.\n" +
                "Format: TYPE:ALG:ACTIVITY,..:PARAMS       \n" +
@@ -78,11 +79,11 @@ class Run : CliktCommand() {
     private val area_geojson by argument(
         help = "Path to the GeoJSON file that defines the area for which you want to generate mobility demand. " +
                 "Helpful websites for GeoJSON generation: https://geojson.io, https://polygons.openstreetmap.fr"
-    ).file(mustExist = true, mustBeReadable = true)
+    ).path(mustExist = true, mustBeReadable = true)
     private val osm_file by argument(
         help = "Path to an osm.pbf file that covers the area completely. " +
                "Recommended download platform: https://download.geofabrik.de/"
-    ).file(mustExist = true, mustBeReadable = true)
+    ).path(mustExist = true, mustBeReadable = true)
     // Options
     private val agentNumberDefinition by mutuallyExclusiveOptions(
         option(
@@ -104,7 +105,7 @@ class Run : CliktCommand() {
     ).enum<Weekday>().default(Weekday.UNDEFINED)
     private val out by option (
         help="Output file. The output format is inferred from the ending: '.json' -> Json, '.xml'-> MATSim, '.db'-> SQLite"
-    ).file().multiple(default = listOf(File("output.json")))
+    ).path().multiple(default = listOf(Paths.get("output.json")))
     private val routing_mode by option(
         help = "Distance calculation method for destination choice." +
                " Either euclidean distance (BEELINE) or routed distance by car (GRAPHHOPPER)"
@@ -112,12 +113,12 @@ class Run : CliktCommand() {
     private val od by option(
         help="[Deprecated] Path to an OD-Matrix in GeoJSON format. " +
              "The matrix is used to further calibrate the model to the area using k-factors."
-    ).file(mustExist = true, mustBeReadable = true)
+    ).path(mustExist = true, mustBeReadable = true)
     private val census by option(
         help="Path to population data in GeoJSON format. " +
              "For an example of how to create such a file see python_tools/format_zensus2011.py. " +
              "Should cover the entire area, but can cover more."
-    ).file(mustExist = true, mustBeReadable = true)
+    ).path(mustExist = true, mustBeReadable = true)
     private val grid_precision by option(
         help="Allowed average distance between a focus area building and its corresponding TAZ center. " +
              "The default is 150m and suitable in most cases." +
@@ -162,28 +163,28 @@ class Run : CliktCommand() {
     private val population_file by option(
         help="Path to file that describes the socio-demographic makeup of the population. " +
              "Must be formatted like omosim/src/main/resources/parametrization/publication2023/Population.json."
-    ).file(mustExist = true, mustBeReadable = true)
+    ).path(mustExist = true, mustBeReadable = true)
     private val activity_group_file by option(
         help="Path to file that describes the activity chains for each population group and the dwell-time distribution for the each chain. " +
         "Must be formatted like omosim/src/main/resources/parametrization/publication2023/ActivityGroup.json"
-    ).file(mustExist = true, mustBeReadable = true)
+    ).path(mustExist = true, mustBeReadable = true)
     private val tour_utilities_file by option(
         help="Path to parameter file for the tour mode decision model." +
               "Must be formatted like omosim/src/main/resources/tourModeUtilities.json"
-    ).file(mustExist = true, mustBeReadable = true)
+    ).path(mustExist = true, mustBeReadable = true)
     private val trip_utilities_file by option(
         help="Path to parameter file for the trip mode decision model. " +
              "Must be formatted like omosim/src/main/resources/tripModeUtilities.json"
-    ).file(mustExist = true, mustBeReadable = true)
+    ).path(mustExist = true, mustBeReadable = true)
     private val trip_utilities_file_for_calibration by option(
         help="[Experimental] Path to parameter file for the trip mode decision model used for calibration." +
              "The model should result in the equivalent mode probabilities as the tour and trip models combined." +
              "Must be formatted like omosim/src/main/resources/tripModeUtilitiesCalibration.json"
-    ).file(mustExist = true, mustBeReadable = true)
+    ).path(mustExist = true, mustBeReadable = true)
     private val destination_choice_file by option(
         help="Path to parameter file for the destination choice model. " +
              "Must be formatted like omosim/src/main/resources/LocChoiceWeightFuns.json"
-    ).file(mustExist = true, mustBeReadable = true)
+    ).path(mustExist = true, mustBeReadable = true)
     private val n_worker by option(
         help="Number of parallel coroutines that can be executed at the same time. " +
              "Default: Number of CPU-Cores available."
@@ -194,7 +195,7 @@ class Run : CliktCommand() {
                "for example if public transit is an option in mode choice. " +
                "Must be a .zip file or a directory (see https://gtfs.org/). " +
                "Recommended download platform for Germany: https://gtfs.de/"
-    ).file(mustExist = true, mustBeReadable = true)
+    ).path(mustExist = true, mustBeReadable = true)
     private val mapdata_overture by option(
         help = "Use overture map data instead of OSM for buildings and POIs. " +
                "Usage: --mapdata_overture RELEASE. Where RELEASE is a valid overture release. " +
@@ -213,13 +214,13 @@ class Run : CliktCommand() {
     private val calibrationParameters by CalibrationOptions().cooccurring()
     private val calibration_file_gravity by option(
         help = "[EXPERIMENTAL] Calibration file to use for the gravity model (destination choice). Generated by a calibration run."
-    ).file(mustExist = true, mustBeReadable = true)
+    ).path(mustExist = true, mustBeReadable = true)
     private val calibration_file_mode_choice by option(
         help = "[EXPERIMENTAL] Calibration file to use for mode choice. Generated by a calibration run."
-    ).file(mustExist = true, mustBeReadable = true)
+    ).path(mustExist = true, mustBeReadable = true)
     private val calibration_file_route_choice by option(
         help = "[EXPERIMENTAL] Calibration file to use for route choice. Generated by a calibration run."
-    ).file(mustExist = true, mustBeReadable = true)
+    ).path(mustExist = true, mustBeReadable = true)
     private val sqlite_route_geometry_datatype by option(
         help = "Datatype of route column in trip table for SQLite output."
     ).enum<RouteGeomTypes>().default(RouteGeomTypes.TWKB)
@@ -227,7 +228,7 @@ class Run : CliktCommand() {
         help = "Path to an osm.pbf file that is used for the road network (including foot paths). " +
                "Defaults to <osm_file>. " +
                "Only set this explicitly if routing data should be taken from a different osm file when POI and building data. "
-    ).file(mustExist = true, mustBeReadable = true).defaultLazy { osm_file }
+    ).path(mustExist = true, mustBeReadable = true).defaultLazy { osm_file }
 
     override fun run() {
         if ((census == null) && (agentNumberDefinition is ShareOfPop) && (calibrationParameters == null)) {
@@ -392,7 +393,7 @@ class Run : CliktCommand() {
                                 "Available output formats: .json, .db (sqlite), .xml (MATSim)" +
                                 "Falling back to JSON"
                     )
-                    val newOut = File(outFn.parent, outFn.nameWithoutExtension + ".json")
+                    val newOut = outFn.parent.resolve(outFn.nameWithoutExtension + ".json")
                     success = writeJSONOutput(agents.map { formatOutput(it) }, newOut, runParameters)
                 }
             }

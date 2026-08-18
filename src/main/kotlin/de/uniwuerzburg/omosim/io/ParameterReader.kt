@@ -1,25 +1,28 @@
 package de.uniwuerzburg.omosim.io
 
 import com.akuleshov7.ktoml.Toml
-import de.uniwuerzburg.omosim.core.*
+import de.uniwuerzburg.omosim.core.CarOwnershipUtility
+import de.uniwuerzburg.omosim.core.LocationChoiceDCWeightFun
+import de.uniwuerzburg.omosim.core.ModeUtility
+import de.uniwuerzburg.omosim.core.Omosim
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import de.uniwuerzburg.omosim.core.models.PopStratum
 import de.uniwuerzburg.omosim.io.json.ActivityGroup
 import de.uniwuerzburg.omosim.io.json.readJson
 import de.uniwuerzburg.omosim.io.json.readJsonFromResource
 import kotlinx.serialization.decodeFromString
-import java.io.File
 import java.io.FileNotFoundException
+import java.nio.file.Path
 
 class ParameterReader(
     val calName: String,
-    var tourModeUtilityFile: File?,
-    var tripModeUtilityFile: File?,
-    var tripModeUtilityForCalibrationFile: File?,
-    var populationFile: File?,
-    var activityGroupFile: File?,
-    var locationChoiceFile: File?,
-    var carOwnershipUtilityFile: File?,
+    var tourModeUtilityFile: Path?,
+    var tripModeUtilityFile: Path?,
+    var tripModeUtilityForCalibrationFile: Path?,
+    var populationFile: Path?,
+    var activityGroupFile: Path?,
+    var locationChoiceFile: Path?,
+    var carOwnershipUtilityFile: Path?,
 ) {
     private val config: ParameterConfig = loadConfig(calName)
 
@@ -53,7 +56,7 @@ class ParameterReader(
         }
     }
 
-    private inline fun <reified T> getParameterJson(fnParam: String, customFile: File?) : T {
+    private inline fun <reified T> getParameterJson(fnParam: String, customFile: Path?) : T {
         val source: String
         val parameter: T = if (customFile != null) {
             source = customFile.toString()

@@ -6,12 +6,9 @@ import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.LineString
 import org.locationtech.jts.io.WKTReader
-import java.io.File
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.sin
+import java.nio.file.Path
+import kotlin.io.path.bufferedReader
+import kotlin.math.*
 
 /**
  * Stores traffic count data for calibration.
@@ -35,7 +32,7 @@ class TrafficSensor(
          * @param transformer Coordinate system transformer
          */
         fun readSensorData(
-            file: File,
+            file: Path,
             transformer: CRSTransformer,
             delimiter: String = ";"
         ): List<TrafficSensor> {

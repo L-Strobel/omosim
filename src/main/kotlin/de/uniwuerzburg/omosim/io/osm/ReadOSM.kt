@@ -6,7 +6,7 @@ import de.uniwuerzburg.omosim.utils.CRSTransformer
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.index.hprtree.HPRtree
-import java.io.File
+import java.nio.file.Path
 
 /**
  * Read and process all the input files.
@@ -18,7 +18,7 @@ import java.io.File
  * @param transformer Used for CRS conversion
  * @return Data retrieved for all buildings in the model area
  */
-fun readOSM (focusArea: Geometry, fullArea: Geometry, osmFile: File,
+fun readOSM (focusArea: Geometry, fullArea: Geometry, osmFile: Path,
              geometryFactory: GeometryFactory, transformer: CRSTransformer
 ): List<BuildingData> {
     logger.info("Start reading OSM-File... (If this is too slow use smaller osm file)")

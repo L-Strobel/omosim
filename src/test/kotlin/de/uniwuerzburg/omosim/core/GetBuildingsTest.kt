@@ -7,14 +7,14 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.locationtech.jts.geom.GeometryFactory
-import java.io.File
 import java.nio.file.FileSystem
 import java.nio.file.Path
+import java.nio.file.Paths
 
 class GetBuildingsTest {
     val geometryFactory = GeometryFactory()
-    val areaFile = File(Omosim::class.java.classLoader.getResource("tinyTown/test_area.geojson")!!.file)
-    val osmFile  = File(Omosim::class.java.classLoader.getResource("tinyTown/test.osm.pbf")!!.file)
+    val areaFile: Path = Paths.get(Omosim::class.java.classLoader.getResource("tinyTown/test_area.geojson")!!.toURI())
+    val osmFile: Path  = Paths.get(Omosim::class.java.classLoader.getResource("tinyTown/test.osm.pbf")!!.toURI())
     lateinit var omosim: Omosim
     lateinit var fs: FileSystem
     lateinit var memCacheDir: Path
@@ -74,7 +74,7 @@ class GetBuildingsTest {
         val buildings = omosim.getBuildings(
             omosim.focusArea,
             omosim.focusArea,
-            File("/does/not/exist"), // Dead file to prevent reading
+            Paths.get("/does/not/exist"), // Dead file to prevent reading
             0.0,
             omosim.transformer,
             geometryFactory,

@@ -4,7 +4,6 @@ import de.uniwuerzburg.omosim.core.models.ActivityType
 import de.uniwuerzburg.omosim.core.models.AggLocation
 import de.uniwuerzburg.omosim.core.models.LocationOption
 import de.uniwuerzburg.omosim.core.models.ODZone
-import de.uniwuerzburg.omosim.routing.RoutingMode
 import java.util.*
 
 /**

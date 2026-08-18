@@ -1,8 +1,8 @@
 package de.uniwuerzburg.omosim.core
 
 import de.uniwuerzburg.omosim.core.models.*
-import de.uniwuerzburg.omosim.io.geojson.property.BuildingProperties
 import de.uniwuerzburg.omosim.io.geojson.GeoJsonFeatureCollection
+import de.uniwuerzburg.omosim.io.geojson.property.BuildingProperties
 import de.uniwuerzburg.omosim.io.json.readJson
 import de.uniwuerzburg.omosim.io.json.readJsonFromResource
 import de.uniwuerzburg.omosim.routing.RoutingCache
@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import org.junit.jupiter.api.Test
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
-import java.io.File
+import java.nio.file.Paths
 import java.util.*
 
 class AgentFactoryDefaultTest {
@@ -34,7 +34,7 @@ class AgentFactoryDefaultTest {
         val agentFactory = AgentFactoryDefault(destinationFinder, carOwnership, popStrata, Dispatchers.Default)
 
         // Get buildings
-        val buildingFile = File(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.file)
+        val buildingFile = Paths.get(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.toURI())
         val collection: GeoJsonFeatureCollection<BuildingProperties> = readJson(buildingFile)
         val buildings =  Building.fromGeoJson(
             collection, GeometryFactory(), CRSTransformer( 11.630883577905143 ), locChoiceWeightFuns
@@ -82,7 +82,7 @@ class AgentFactoryDefaultTest {
         val agentFactory = AgentFactoryDefault(destinationFinder, carOwnership, popStrata, Dispatchers.Default)
 
         // Get buildings
-        val buildingFile = File(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.file)
+        val buildingFile = Paths.get(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.toURI())
         val collection: GeoJsonFeatureCollection<BuildingProperties> = readJson(buildingFile)
         val buildings =  Building.fromGeoJson(
             collection, GeometryFactory(), CRSTransformer( 11.630883577905143 ), locChoiceWeightFuns
@@ -120,7 +120,7 @@ class AgentFactoryDefaultTest {
         val agentFactory = AgentFactoryDefault(destinationFinder, carOwnership, popStrata, Dispatchers.Default)
 
         // Get buildings
-        val buildingFile = File(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.file)
+        val buildingFile = Paths.get(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.toURI())
         val collection: GeoJsonFeatureCollection<BuildingProperties> = readJson(buildingFile)
         val buildings =  Building.fromGeoJson(
             collection, GeometryFactory(), CRSTransformer( 11.630883577905143 ), locChoiceWeightFuns

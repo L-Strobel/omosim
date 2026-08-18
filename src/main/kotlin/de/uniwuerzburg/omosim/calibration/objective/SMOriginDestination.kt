@@ -3,9 +3,7 @@ package de.uniwuerzburg.omosim.calibration.objective
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants
 import de.uniwuerzburg.omosim.calibration.TrafficCountCalibrationContext
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelCore
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelMV
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelMVOnlyEval
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelUV
 import de.uniwuerzburg.omosim.core.models.ActivityType
 import org.tensorflow.Operand
 import org.tensorflow.op.core.Constant

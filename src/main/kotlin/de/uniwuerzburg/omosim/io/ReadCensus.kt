@@ -1,13 +1,13 @@
 package de.uniwuerzburg.omosim.io
 
-import de.uniwuerzburg.omosim.io.geojson.*
+import de.uniwuerzburg.omosim.io.geojson.GeoJsonFeatureCollection
 import de.uniwuerzburg.omosim.io.geojson.property.CensusProperties
 import de.uniwuerzburg.omosim.io.json.readJsonStream
 import de.uniwuerzburg.omosim.io.osm.BuildingData
 import de.uniwuerzburg.omosim.utils.CRSTransformer
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.index.hprtree.HPRtree
-import java.io.File
+import java.nio.file.Path
 import java.util.*
 import kotlin.math.ceil
 import kotlin.math.min
@@ -23,7 +23,7 @@ import kotlin.math.min
  */
 fun readCensus(
     osmBuildings: List<BuildingData>, transformer: CRSTransformer,
-    geometryFactory: GeometryFactory, censusFile: File,
+    geometryFactory: GeometryFactory, censusFile: Path,
     rng: Random
 ) : List<BuildingData> {
 

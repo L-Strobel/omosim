@@ -33,13 +33,14 @@ import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.index.kdtree.KdNode
 import org.locationtech.jts.index.kdtree.KdTree
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.LocalDate
 import java.util.*
 import kotlin.io.path.exists
+import kotlin.io.path.name
+import kotlin.io.path.nameWithoutExtension
 import kotlin.time.TimeSource
 
 /**
@@ -65,36 +66,35 @@ import kotlin.time.TimeSource
  * @param gtfsFile GTFS location (Directory or .zip file)
  */
 class Omosim (
-    areaFile: File,
-    private val osmFile: File,
+    areaFile: Path,
+    private val osmFile: Path,
     routingMode: RoutingMode = RoutingMode.BEELINE,
     cache: Boolean = true,
     private val cacheDir: Path = Paths.get("omosim_cache/"),
-    odFile: File? = null,
+    odFile: Path? = null,
     gridPrecision: Double = 200.0,
     seed: Long? = null,
     val bufferRadius: Double = 0.0,
-    censusFile: File? = null,
+    censusFile: Path? = null,
     val populateBufferArea: Boolean = true,
     val distanceCacheSize: Long = 400e6.toLong(),
-    populationFile: File? = null,
-    activityGroupFile: File? = null,
+    populationFile: Path? = null,
+    activityGroupFile: Path? = null,
     val nWorker: Int? = null,
-    private val gtfsFile: File? = null,
+    private val gtfsFile: Path? = null,
     overtureRelease: String? = null,
     carOwnershipOption: CarOwnershipOption = CarOwnershipOption.FIX,
     private val modeSpeedUp: Map<Mode, Double> = mapOf(),
     parametrization: String = "publication2023",
-    tourModeUtilityFile: File? = null,
-    tripModeUtilityFile: File? = null,
-    tripModeUtilityCalibrationFile: File? = null,
-    locationChoiceFile: File? = null,
-    carOwnershipUtilityFile: File? = null,
-    private val osmFileRoads: File = osmFile,
+    tourModeUtilityFile: Path? = null,
+    tripModeUtilityFile: Path? = null,
+    tripModeUtilityCalibrationFile: Path? = null,
+    locationChoiceFile: Path? = null,
+    carOwnershipUtilityFile: Path? = null,
+    private val osmFileRoads: Path = osmFile,
 ) {
     @Suppress("MemberVisibilityCanBePrivate")
     val kdTree: KdTree
-    @Suppress("MemberVisibilityCanBePrivate")
     val buildings: List<Building>
     var hopper: GraphHopper? = null
     val grid: List<Cell>
@@ -235,7 +235,7 @@ class Omosim (
          * @param osmFile osm.pbf file that covers at least the focus area and buffer area
          */
         @Suppress("unused")
-        fun defaultFactory(areaFile: File, osmFile: File): Omosim {
+        fun defaultFactory(areaFile: Path, osmFile: Path): Omosim {
             return Omosim(areaFile, osmFile)
         }
     }
@@ -259,11 +259,11 @@ class Omosim (
     fun getBuildings(
         focusArea: Geometry,
         fullArea: Geometry,
-        osmFile: File,
+        osmFile: Path,
         bufferRadius: Double = 0.0,
         transformer: CRSTransformer,
         geometryFactory: GeometryFactory,
-        censusFile: File?,
+        censusFile: Path?,
         cacheDir: Path,
         cache: Boolean,
         locChoiceWeightFuns: Map<ActivityType, LocationChoiceDCWeightFun>,
@@ -518,7 +518,6 @@ class Omosim (
      * @param n_days Number of consecutive days to simulate
      * @return List of agents each with an activity schedules for every simulated day
      */
-    @Suppress("MemberVisibilityCanBePrivate")
     fun run(
         agents: List<MobiAgent>,
         start_wd: Weekday = Weekday.UNDEFINED,
@@ -637,9 +636,11 @@ class Omosim (
     private fun setupHopper() {
         // Get a GraphHopper if none exists
         if (hopper == null) {
+            val ghParent = cacheDir.resolve("routing-graph-cache")
+            val ghPath   = ghParent.resolve( osmFileRoads.name)
             hopper = createGraphHopper(
                 osmFileRoads.toString(),
-                Paths.get(cacheDir.toString(), "routing-graph-cache", osmFileRoads.name).toString(),
+                ghPath.toString(),
                 nWorker
             )
         }
@@ -660,7 +661,7 @@ class Omosim (
      */
     inner class GTFSComponents(
         focusArea: Geometry, fullArea: Geometry, cacheDir: Path, dispatcher: CoroutineDispatcher,
-        osmFile: File
+        osmFile: Path
     ) {
         val timeZone: TimeZone
         val ptSimDays: Map<Weekday, LocalDate>
@@ -686,7 +687,7 @@ class Omosim (
             if (!clippedGtfsPath.exists()) {
                 clipGTFSFile(
                     fullArea.envelopeInternal,
-                    gtfsFile!!.toPath(),
+                    gtfsFile!!,
                     clippedGtfsPath,
                     dispatcher
                 )

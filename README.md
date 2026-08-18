@@ -372,31 +372,31 @@ import de.uniwuerzburg.omosim.core.models.Weekday;
 import de.uniwuerzburg.omosim.core.models.Activity;
 import de.uniwuerzburg.omosim.core.models.ActivityType;
 
+import java.nio.file.Paths;
 import java.util.LinkedList;
-import java.io.File;
 import java.util.List;
 
 class App {
-   public static void main (String[] args) {
-      File areaFile = new File("Path/to/GeoJson");
-      File osmFile = new File("Path/to/osm.pbf");
-   
-      // Create a simulator
-      Omosim omosim = Omosim.Companion.defaultFactory(areaFile, osmFile);
-   
-      // Run for 1000 agents, an undefined start day, and 1 day
-      List<MobiAgent> agents = omosim.run(1000, Weekday.UNDEFINED, 1);
-   
-      // Do something with the result. E.g. get conducted activities 
-      List<ActivityType> activities = new LinkedList<ActivityType>();
-      for (MobiAgent agent : agents) {
-         for (Diary diary : agent.getMobilityDemand()) {
-            for (Activity activity : diary.getActivities()) {
-                activities.add(activity.getType());
+    public static void main(String[] args) {
+        Path areaFile = Paths.get("Path/to/GeoJson");
+        Path osmFile  = Paths.get("Path/to/osm.pbf");
+
+        // Create a simulator
+        Omosim omosim = Omosim.Companion.defaultFactory(areaFile, osmFile);
+
+        // Run for 1000 agents, an undefined start day, and 1 day
+        List<MobiAgent> agents = omosim.run(1000, Weekday.UNDEFINED, 1);
+
+        // Do something with the result. E.g. get conducted activities 
+        List<ActivityType> activities = new LinkedList<ActivityType>();
+        for (MobiAgent agent : agents) {
+            for (Diary diary : agent.getMobilityDemand()) {
+                for (Activity activity : diary.getActivities()) {
+                    activities.add(activity.getType());
+                }
             }
-         }
-      }
-   }
+        }
+    }
 }
 ```
 

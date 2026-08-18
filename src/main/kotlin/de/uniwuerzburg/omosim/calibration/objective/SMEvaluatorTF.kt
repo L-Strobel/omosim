@@ -14,14 +14,14 @@ import org.tensorflow.Operand
 import org.tensorflow.Session
 import org.tensorflow.ndarray.StdArrays
 import org.tensorflow.types.TFloat32
-import java.io.File
+import java.nio.file.Path
 
 /**
  * Used to test how well the surrogate fits the simulation it was build to approximate.
  */
 class SMEvaluatorTF(
     val context: TrafficCountCalibrationContext,
-    val outputFile: File
+    val outputFile: Path
 ) : SMGravityObjectiveTF<TfModelMV>  {
     override fun build (
         core: TfModelCore,

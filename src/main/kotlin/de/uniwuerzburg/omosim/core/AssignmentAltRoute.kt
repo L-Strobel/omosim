@@ -6,7 +6,6 @@ import de.uniwuerzburg.omosim.calibration.RouteChoiceCalibrationStore
 import de.uniwuerzburg.omosim.core.models.MobiAgent
 import de.uniwuerzburg.omosim.core.models.Mode
 import de.uniwuerzburg.omosim.core.models.RealLocation
-import de.uniwuerzburg.omosim.core.models.Trip
 import de.uniwuerzburg.omosim.core.models.TripVisitor
 import de.uniwuerzburg.omosim.routing.Route
 import de.uniwuerzburg.omosim.routing.routeCarAlternatives
@@ -14,11 +13,8 @@ import de.uniwuerzburg.omosim.utils.createCumDist
 import de.uniwuerzburg.omosim.utils.runParallel
 import de.uniwuerzburg.omosim.utils.sampleCumDist
 import kotlinx.coroutines.CoroutineDispatcher
-import java.util.Random
+import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.collections.toDoubleArray
 import kotlin.math.floor
 
 /**

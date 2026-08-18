@@ -15,7 +15,6 @@ import de.uniwuerzburg.omosim.core.models.ActivityType
 import de.uniwuerzburg.omosim.core.models.Cell
 import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
 import java.nio.file.Path
-import java.nio.file.Paths
 
 /**
  * Calibrate OMoSim output by adjusting the gravity model.
@@ -151,10 +150,7 @@ class Gravity(
             activities: List<ActivityType>
         )  {
             for (activity in activities) {
-                val outputFile = Paths.get(
-                    calibrationOutputFolder.toString(),
-                    "smEval${activity.name}.json"
-                ).toFile()
+                val outputFile = calibrationOutputFolder.resolve("smEval${activity.name}.json")
                 if (TENSOR_FLOW) {
                     SurrogateGravity(context).buildTF(
                         activity,

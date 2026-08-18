@@ -1,12 +1,12 @@
 package de.uniwuerzburg.omosim.core.models
 
-import de.uniwuerzburg.omosim.utils.CRSTransformer
 import de.uniwuerzburg.omosim.io.geojson.GeoJsonFeatureCollection
 import de.uniwuerzburg.omosim.io.geojson.property.ODProperties
-import kotlinx.serialization.json.Json
+import de.uniwuerzburg.omosim.io.json.readJson
+import de.uniwuerzburg.omosim.utils.CRSTransformer
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
-import java.io.File
+import java.nio.file.Path
 
 /**
  * Zone of the OD-Matrix, i.e. TAZ. Used for calibrating OMoSim then an od-file is provided.
@@ -32,8 +32,6 @@ data class ODZone (
     val aggLocs: MutableList<LocationOption> = mutableListOf()
 
     companion object {
-        private val json = Json { ignoreUnknownKeys = true }
-
         /**
          * Read od-file
          *
@@ -42,9 +40,9 @@ data class ODZone (
          * @param transformer Transformer for CRS conversion
          * @return list of OD-Zones
          */
-        fun readODMatrix(odFile: File, factory: GeometryFactory, transformer: CRSTransformer) : List<ODZone> {
+        fun readODMatrix(odFile: Path, factory: GeometryFactory, transformer: CRSTransformer) : List<ODZone> {
             // Read OD
-            val geoJson: GeoJsonFeatureCollection<ODProperties> = json.decodeFromString(odFile.readText(Charsets.UTF_8))
+            val geoJson: GeoJsonFeatureCollection<ODProperties> = readJson(odFile)
 
             // Get zones
             val odZones = geoJson.features.map {

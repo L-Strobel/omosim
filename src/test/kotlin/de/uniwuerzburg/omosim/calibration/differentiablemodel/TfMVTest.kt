@@ -3,7 +3,6 @@ package de.uniwuerzburg.omosim.calibration.differentiablemodel
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.nat.*
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelCore
 import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelMV
-import de.uniwuerzburg.omosim.calibration.differentiablemodel.tf.TfModelUV
 import org.junit.jupiter.api.Test
 import org.tensorflow.Operand
 import org.tensorflow.types.TFloat32

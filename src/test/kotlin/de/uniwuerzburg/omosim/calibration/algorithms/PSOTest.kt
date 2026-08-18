@@ -1,7 +1,6 @@
 package de.uniwuerzburg.omosim.calibration.algorithms
 
 import org.junit.jupiter.api.Test
-import java.util.*
 import kotlin.math.abs
 
 class PSOTest {

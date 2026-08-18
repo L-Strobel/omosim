@@ -8,13 +8,14 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
 import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.Paths.get
 
 class OmosimTest {
-    val areaFile = File(Omosim::class.java.classLoader.getResource("smallTown/boundary.geojson")!!.file)
-    val osmFile  = File(Omosim::class.java.classLoader.getResource("smallTown/starnberg.osm.pbf")!!.file)
-    val gtfsFile = File(Omosim::class.java.classLoader.getResource("smallTown/starnberg_gtfs_clipped.zip")!!.file)
+    val areaFile: Path = get(Omosim::class.java.classLoader.getResource("smallTown/boundary.geojson")!!.toURI())
+    val osmFile: Path  = get(Omosim::class.java.classLoader.getResource("smallTown/starnberg.osm.pbf")!!.toURI())
+    val gtfsFile: Path = get(Omosim::class.java.classLoader.getResource("smallTown/starnberg_gtfs_clipped.zip")!!.toURI())
     lateinit var omosim: Omosim
 
     @BeforeEach

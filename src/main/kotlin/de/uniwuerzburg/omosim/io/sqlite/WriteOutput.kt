@@ -10,21 +10,22 @@ import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.io.WKBWriter
 import org.locationtech.jts.io.WKTWriter
 import org.locationtech.jts.io.twkb.TWKBWriter
-import java.io.File
+import java.nio.file.Path
 import java.sql.DriverManager
 import java.sql.SQLException
 import java.sql.Statement
 import java.sql.Types.INTEGER
+import kotlin.io.path.absolutePathString
 
 enum class RouteGeomTypes {
     WKT, WKB, TWKB
 }
 
 fun writeSQLite(
-    output: List<OutputEntry>, file: File, runParams: Map<String, String>,
+    output: List<OutputEntry>, file: Path, runParams: Map<String, String>,
     routeGeomType: RouteGeomTypes = RouteGeomTypes.TWKB
 ) : Boolean {
-    val url = "jdbc:sqlite:${file.absolutePath}"
+    val url = "jdbc:sqlite:${file.absolutePathString()}"
     val geometryFactory = GeometryFactory()
 
     // Path output writer
