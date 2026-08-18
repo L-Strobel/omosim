@@ -675,35 +675,34 @@ class Omosim (
             val lonMax = fullArea.envelopeInternal.maxY
 
             // Unique cache path
-            val gtfsCachePath = Paths.get(
-                cacheDir.toString(),
-                "gtfs/",
-                "BoundsLLAT${latMin}ULAT${latMax}LLON${lonMin}ULON${lonMax}"
-            )
+            val gtfsParent = cacheDir.resolve("gtfs")
+            val gtfsCachePath = gtfsParent.resolve("BoundsLLAT${latMin}ULAT${latMax}LLON${lonMin}ULON${lonMax}")
 
             // Create directory in cache
             Files.createDirectories(gtfsCachePath)
 
             // Clip GTFS file to bounding box
-            val clippedGtfsPath = Paths.get(gtfsCachePath.toString(), "clippedGTFS")
+            val clippedGtfsPath = gtfsCachePath.resolve("clippedGTFS")
             if (!clippedGtfsPath.exists()) {
                 clipGTFSFile(
                     fullArea.envelopeInternal,
                     gtfsFile!!.toPath(),
-                    gtfsCachePath,
+                    clippedGtfsPath,
                     dispatcher
                 )
             }
 
             // Extract temporal information
-            ptSimDays = getPublicTransitSimDays(Paths.get(clippedGtfsPath.toString(), "calendar.txt"))
+            ptSimDays = getPublicTransitSimDays(clippedGtfsPath.resolve("calendar.txt"))
             timeZone = getTimeZone(focusArea)
 
             // Get the GTFS GraphHopper
+            val ghGtfsParent = gtfsCachePath.resolve("gtfs-routing-graph-cache")
+            val ghGtfsPath = ghGtfsParent.resolve(osmFile.name)
             val gtfsPair = createGraphHopperGTFS(
                 osmFile.toString(),
                 clippedGtfsPath.toString(),
-                Paths.get(gtfsCachePath.toString(), "gtfs-routing-graph-cache", osmFile.name).toString(),
+                ghGtfsPath.toString(),
                 nWorker
             )
             ptRouter = gtfsPair.first

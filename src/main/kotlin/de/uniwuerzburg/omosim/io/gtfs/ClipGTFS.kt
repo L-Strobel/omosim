@@ -1,18 +1,18 @@
 package de.uniwuerzburg.omosim.io.gtfs
 
 import de.uniwuerzburg.omosim.io.logger
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.locationtech.jts.geom.Envelope
 import java.io.IOException
 import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.util.zip.ZipFile
 import kotlin.io.path.*
-import kotlin.io.path.inputStream
 
 
 /**
@@ -31,17 +31,22 @@ import kotlin.io.path.inputStream
  * @param gtfsPath Location of gtfs data can be a directory or a zip file
  * @param cacheDir Cache directory
  */
-fun clipGTFSFile(bbBox: Envelope, gtfsPath: Path, cacheDir: Path, dispatcher: CoroutineDispatcher) {
+fun clipGTFSFile(
+    bbBox: Envelope,
+    gtfsPath: Path,
+    cacheDir: Path,
+    dispatcher: CoroutineDispatcher
+) {
     logger.info("Clipping GTFS to bounding box...")
     var inputStreams = loadInputStreams(gtfsPath)
 
     // Create directory in cache
-    Files.createDirectories(Paths.get(cacheDir.toString(),"clippedGTFS"))
+    Files.createDirectories(cacheDir)
 
     // Clip Stops
     val stops = filterGTFSFile(
         inputStreams["stops.txt"]!!,
-        Paths.get(cacheDir.toString(),"clippedGTFS/stops.txt"),
+        cacheDir.resolve("stops.txt"),
         listOf("stop_id"),
         BBFilter(bbBox),
         dispatcher
@@ -50,7 +55,7 @@ fun clipGTFSFile(bbBox: Envelope, gtfsPath: Path, cacheDir: Path, dispatcher: Co
     // Get trips
     val trips = filterGTFSFile(
         inputStreams["stop_times.txt"]!!,
-        Paths.get(cacheDir.toString(), "clippedGTFS/stop_times.txt"),
+        cacheDir.resolve("stop_times.txt"),
         listOf("trip_id"),
         ForeignKeyFilter(stops, "stop_id"),
         dispatcher
@@ -63,7 +68,7 @@ fun clipGTFSFile(bbBox: Envelope, gtfsPath: Path, cacheDir: Path, dispatcher: Co
     // Filter stop times
     stops += filterGTFSFile(
         inputStreams["stop_times.txt"]!!,
-        Paths.get(cacheDir.toString(), "clippedGTFS/stop_times.txt"),
+        cacheDir.resolve("stop_times.txt"),
         listOf("stop_id"),
         ForeignKeyFilter(trips, "trip_id"),
         dispatcher
@@ -72,7 +77,7 @@ fun clipGTFSFile(bbBox: Envelope, gtfsPath: Path, cacheDir: Path, dispatcher: Co
     // Get stops on trips
     filterGTFSFile(
         inputStreams["stops.txt"]!!,
-        Paths.get(cacheDir.toString(),"clippedGTFS/stops.txt"),
+        cacheDir.resolve("stops.txt"),
         listOf(),
         ForeignKeyFilter(stops, "stop_id"),
         dispatcher
@@ -81,7 +86,7 @@ fun clipGTFSFile(bbBox: Envelope, gtfsPath: Path, cacheDir: Path, dispatcher: Co
     // Filter trips
     val tripsFKeys = filterGTFSFile(
         inputStreams["trips.txt"]!!,
-        Paths.get(cacheDir.toString(), "clippedGTFS/trips.txt"),
+        cacheDir.resolve("trips.txt"),
         listOf("route_id", "service_id"),
         ForeignKeyFilter(trips, "trip_id"),
         dispatcher
@@ -92,7 +97,7 @@ fun clipGTFSFile(bbBox: Envelope, gtfsPath: Path, cacheDir: Path, dispatcher: Co
     // Filter routes
     val agencies = filterGTFSFile(
         inputStreams["routes.txt"]!!,
-        Paths.get(cacheDir.toString(), "clippedGTFS/routes.txt"),
+        cacheDir.resolve("routes.txt"),
         listOf("agency_id"),
         ForeignKeyFilter(routes, "route_id"),
         dispatcher
@@ -101,7 +106,7 @@ fun clipGTFSFile(bbBox: Envelope, gtfsPath: Path, cacheDir: Path, dispatcher: Co
     // Filter agencies
     filterGTFSFile(
         inputStreams["agency.txt"]!!,
-        Paths.get(cacheDir.toString(), "clippedGTFS/agency.txt"),
+        cacheDir.resolve("agency.txt"),
         listOf(),
         ForeignKeyFilter(agencies, "agency_id"),
         dispatcher
@@ -110,7 +115,7 @@ fun clipGTFSFile(bbBox: Envelope, gtfsPath: Path, cacheDir: Path, dispatcher: Co
     // Filter calendar
     filterGTFSFile(
         inputStreams["calendar.txt"]!!,
-        Paths.get(cacheDir.toString(), "clippedGTFS/calendar.txt"),
+        cacheDir.resolve("calendar.txt"),
         listOf(),
         ForeignKeyFilter(services, "service_id"),
         dispatcher
@@ -119,7 +124,7 @@ fun clipGTFSFile(bbBox: Envelope, gtfsPath: Path, cacheDir: Path, dispatcher: Co
         // Filter calendar dates
         filterGTFSFile(
             inputStreams["calendar_dates.txt"]!!,
-            Paths.get(cacheDir.toString(), "clippedGTFS/calendar_dates.txt"),
+            cacheDir.resolve("calendar_dates.txt"),
             listOf(),
             ForeignKeyFilter(services, "service_id"),
             dispatcher
@@ -213,8 +218,8 @@ private fun filterGTFSFile(
 private fun loadInputStreams( gtfsPath: Path ) : MutableMap<String, InputStream> {
     val inputStreams: MutableMap<String, InputStream> = mutableMapOf()
     if (gtfsPath.isDirectory()){
-        for (file in gtfsPath.listDirectoryEntries("*.txt")) {
-            inputStreams[file.name] = file.inputStream()
+        for (path in gtfsPath.listDirectoryEntries("*.txt")) {
+            inputStreams[path.name] = path.inputStream()
         }
     } else if (gtfsPath.toFile().extension == "zip") {
         val zipFile = ZipFile(gtfsPath.toFile())
