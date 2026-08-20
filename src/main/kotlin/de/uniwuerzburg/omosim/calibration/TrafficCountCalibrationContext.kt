@@ -1,5 +1,14 @@
 package de.uniwuerzburg.omosim.calibration
 
+import com.github.ajalt.mordant.rendering.AnsiLevel
+import com.github.ajalt.mordant.rendering.BorderType.Companion.SQUARE_DOUBLE_SECTION_SEPARATOR
+import com.github.ajalt.mordant.rendering.TextAlign
+import com.github.ajalt.mordant.rendering.TextColors
+import com.github.ajalt.mordant.rendering.TextStyles
+import com.github.ajalt.mordant.table.Borders
+import com.github.ajalt.mordant.table.table
+import com.github.ajalt.mordant.terminal.Terminal
+import com.github.ajalt.mordant.widgets.Text
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.objective.ModeChoiceCalibrationObjective
 import de.uniwuerzburg.omosim.cli.CalibrationStep
@@ -21,6 +30,7 @@ import org.locationtech.jts.geom.MultiLineString
 import org.locationtech.jts.index.hprtree.HPRtree
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.math.abs
 import kotlin.math.pow
 
 /**
@@ -244,77 +254,108 @@ class TrafficCountCalibrationContext(
     }
 
     /**
-     * Print evaluation result
+     * Print evaluation table
      * 
      * @param simBase Simulation result at each traffic sensor at each time step without calibration
      * @param simCal Simulation result at each traffic sensor at each time step with calibration
-     * @param cellWidth Size of each table cell (number of characters)
      */
     private fun printTable(
         simBase: Map<TrafficSensor, DoubleArray>,
-        simCal: Map<TrafficSensor, DoubleArray>,
-        cellWidth: Int = 15
+        simCal: Map<TrafficSensor, DoubleArray>
     ) {
         // Calculate MSE
         val sseCal  = sse(simCal)
         val sseBase = sse(simBase)
 
         // Print table
-        println("Evaluate Traffic Counts:")
+        val t = Terminal()
+        t.println(table {
+            borderType = SQUARE_DOUBLE_SECTION_SEPARATOR
+            captionTop("Traffic Count Comparison:", align = TextAlign.LEFT)
+            header {
+                row{
+                    cells("Sensor", "T", "Measured", "Sim. Base", "Sim. Calibrated")
+                    cellBorders = Borders.TOP
+                }
+                row {
+                    // Choose color based on whether SSE improved through calibration
+                    val styleSSEBase = TextColors.blue + TextStyles.bold
+                    val styleSSECal  = if (sseCal < sseBase) {
+                        TextColors.green + TextStyles.bold
+                    } else if (sseCal == sseBase) {
+                        TextColors.blue + TextStyles.bold
+                    } else {
+                        TextColors.red + TextStyles.bold
+                    }
 
-        // Header
-        println("_".repeat(cellWidth*5 + 4*3))
-        println("${"Sensor".padEnd(cellWidth)} | " +
-                "${"T".padEnd(cellWidth)} | " +
-                "${"Sim. Calibrated".padEnd(cellWidth)} | " +
-                "${"Sim. Base".padEnd(cellWidth)} | " +
-                "Measured".padEnd(cellWidth)
-        )
-        printTabHLine(cellWidth)
-
-        // SSE Result
-        println(" ".repeat(cellWidth) +
-                " | " + " ".repeat(cellWidth) +
-                " | SSE " + "%.4g".format(sseCal).padStart(cellWidth - 4)  +
-                " | SSE " + "%.4g".format(sseBase).padStart(cellWidth - 4)  +
-                " | " + " ".repeat(cellWidth)
-        )
-        printTabHLine(cellWidth)
-
-        // Measurement vs Simulated
-        for (sensor in sensors) {
-            // Print results for aggregated time windows
-            for (seg in listOf(Pair(0, T))) {
-                // Sum over time window
-                var cal = 0.0
-                var base = 0.0
-                var measurement = 0.0
-                for (t in seg.first until seg.second) {
-                    cal += simCal[sensor]!![t]
-                    base += simBase[sensor]!![t]
-                    measurement += sensor.measurements[t]
+                    cells(
+                        "",
+                        "",
+                        "",
+                        styleSSEBase("SSE  %.4g".format(sseBase)),
+                        styleSSECal("SSE  %.4g".format(sseCal))
+                    )
+                    cellBorders = Borders.NONE
+                    align = TextAlign.RIGHT
+                }
+            }
+            body {
+                // Column styles
+                column(0) {
+                    cellBorders = Borders.TOP_BOTTOM
+                }
+                column(1) {
+                    cellBorders = Borders.TOP_RIGHT_BOTTOM
+                }
+                column(2) {
+                    cellBorders = Borders.TOP_BOTTOM
+                    align = TextAlign.RIGHT
+                }
+                column(3) {
+                    cellBorders = Borders.TOP_BOTTOM
+                    align = TextAlign.RIGHT
+                    style = TextColors.blue
+                }
+                column(4) {
+                    cellBorders = Borders.TOP_BOTTOM
+                    align = TextAlign.RIGHT
                 }
 
-                println(
-                    "${sensor.name.padEnd(cellWidth)} | " +
-                            "${(seg.first.toString() + "-" + seg.second).padEnd(cellWidth)} | " +
-                            "%.2f".format(cal).padStart(cellWidth) + " | " +
-                            "%.2f".format(base).padStart(cellWidth) + " | " +
-                            "%.2f".format(measurement).padStart(cellWidth)
-                )
-            }
-        }
-    }
+                // Rows
+                for (sensor in sensors) {
+                    for (seg in listOf(Pair(0, T))) {
+                        // Sum over time window
+                        var cal = 0.0
+                        var base = 0.0
+                        var measurement = 0.0
+                        for (t in seg.first until seg.second) {
+                            cal += simCal[sensor]!![t]
+                            base += simBase[sensor]!![t]
+                            measurement += sensor.measurements[t]
+                        }
 
-    @Suppress("SameParameterValue")
-    private fun printTabHLine(wCell: Int) {
-        println(
-            "_".repeat(wCell) +
-            " | " + "_".repeat(wCell)  +
-            " | " + "_".repeat(wCell)  +
-            " | " + "_".repeat(wCell)  +
-            " | " + "_".repeat(wCell)
-        )
+                        // Choose color based on whether measurement improved through calibration
+                        val diffCal  = abs(measurement - cal)
+                        val diffBase = abs(measurement - base)
+                        val calibratedColor = if (diffCal < diffBase) {
+                            TextColors.green
+                        } else if (diffCal == diffBase) {
+                            TextColors.white
+                        } else {
+                            TextColors.red
+                        }
+
+                        row (
+                            sensor.name,
+                            seg.first.toString() + "-" + seg.second,
+                            "%.2f".format(measurement),
+                            "%.2f".format(base),
+                            calibratedColor("%.2f".format(cal))
+                        )
+                    }
+                }
+            }
+        })
     }
 
     /**

@@ -70,6 +70,7 @@ dependencies {
     commonImplementation("com.akuleshov7:ktoml-core:0.7.1")
     commonImplementation("org.jetbrains.kotlinx:multik-default:0.3.1")
     commonImplementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1-0.6.x-compat") // For com.akuleshov7:ktoml-core:0.7.1
+    commonImplementation("com.github.ajalt.mordant:mordant:3.0.2")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.1")
     testImplementation("org.junit.jupiter:junit-jupiter:6.1.1")
