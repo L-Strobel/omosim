@@ -40,7 +40,13 @@ class SMOriginDestination(
             val flat = tf.reshape(eMatrixT, flatShape) // Flatten
             flatMatrices.add(flat)
         }
-        val eTotalFlat: Operand<TFloat32> = tf.concat(flatMatrices, tf.constant(0)) // Stack
+
+        // Stack
+        val eTotalFlat: Operand<TFloat32> = if ( flatMatrices.size == 1 ) {
+            flatMatrices.first()
+        } else {
+            tf.concat(flatMatrices, tf.constant(0))
+        }
 
         return TfModelMVOnlyEval(core, eTotalFlat)
     }
