@@ -2,6 +2,7 @@ package de.uniwuerzburg.omosim.cli
 
 import de.uniwuerzburg.omosim.calibration.CalibrationAlgorithm
 import de.uniwuerzburg.omosim.calibration.CalibrationType
+import de.uniwuerzburg.omosim.core.logger
 import de.uniwuerzburg.omosim.core.models.ActivityType
 
 /**
@@ -57,7 +58,14 @@ class CalibrationStep (
 
             // Activities
             val activities = if (components[2] == "") {
-                listOf()
+                if (type == CalibrationType.GRAVITY) {
+                    logger.get()?.warn(
+                        "No activity type supplied for gravity model calibration! Falling back to Work activity."
+                    )
+                    listOf(ActivityType.WORK)
+                } else {
+                    listOf()
+                }
             } else {
                 components[2].split(",").map {  ActivityType.valueOf(it) }
             }
