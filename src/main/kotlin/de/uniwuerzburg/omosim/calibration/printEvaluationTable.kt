@@ -53,13 +53,7 @@ fun printEvaluationTable(
 
                     // Choose color based on whether metric improved through calibration
                     val styleSSEBase = TextColors.blue + TextStyles.bold
-                    val styleSSECal = if (mCal < mBase) {
-                        TextColors.green + TextStyles.bold
-                    } else if (mCal == mBase) {
-                        TextColors.blue + TextStyles.bold
-                    } else {
-                        TextColors.red + TextStyles.bold
-                    }
+                    val styleSSECal = getImprovementIndicationColor(0.0,mBase,mCal)
 
                     cells(
                         "",
@@ -97,16 +91,7 @@ fun printEvaluationTable(
 
             // Rows
             for (i in measurements.indices) {
-                // Choose color based on whether measurement improved through calibration
-                val diffCal = abs(measurements[i] - calibrated[i])
-                val diffBase = abs(measurements[i] - baseline[i])
-                val calibratedColor = if (diffCal < diffBase) {
-                    TextColors.green
-                } else if (diffCal == diffBase) {
-                    TextColors.white
-                } else {
-                    TextColors.red
-                }
+                val calibratedColor = getImprovementIndicationColor(measurements[i],baseline[i],calibrated[i])
 
                 val rowValues = mutableListOf<Any>()
                 for (k in index.keys) {
@@ -119,4 +104,24 @@ fun printEvaluationTable(
             }
         }
     })
+}
+
+/**
+ * Green if calibration improved value, red if it worsened the value, and white if the value did not change.
+ */
+private fun getImprovementIndicationColor(
+    valueTarget: Double,
+    valueBase: Double,
+    valueCal: Double
+) : TextColors {
+    val diffCal = abs(valueTarget - valueCal)
+    val diffBase = abs(valueTarget - valueBase)
+
+    return if (diffCal < diffBase) {
+        TextColors.green
+    } else if (diffCal == diffBase) {
+        TextColors.white
+    } else {
+        TextColors.red
+    }
 }
