@@ -1,14 +1,5 @@
 package de.uniwuerzburg.omosim.calibration
 
-import com.github.ajalt.mordant.rendering.AnsiLevel
-import com.github.ajalt.mordant.rendering.BorderType.Companion.SQUARE_DOUBLE_SECTION_SEPARATOR
-import com.github.ajalt.mordant.rendering.TextAlign
-import com.github.ajalt.mordant.rendering.TextColors
-import com.github.ajalt.mordant.rendering.TextStyles
-import com.github.ajalt.mordant.table.Borders
-import com.github.ajalt.mordant.table.table
-import com.github.ajalt.mordant.terminal.Terminal
-import com.github.ajalt.mordant.widgets.Text
 import de.uniwuerzburg.omosim.calibration.CalibrationConstants.T
 import de.uniwuerzburg.omosim.calibration.objective.ModeChoiceCalibrationObjective
 import de.uniwuerzburg.omosim.cli.CalibrationStep
@@ -30,7 +21,6 @@ import org.locationtech.jts.geom.MultiLineString
 import org.locationtech.jts.index.hprtree.HPRtree
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.math.abs
 import kotlin.math.pow
 
 /**
@@ -193,7 +183,45 @@ class TrafficCountCalibrationContext(
         // Run uncalibrated
         val simBase = runBatch(sharePop)
 
-        printTable(simBase, simCal)
+        // Calculate SSE
+        val sseCal  = sse(simCal)
+        val sseBase = sse(simBase)
+
+        // Flatten and aggregate results
+        val colSensors = mutableListOf<String>()
+        val colTime = mutableListOf<String>()
+        val colMeasurements = mutableListOf<Double>()
+        val colBase = mutableListOf<Double>()
+        val colCal = mutableListOf<Double>()
+        for (sensor in sensors) {
+            for (seg in listOf(Pair(0, T))) {
+                // Sum over time window
+                var cal = 0.0
+                var base = 0.0
+                var measurement = 0.0
+                for (t in seg.first until seg.second) {
+                    cal += simCal[sensor]!![t]
+                    base += simBase[sensor]!![t]
+                    measurement += sensor.measurements[t]
+                }
+                colSensors.add(sensor.name)
+                colTime.add(seg.first.toString() + "-" + seg.second)
+                colMeasurements.add(measurement)
+                colBase.add(base)
+                colCal.add(cal)
+            }
+        }
+
+        // Print table
+        printEvaluationTable(
+            mapOf("Sensor" to colSensors, "T" to colTime),
+            colMeasurements,
+            colBase,
+            colCal,
+            listOf("SSE"),
+            listOf(sseBase),
+            listOf(sseCal)
+        )
     }
 
     /**
@@ -251,111 +279,6 @@ class TrafficCountCalibrationContext(
         } else {
             logger.info("Sensor check complete! Found issues with $nIssues sensors.")
         }
-    }
-
-    /**
-     * Print evaluation table
-     * 
-     * @param simBase Simulation result at each traffic sensor at each time step without calibration
-     * @param simCal Simulation result at each traffic sensor at each time step with calibration
-     */
-    private fun printTable(
-        simBase: Map<TrafficSensor, DoubleArray>,
-        simCal: Map<TrafficSensor, DoubleArray>
-    ) {
-        // Calculate MSE
-        val sseCal  = sse(simCal)
-        val sseBase = sse(simBase)
-
-        // Print table
-        val t = Terminal()
-        t.println(table {
-            borderType = SQUARE_DOUBLE_SECTION_SEPARATOR
-            captionTop("Traffic Count Comparison:", align = TextAlign.LEFT)
-            header {
-                row{
-                    cells("Sensor", "T", "Measured", "Sim. Base", "Sim. Calibrated")
-                    cellBorders = Borders.TOP
-                }
-                row {
-                    // Choose color based on whether SSE improved through calibration
-                    val styleSSEBase = TextColors.blue + TextStyles.bold
-                    val styleSSECal  = if (sseCal < sseBase) {
-                        TextColors.green + TextStyles.bold
-                    } else if (sseCal == sseBase) {
-                        TextColors.blue + TextStyles.bold
-                    } else {
-                        TextColors.red + TextStyles.bold
-                    }
-
-                    cells(
-                        "",
-                        "",
-                        "",
-                        styleSSEBase("SSE  %.4g".format(sseBase)),
-                        styleSSECal("SSE  %.4g".format(sseCal))
-                    )
-                    cellBorders = Borders.NONE
-                    align = TextAlign.RIGHT
-                }
-            }
-            body {
-                // Column styles
-                column(0) {
-                    cellBorders = Borders.TOP_BOTTOM
-                }
-                column(1) {
-                    cellBorders = Borders.TOP_RIGHT_BOTTOM
-                }
-                column(2) {
-                    cellBorders = Borders.TOP_BOTTOM
-                    align = TextAlign.RIGHT
-                }
-                column(3) {
-                    cellBorders = Borders.TOP_BOTTOM
-                    align = TextAlign.RIGHT
-                    style = TextColors.blue
-                }
-                column(4) {
-                    cellBorders = Borders.TOP_BOTTOM
-                    align = TextAlign.RIGHT
-                }
-
-                // Rows
-                for (sensor in sensors) {
-                    for (seg in listOf(Pair(0, T))) {
-                        // Sum over time window
-                        var cal = 0.0
-                        var base = 0.0
-                        var measurement = 0.0
-                        for (t in seg.first until seg.second) {
-                            cal += simCal[sensor]!![t]
-                            base += simBase[sensor]!![t]
-                            measurement += sensor.measurements[t]
-                        }
-
-                        // Choose color based on whether measurement improved through calibration
-                        val diffCal  = abs(measurement - cal)
-                        val diffBase = abs(measurement - base)
-                        val calibratedColor = if (diffCal < diffBase) {
-                            TextColors.green
-                        } else if (diffCal == diffBase) {
-                            TextColors.white
-                        } else {
-                            TextColors.red
-                        }
-
-                        row (
-                            sensor.name,
-                            seg.first.toString() + "-" + seg.second,
-                            "%.2f".format(measurement),
-                            "%.2f".format(base),
-                            calibratedColor("%.2f".format(cal))
-                        )
-                    }
-                }
-            }
-        })
     }
 
     /**
