@@ -53,7 +53,8 @@ fun printEvaluationTable(
 
                     // Choose color based on whether metric improved through calibration
                     val styleSSEBase = TextColors.blue + TextStyles.bold
-                    val styleSSECal = getImprovementIndicationColor(0.0,mBase,mCal)
+                    val styleSSECal = getImprovementIndicationColor(0.0,mBase,mCal) +
+                            TextStyles.bold
 
                     cells(
                         "",
