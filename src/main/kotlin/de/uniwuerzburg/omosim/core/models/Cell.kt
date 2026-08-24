@@ -24,7 +24,7 @@ data class Cell (
     }.flatten().sum() / (buildings.size * buildings.size)
 
     // Most common taz (Normally null at initialization)
-    override var odZone = buildings.groupingBy { it.odZone }.eachCount().maxByOrNull { it.value }!!.key
+    override var odZone = buildings.groupingBy { it.odZone }.eachCount().maxByOrNull { it.value }?.key
 
     override val inFocusArea = buildings.any { it.inFocusArea }
 

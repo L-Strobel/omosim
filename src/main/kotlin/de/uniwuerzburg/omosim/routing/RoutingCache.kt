@@ -99,9 +99,8 @@ class RoutingCache(
         val latMax = locations.maxOfOrNull { it.latlonCoord.x } ?:0.0
         val lonMax = locations.maxOfOrNull { it.latlonCoord.y } ?:0.0
         // Unique cache path
-        cachePath = Paths.get(
-            cacheDir.toString(),
-            "routing-matrix-cache",
+        val cacheParent = cacheDir.resolve("routing-matrix-cache")
+        cachePath = cacheParent.resolve(
             "RoutingMode${mode}NCells${locations.size}" +
             "GridBounds${listOf(latMin, latMax, lonMin, lonMax).toString().replace(" ", "")}"
         )

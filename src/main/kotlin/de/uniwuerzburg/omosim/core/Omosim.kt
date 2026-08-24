@@ -94,7 +94,7 @@ class Omosim (
     private val osmFileRoads: Path = osmFile,
 ) {
     @Suppress("MemberVisibilityCanBePrivate")
-    val kdTree: KdTree
+    val kdTree = KdTree()
     val buildings: List<Building>
     var hopper: GraphHopper? = null
     val grid: List<Cell>
@@ -164,7 +164,6 @@ class Omosim (
         )
 
         // Create KD-Tree for faster access
-        kdTree = KdTree()
         buildings.forEach { building ->
             kdTree.insert(building.coord, building)
         }
