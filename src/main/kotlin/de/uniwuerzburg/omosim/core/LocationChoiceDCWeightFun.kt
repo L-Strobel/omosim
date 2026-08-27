@@ -265,7 +265,7 @@ sealed class LocationChoiceDCWeightFun {
 /**
  * Destination choice function implementation for the HOME location distribution when census data is given.
  */
-object ByPopulation: LocationChoiceDCWeightFun () {
+class ByPopulation: LocationChoiceDCWeightFun () {
     override val coeffResidentialArea: Double get() { throw NotImplementedError() }
     override val coeffCommercialArea: Double get() { throw NotImplementedError() }
     override val coeffRetailArea: Double get() { throw NotImplementedError() }

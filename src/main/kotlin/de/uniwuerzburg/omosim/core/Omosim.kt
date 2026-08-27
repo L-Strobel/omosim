@@ -136,7 +136,7 @@ class Omosim (
 
         if (censusFile != null) {
             censusAvailable = true
-            mutLocChoiceFuns[ActivityType.HOME] = ByPopulation
+            mutLocChoiceFuns[ActivityType.HOME] = ByPopulation()
         }
         mutLocChoiceFuns[ActivityType.BUSINESS] = mutLocChoiceFuns[ActivityType.OTHER]!!
         val locChoiceWeightFuns = mutLocChoiceFuns.toMap()

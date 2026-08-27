@@ -25,13 +25,13 @@ class RoutingCacheTest {
     )
     val origin = Cell(
         1,
-        transformer.toModelCRS(originPoint).coordinate, // Dummy
+        transformer.toModelCRS(originPoint).coordinate,
         originPoint.coordinate,
         listOf()
     )
     val destination = Cell(
         2,
-        transformer.toModelCRS(destinationPoint).coordinate, // Dummy
+        transformer.toModelCRS(destinationPoint).coordinate,
         destinationPoint.coordinate,
         listOf()
     )

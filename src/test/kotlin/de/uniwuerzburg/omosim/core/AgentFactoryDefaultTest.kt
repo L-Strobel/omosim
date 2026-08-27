@@ -22,7 +22,7 @@ class AgentFactoryDefaultTest {
         // Setup
         val mutLocChoiceFuns: MutableMap<ActivityType, LocationChoiceDCWeightFun> =
             readJsonFromResource("parametrization/publication2023/LocChoiceWeightFuns.json")
-        mutLocChoiceFuns[ActivityType.HOME] = ByPopulation
+        mutLocChoiceFuns[ActivityType.HOME] = ByPopulation()
         mutLocChoiceFuns[ActivityType.BUSINESS] = mutLocChoiceFuns[ActivityType.OTHER]!!
         val locChoiceWeightFuns = mutLocChoiceFuns.toMutableMap()
 
@@ -70,7 +70,7 @@ class AgentFactoryDefaultTest {
         // Setup
         val mutLocChoiceFuns: MutableMap<ActivityType, LocationChoiceDCWeightFun> =
             readJsonFromResource("parametrization/publication2023/LocChoiceWeightFuns.json")
-        mutLocChoiceFuns[ActivityType.HOME] = ByPopulation
+        mutLocChoiceFuns[ActivityType.HOME] = ByPopulation()
         mutLocChoiceFuns[ActivityType.BUSINESS] = mutLocChoiceFuns[ActivityType.OTHER]!!
         val locChoiceWeightFuns = mutLocChoiceFuns.toMutableMap()
 
@@ -108,7 +108,7 @@ class AgentFactoryDefaultTest {
         // Setup
         val mutLocChoiceFuns: MutableMap<ActivityType, LocationChoiceDCWeightFun> =
             readJsonFromResource("parametrization/publication2023/LocChoiceWeightFuns.json")
-        mutLocChoiceFuns[ActivityType.HOME] = ByPopulation
+        mutLocChoiceFuns[ActivityType.HOME] = ByPopulation()
         mutLocChoiceFuns[ActivityType.BUSINESS] = mutLocChoiceFuns[ActivityType.OTHER]!!
         val locChoiceWeightFuns = mutLocChoiceFuns.toMutableMap()
 

@@ -76,7 +76,7 @@ class LocationChoiceDCWeightFunTest {
     @Test
     fun byPopulationTest() {
         val testDestinations = generateTestDestinations()
-        val distribution = ByPopulation
+        val distribution = ByPopulation()
         testDestinations.forEach { it.recalculateAttractions(listOf(distribution)) }
 
         val pFirst = distribution.calcForNoOrigin(testDestinations.first())
