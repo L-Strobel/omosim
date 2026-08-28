@@ -377,7 +377,7 @@ class TrafficCountCalibrationContext(
      * @return Key: origin-destination pair. Value: List of alternatives that contain lists of all sensors affected by
      * the alternative.
      */
-    private fun altAffectedSensors(
+    fun altAffectedSensors(
         leeway: Double = 30.0,
         altMaxRoutes: Int? = null,
         altMaxSlower: Double? = null,
@@ -397,7 +397,7 @@ class TrafficCountCalibrationContext(
      *
      * @return Key: origin-destination pair. Value: List of all sensors affected by the pair.
      */
-    private fun affectedSensors(leeway: Double = 30.0) : Map<Pair<RealLocation, RealLocation>, List<TrafficSensor>> {
+    fun affectedSensors(leeway: Double = 30.0) : Map<Pair<RealLocation, RealLocation>, List<TrafficSensor>> {
         val affectedSensors = affectedSensors(false, leeway = leeway)
             .mapValues { (_, v) -> v.first() }
             .filter{ (_, v) -> v.isNotEmpty()}
