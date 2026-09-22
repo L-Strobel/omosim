@@ -53,7 +53,6 @@ class Gravity(
     fun calibrate(algorithm: CalibrationAlgorithm?, activities: List<ActivityType>, parameters: Map<String, String>?) {
         when (algorithm) {
             CalibrationAlgorithm.SM_LBFGS    -> rw.calibrateLBFGSSM(activities, parameters)
-            // CalibrationAlgorithm.SM_MINBC    -> rw.calibrateMinBcSM(activities, parameters)
             CalibrationAlgorithm.SM_GD       -> rw.calibrateGDSM(activities, parameters)
             CalibrationAlgorithm.SM_PSO      -> rw.calibratePSOSM(activities, parameters)
             CalibrationAlgorithm.PSO         -> rw.calibratePSO(activities, parameters)
@@ -173,18 +172,6 @@ class Gravity(
                 val model = buildModel(activity)
                 val x0 = getX0(activity, context)
                 val d = BFGS.run(model, x0, parameters=parameters)
-                updateCalibration(d, activity)
-            }
-        }
-
-        // MinBC (CG)
-        fun calibrateMinBcSM(
-            activities: List<ActivityType>, parameters: Map<String, String>? = null
-        )  {
-            for (activity in activities) {
-                val model = buildModel(activity)
-                val x0 = getX0(activity, context)
-                val d = MinBc.run(model, x0, parameters=parameters)
                 updateCalibration(d, activity)
             }
         }
