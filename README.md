@@ -177,6 +177,11 @@ Example:
     "stratumName": "Young Generation",  // Can be chosen freely
     "stratumShare": 0.5,                // Must add up to 1.0 with the shares of the other strata
     "carOwnership": 0.30,               // Share of car ownership in the group
+    "income": {                         // Defines the income distribution fo the stratum, similar to age
+      "limits": [1000, 2000, 3000, 5000, 7000, 10000, 20000], 
+      "shares": [0.1, 0.2, 0.2, 0.2, 0.15, 0.1, 0.05],
+      "UNDEFINED": 0.0
+    },
     "age": {                            
       "limits": [10, 20, 30],           // Defines the age distribution of the stratum. The limits define the upper bounds of each bin. Inside each bin, the distribution is uniform. For example, here, 25% of the group is aged between 0 (inclusive) and 10 (exclusive).
       "shares": [0.25, 0.5, 0.25],      // These values combined with the value of 'UNDEFINED' must add up to 1.0

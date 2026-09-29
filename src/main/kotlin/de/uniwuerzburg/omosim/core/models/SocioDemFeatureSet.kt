@@ -7,5 +7,6 @@ class SocioDemFeatureSet (
     val hom: HomogeneousGrp,
     val mob: MobilityGrp,
     val age: Int?,
+    val income: Int?,
     val sex: Sex
 )

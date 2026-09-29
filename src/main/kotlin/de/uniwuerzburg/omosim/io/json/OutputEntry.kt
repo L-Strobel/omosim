@@ -14,6 +14,7 @@ data class OutputEntry (
     val homogenousGroup: HomogeneousGrp,
     val mobilityGroup: MobilityGrp,
     val age: Int?,
+    val income: Int?,
     val sex: Sex,
     val carAccess: Boolean,
     val homeLat: Double,

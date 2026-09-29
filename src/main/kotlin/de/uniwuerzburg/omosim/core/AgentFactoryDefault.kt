@@ -180,7 +180,7 @@ class AgentFactoryDefault (
         val school = destinationFinder.getLocation(home, zones, ActivityType.SCHOOL, rng)
 
         val agent = MobiAgent(
-            id, featureSet.hom, featureSet.mob, featureSet.age, home, work, school, featureSet.sex
+            id, featureSet.hom, featureSet.mob, featureSet.age, featureSet.income, home, work, school, featureSet.sex
         )
         agent.carAccess = carOwnership.determine(agent, stratum, rng)
         return agent
