@@ -100,21 +100,24 @@ class AgentFactoryDefaultTest {
         val agents = agentFactory.createAgents(10_000, listOf(cell), false, Random())
         val sumUNDEFINED = agents.filter {it.income == null}.size
         val notNones = agents.filter {it.income != null}
+        val incomeAndAge = agents.filter {it.age != null}
         val sumBelow1000 = notNones.map{if (it.income!! < 1000) 1 else 0}.sum()
         val sumAbove5000 = notNones.map{if ((it.income!! >= 5000)) 1 else 0}.sum()
         val sumAbove10000 = notNones.map{if ((it.income!! >= 10000)) 1 else 0}.sum()
         val sumBetween1k5k = notNones.map{if ((it.income!! >= 1000) and (it.income < 5000)) 1 else 0}.sum()
+        val incomeBelow16 = incomeAndAge.map{if ((it.income != null) && (it.age!! < 16)) 1 else 0}.sum()
 
         // Check if shares are within generous bounds. Might fail very rarely by chance.
-        assert(sumUNDEFINED < 10_000 * 0.1)
-        assert(sumBelow1000 > 10_000 * 0.1)
-        assert(sumBelow1000 < 10_000 * 0.5)
-        assert(sumAbove5000 > 10_000 * 0.2)
-        assert(sumAbove5000 < 10_000 * 0.7)
-        assert(sumAbove10000 > 10_000 * 0.025)
-        assert(sumAbove10000 < 10_000 * 0.1)
-        assert(sumBetween1k5k > 10_000 * 0.2)
-        assert(sumBetween1k5k < 10_000 * 0.5)
+        // The distribution from the input file is only valid for the population above age 16
+        assert(sumBelow1000 > notNones.size * 0.1)
+        assert(sumBelow1000 < notNones.size * 0.5)
+        assert(sumAbove5000 > notNones.size * 0.2)
+        assert(sumAbove5000 < notNones.size * 0.7)
+        assert(sumAbove10000 > notNones.size * 0.025)
+        assert(sumAbove10000 < notNones.size * 0.1)
+        assert(sumBetween1k5k > notNones.size * 0.2)
+        assert(sumBetween1k5k < notNones.size * 0.5)
+        assert(incomeBelow16 <= 10_000 * 0.0)
         assert(sumUNDEFINED + sumBelow1000 + sumAbove5000 + sumBetween1k5k == 10_000)
     }
 

@@ -152,9 +152,11 @@ class PopStratum (
             rng.nextInt(lb, ub)
         }
         // Sample income between groups
-        val incomeVal = if (rng.nextDouble() <= income.UNDEFINED) {
+        val incomeVal = if (age != null && age < 16) {
+            null // skips an agent that is under age 16 when assigning income
+        } else if (rng.nextDouble() <= income.UNDEFINED) {
             null
-        } else {
+        }else {
             val i = sampleCumDist(incomeDistr, rng)
             val ub = incomeGroups[i]
             val lb = if(i == 0) {
