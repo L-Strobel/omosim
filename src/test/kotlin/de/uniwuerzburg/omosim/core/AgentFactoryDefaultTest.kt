@@ -66,6 +66,59 @@ class AgentFactoryDefaultTest {
     }
 
     @Test
+    fun incomeTest() {
+        // Setup
+        val mutLocChoiceFuns: MutableMap<ActivityType, LocationChoiceDCWeightFun> =
+            readJsonFromResource("parametrization/publication2023/LocChoiceWeightFuns.json")
+        mutLocChoiceFuns[ActivityType.HOME] = ByPopulation()
+        mutLocChoiceFuns[ActivityType.BUSINESS] = mutLocChoiceFuns[ActivityType.OTHER]!!
+        val locChoiceWeightFuns = mutLocChoiceFuns.toMutableMap()
+
+        val routingCache = RoutingCache(RoutingMode.BEELINE, null, 0, Dispatchers.Default)
+        val destinationFinder = DestinationFinderDefault(routingCache, locChoiceWeightFuns)
+
+        val popStrata: List<PopStratum> = readJsonFromResource("testPopulation.json")
+        val carOwnership = CarOwnershipFixedProbability(17)
+        val agentFactory = AgentFactoryDefault(destinationFinder, carOwnership, popStrata, Dispatchers.Default)
+
+        // Get buildings
+        val buildingFile = Paths.get(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.toURI())
+        val collection: GeoJsonFeatureCollection<BuildingProperties> = readJson(buildingFile)
+        val buildings =  Building.fromGeoJson(
+            collection, GeometryFactory(), CRSTransformer( 11.630883577905143 ), locChoiceWeightFuns
+        )
+        val cell = Cell(
+            id = 0,
+            coord = Coordinate(0.0, 0.0),
+            latlonCoord = Coordinate(0.0, 0.0),
+            buildings = buildings,
+        )
+        for (building in buildings) {
+            building.cell = cell
+        }
+
+        val agents = agentFactory.createAgents(10_000, listOf(cell), false, Random())
+        val sumUNDEFINED = agents.filter {it.income == null}.size
+        val notNones = agents.filter {it.income != null}
+        val sumBelow1000 = notNones.map{if (it.income!! < 1000) 1 else 0}.sum()
+        val sumAbove5000 = notNones.map{if ((it.income!! >= 5000)) 1 else 0}.sum()
+        val sumAbove10000 = notNones.map{if ((it.income!! >= 10000)) 1 else 0}.sum()
+        val sumBetween1k5k = notNones.map{if ((it.income!! >= 1000) and (it.income < 5000)) 1 else 0}.sum()
+
+        // Check if shares are within generous bounds. Might fail very rarely by chance.
+        assert(sumUNDEFINED < 10_000 * 0.1)
+        assert(sumBelow1000 > 10_000 * 0.1)
+        assert(sumBelow1000 < 10_000 * 0.5)
+        assert(sumAbove5000 > 10_000 * 0.2)
+        assert(sumAbove5000 < 10_000 * 0.7)
+        assert(sumAbove10000 > 10_000 * 0.025)
+        assert(sumAbove10000 < 10_000 * 0.1)
+        assert(sumBetween1k5k > 10_000 * 0.2)
+        assert(sumBetween1k5k < 10_000 * 0.5)
+        assert(sumUNDEFINED + sumBelow1000 + sumAbove5000 + sumBetween1k5k == 10_000)
+    }
+
+    @Test
     fun popStrataTest() {
         // Setup
         val mutLocChoiceFuns: MutableMap<ActivityType, LocationChoiceDCWeightFun> =
