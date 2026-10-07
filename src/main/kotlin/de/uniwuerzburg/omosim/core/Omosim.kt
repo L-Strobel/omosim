@@ -111,6 +111,7 @@ class Omosim (
     val focusArea: Geometry
     private val fullArea: Geometry
     val popStrata: List<PopStratum>
+    val popAssumptions: PopStratum.PopAssumptions
     val carOwnership: CarOwnership
     var routeChoiceCalibration: RouteChoiceCalibrationStore? = null
     val parameterReader: ParameterReader
@@ -130,7 +131,11 @@ class Omosim (
             locationChoiceFile,
             carOwnershipUtilityFile
         )
-        popStrata = parameterReader.getPopulationDistribution() // Population feature distribution
+        // Deconstruct population file in strata and the population assumptions
+        val popConfig = parameterReader.getPopulationDistribution()
+        popStrata = popConfig.stratum
+        popAssumptions = popConfig.popAssumptions
+
         val activityGroups = parameterReader.getActivityGroups() // Activity chain and activity duration distributions
         val mutLocChoiceFuns = parameterReader.getLocationChoiceFuns() // Load distance distributions
 
@@ -220,7 +225,7 @@ class Omosim (
         }
 
         // Agent factory
-        agentFactory = AgentFactoryDefault(destinationFinder, carOwnership, popStrata, dispatcher)
+        agentFactory = AgentFactoryDefault(destinationFinder, carOwnership, popStrata, popAssumptions, dispatcher)
 
         logger.get()?.info("Initializing OMoSim took: ${timeSource.markNow() - timestampStartInit}")
     }

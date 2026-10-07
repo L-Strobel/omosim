@@ -81,7 +81,7 @@ class ParameterReader(
         return getParameterJson("tripModeUtilitiesCalibration.json", tripModeUtilityForCalibrationFile)
     }
 
-    fun getPopulationDistribution() : List<PopStratum> {
+    fun getPopulationDistribution() : PopStratum.PopulationConfig {
         return getParameterJson("Population.json", populationFile)
     }
 

@@ -13,6 +13,7 @@ class AgentFactoryDefault (
     private val destinationFinder: DestinationFinder,
     private val carOwnership: CarOwnership,
     private val popStrata: List<PopStratum>,
+    private val popAssumptions: PopStratum.PopAssumptions,
     private val dispatcher: CoroutineDispatcher
 ) : AgentFactory {
     private val strataDistr: DoubleArray = createCumDist(popStrata.map{it.stratumShare}.toDoubleArray())
@@ -173,7 +174,7 @@ class AgentFactoryDefault (
     ) : MobiAgent {
         // Sociodemographic features
         val stratum = popStrata[sampleCumDist(strataDistr, rng)]
-        val featureSet = stratum.sampleSocDemFeatures(rng)
+        val featureSet = stratum.sampleSocDemFeatures(rng, popAssumptions.minIncomeAge)
 
         // Fixed locations
         val work = destinationFinder.getLocation(home, zones, ActivityType.WORK, rng)

@@ -29,9 +29,15 @@ class AgentFactoryDefaultTest {
         val routingCache = RoutingCache(RoutingMode.BEELINE, null, 0, Dispatchers.Default)
         val destinationFinder = DestinationFinderDefault(routingCache, locChoiceWeightFuns)
 
-        val popStrata: List<PopStratum> = readJsonFromResource("testPopulation.json")
-        val carOwnership = CarOwnershipFixedProbability(17)
-        val agentFactory = AgentFactoryDefault(destinationFinder, carOwnership, popStrata, Dispatchers.Default)
+        val popConfig: PopStratum.PopulationConfig = readJsonFromResource("testPopulation.json")
+        val carOwnership = CarOwnershipFixedProbability(popConfig.popAssumptions.minDrivingAge)
+        val agentFactory = AgentFactoryDefault(
+            destinationFinder,
+            carOwnership,
+            popConfig.stratum,
+            popConfig.popAssumptions,
+            Dispatchers.Default
+        )
 
         // Get buildings
         val buildingFile = Paths.get(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.toURI())
@@ -77,9 +83,14 @@ class AgentFactoryDefaultTest {
         val routingCache = RoutingCache(RoutingMode.BEELINE, null, 0, Dispatchers.Default)
         val destinationFinder = DestinationFinderDefault(routingCache, locChoiceWeightFuns)
 
-        val popStrata: List<PopStratum> = readJsonFromResource("testPopulation.json")
-        val carOwnership = CarOwnershipFixedProbability(17)
-        val agentFactory = AgentFactoryDefault(destinationFinder, carOwnership, popStrata, Dispatchers.Default)
+        val popConfig: PopStratum.PopulationConfig = readJsonFromResource("testPopulation.json")
+        val carOwnership = CarOwnershipFixedProbability(popConfig.popAssumptions.minDrivingAge)
+        val agentFactory = AgentFactoryDefault(
+            destinationFinder,
+            carOwnership,
+            popConfig.stratum,
+            popConfig.popAssumptions,
+            Dispatchers.Default)
 
         // Get buildings
         val buildingFile = Paths.get(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.toURI())
@@ -133,9 +144,14 @@ class AgentFactoryDefaultTest {
         val routingCache = RoutingCache(RoutingMode.BEELINE, null, 0, Dispatchers.Default)
         val destinationFinder = DestinationFinderDefault(routingCache, locChoiceWeightFuns)
 
-        val popStrata: List<PopStratum> = readJsonFromResource("testPopulation.json")
-        val carOwnership = CarOwnershipFixedProbability(17)
-        val agentFactory = AgentFactoryDefault(destinationFinder, carOwnership, popStrata, Dispatchers.Default)
+        val popConfig: PopStratum.PopulationConfig = readJsonFromResource("testPopulation.json")
+        val carOwnership = CarOwnershipFixedProbability(popConfig.popAssumptions.minDrivingAge)
+        val agentFactory = AgentFactoryDefault(
+            destinationFinder,
+            carOwnership,
+            popConfig.stratum,
+            popConfig.popAssumptions,
+            Dispatchers.Default)
 
         // Get buildings
         val buildingFile = Paths.get(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.toURI())
@@ -168,12 +184,17 @@ class AgentFactoryDefaultTest {
         mutLocChoiceFuns[ActivityType.BUSINESS] = mutLocChoiceFuns[ActivityType.OTHER]!!
         val locChoiceWeightFuns = mutLocChoiceFuns.toMutableMap()
 
-        val carOwnership = CarOwnershipFixedProbability(17)
 
         val routingCache = RoutingCache(RoutingMode.BEELINE, null, 0, Dispatchers.Default)
         val destinationFinder = DestinationFinderDefault(routingCache, locChoiceWeightFuns)
-        val popStrata: List<PopStratum> = readJsonFromResource("testPopulation.json")
-        val agentFactory = AgentFactoryDefault(destinationFinder, carOwnership, popStrata, Dispatchers.Default)
+        val popConfig: PopStratum.PopulationConfig = readJsonFromResource("testPopulation.json")
+        val carOwnership = CarOwnershipFixedProbability(popConfig.popAssumptions.minDrivingAge)
+        val agentFactory = AgentFactoryDefault(
+            destinationFinder,
+            carOwnership,
+            popConfig.stratum,
+            popConfig.popAssumptions,
+            Dispatchers.Default)
 
         // Get buildings
         val buildingFile = Paths.get(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.toURI())

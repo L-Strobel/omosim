@@ -133,7 +133,7 @@ class PopStratum (
         return groups
     }
 
-    fun sampleSocDemFeatures(rng: Random) : SocioDemFeatureSet {
+    fun sampleSocDemFeatures(rng: Random, minIncomeAge: Int) : SocioDemFeatureSet {
         val hom = homGroups[sampleCumDist(homDistr, rng)]
         val mob = mobGroups[sampleCumDist(mobDistr, rng)]
         val sex = sexGroups[sampleCumDist(sexDistr, rng)]
@@ -152,8 +152,8 @@ class PopStratum (
             rng.nextInt(lb, ub)
         }
         // Sample income between groups
-        val incomeVal = if (age != null && age < 16) {
-            null // skips an agent that is under age 16 when assigning income
+        val incomeVal = if (age != null && age < minIncomeAge) {
+            null // skips an agent that is under defined minimum age when assigning income
         } else if (rng.nextDouble() <= monthlyIncome.UNDEFINED) {
             null
         }else {
@@ -221,6 +221,18 @@ class PopStratum (
             }
         }
     }
+
+    @Serializable
+    data class PopAssumptions(
+        val minDrivingAge: Int,
+        val minIncomeAge: Int,
+    )
+
+    @Serializable
+    data class PopulationConfig(
+        val popAssumptions: PopAssumptions,
+        val stratum: List<PopStratum>
+    )
 
     /**
      * Income distribution of group.
