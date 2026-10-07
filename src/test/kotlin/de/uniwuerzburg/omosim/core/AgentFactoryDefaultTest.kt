@@ -98,14 +98,14 @@ class AgentFactoryDefaultTest {
         }
 
         val agents = agentFactory.createAgents(10_000, listOf(cell), false, Random())
-        val sumUNDEFINED = agents.filter {it.income == null}.size
-        val notNones = agents.filter {it.income != null}
+        val sumUNDEFINED = agents.filter {it.monthlyIncome == null}.size
+        val notNones = agents.filter {it.monthlyIncome != null}
         val incomeAndAge = agents.filter {it.age != null}
-        val sumBelow1000 = notNones.map{if (it.income!! < 1000) 1 else 0}.sum()
-        val sumAbove5000 = notNones.map{if ((it.income!! >= 5000)) 1 else 0}.sum()
-        val sumAbove10000 = notNones.map{if ((it.income!! >= 10000)) 1 else 0}.sum()
-        val sumBetween1k5k = notNones.map{if ((it.income!! >= 1000) and (it.income < 5000)) 1 else 0}.sum()
-        val incomeBelow16 = incomeAndAge.map{if ((it.income != null) && (it.age!! < 16)) 1 else 0}.sum()
+        val sumBelow1000 = notNones.map{if (it.monthlyIncome!! < 1000) 1 else 0}.sum()
+        val sumAbove5000 = notNones.map{if ((it.monthlyIncome!! >= 5000)) 1 else 0}.sum()
+        val sumAbove10000 = notNones.map{if ((it.monthlyIncome!! >= 10000)) 1 else 0}.sum()
+        val sumBetween1k5k = notNones.map{if ((it.monthlyIncome!! >= 1000) and (it.monthlyIncome < 5000)) 1 else 0}.sum()
+        val incomeBelow16 = incomeAndAge.map{if ((it.monthlyIncome != null) && (it.age!! < 16)) 1 else 0}.sum()
 
         // Check if shares are within generous bounds. Might fail very rarely by chance.
         // The distribution from the input file is only valid for the population above age 16

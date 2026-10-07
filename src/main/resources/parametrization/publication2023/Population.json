@@ -8,7 +8,7 @@
       "shares": [0.0, 0.0],
       "UNDEFINED": 1.0
     },
-    "income": {
+    "monthlyIncome": {
       "limits": [1000, 2000, 3000, 5000, 7000, 10000, 20000],
       "shares": [0.1, 0.2, 0.2, 0.2, 0.15, 0.1, 0.05],
       "UNDEFINED": 0.0

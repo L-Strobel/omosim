@@ -56,7 +56,7 @@ fun formatOutput(agent: MobiAgent) : OutputEntry {
         agent.homogenousGroup,
         agent.mobilityGroup,
         agent.age,
-        agent.income,
+        agent.monthlyIncome,
         agent.sex,
         agent.carAccess,
         agent.home.latlonCoord.x,

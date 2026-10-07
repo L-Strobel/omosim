@@ -346,7 +346,7 @@ class SurrogateGravity (
                 // Agent representing the population stratum
                 val stratumAgent = MobiAgent(
                     -1,  socioFeatureSet.hom, socioFeatureSet.mob, socioFeatureSet.age,
-                    socioFeatureSet.income, dummyLocation, dummyLocation, dummyLocation, socioFeatureSet.sex
+                    socioFeatureSet.monthlyIncome, dummyLocation, dummyLocation, dummyLocation, socioFeatureSet.sex
                 )
                 stratumAgent.carAccess = true // Car ownership probability is considered later
 
