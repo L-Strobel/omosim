@@ -175,50 +175,36 @@ class PopStratum (
         val ageGroup = aZipped.sortedBy { it.first }
         val incomeGroup = monthlyIncome.limits.zip(monthlyIncome.shares).sortedBy { it.first }
 
+        val ageOptions: List<Pair<Int?, Double>> =
+            listOf(null to age.UNDEFINED) + bucketValues(ageGroup)
+        val incomeOptions: List<Pair<Int?, Double>> =
+            listOf(null to monthlyIncome.UNDEFINED) + bucketValues(incomeGroup)
+
         for ((hom, pHom) in homogenousGroup) {
             for ((mob, pMob) in mobilityGroup) {
                 for ((s, pSex) in sex) {
-                    // Undefined age and income
-                    val uSet = SocioDemFeatureSet(hom, mob, null, monthlyIncome=null, s)
-                    val uP = pHom * pMob * pSex * age.UNDEFINED * monthlyIncome.UNDEFINED
-                    yield(Pair(uSet, uP))
-
-                    // Defined age, undefined income
-                    // TODO: extract method
-                    var ageLb = 0
-                    for((ageUb, pAge) in ageGroup) {
-                        val a = (ageUb - ageLb) / 2
-                        ageLb = ageUb
-                        val set = SocioDemFeatureSet(hom, mob, a, monthlyIncome=null, s)
-                        val p = pHom * pMob * pSex * pAge * monthlyIncome.UNDEFINED
-                        yield(Pair(set, p))
-                    }
-                    // Defined income, undefined age
-                    var incomeLb = 0
-                    for ((incomeUb, pIncome) in incomeGroup) {
-                        val i = (incomeUb - incomeLb) / 2
-                        incomeLb = incomeUb
-                        val set = SocioDemFeatureSet(hom, mob, null, i, s)
-                        val p = pHom * pMob * pSex * age.UNDEFINED * pIncome
-                        yield(Pair(set, p))
-                    }
-                    // both defined
-                    ageLb = 0
-                    for ((ageUb, pAge) in ageGroup) {
-                        val a = (ageUb - ageLb) / 2
-                        ageLb = ageUb
-                        incomeLb = 0
-                        for ((incomeUb, pIncome) in incomeGroup) {
-                            val i = (incomeUb - incomeLb) / 2
-                            incomeLb = incomeUb
-                            yield(Pair(
-                                SocioDemFeatureSet(hom, mob, a, i, s),
-                                pHom * pMob * pSex * pAge * pIncome
-                            ))
+                    for ((a, pAge) in ageOptions) {
+                        for ((i, pIncome) in incomeOptions) {
+                            yield(
+                                Pair(
+                                    SocioDemFeatureSet(hom, mob, a, i, s),
+                                    pHom * pMob * pSex * pAge * pIncome
+                                )
+                            )
                         }
                     }
                 }
             }
+        }
+    }
+
+    // Converts sorted (upperBound, share) pairs into (value, share) pairs
+    private fun bucketValues(group: List<Pair<Int, Double>>): List<Pair<Int, Double>> {
+        var lowerBound = 0
+        return group.map { (upperBound, share) ->
+            val value = (upperBound - lowerBound) / 2
+            lowerBound = upperBound
+            value to share
         }
     }
 
