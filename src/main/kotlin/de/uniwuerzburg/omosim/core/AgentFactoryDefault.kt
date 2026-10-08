@@ -12,10 +12,10 @@ import kotlin.collections.toList
 class AgentFactoryDefault (
     private val destinationFinder: DestinationFinder,
     private val carOwnership: CarOwnership,
-    private val popStrata: List<PopStratum>,
+    private val popConfig: PopulationConfig,
     private val dispatcher: CoroutineDispatcher
 ) : AgentFactory {
-    private val strataDistr: DoubleArray = createCumDist(popStrata.map{it.stratumShare}.toDoubleArray())
+    private val strataDistr: DoubleArray = createCumDist(popConfig.strata.map{it.stratumShare}.toDoubleArray())
 
     /**
      * Initialize population based on a share of the existing population.
@@ -172,15 +172,23 @@ class AgentFactoryDefault (
         id: Int, home: LocationOption, homeZone: AggLocation, zones: List<AggLocation>, rng: Random
     ) : MobiAgent {
         // Sociodemographic features
-        val stratum = popStrata[sampleCumDist(strataDistr, rng)]
-        val featureSet = stratum.sampleSocDemFeatures(rng)
+        val stratum = popConfig.strata[sampleCumDist(strataDistr, rng)]
+        val featureSet = stratum.sampleSocDemFeatures(rng, popConfig.populationWideValues)
 
         // Fixed locations
         val work = destinationFinder.getLocation(home, zones, ActivityType.WORK, rng)
         val school = destinationFinder.getLocation(home, zones, ActivityType.SCHOOL, rng)
 
         val agent = MobiAgent(
-            id, featureSet.hom, featureSet.mob, featureSet.age, home, work, school, featureSet.sex
+            id,
+            featureSet.hom,
+            featureSet.mob,
+            featureSet.age,
+            featureSet.monthlyIncome,
+            home,
+            work,
+            school,
+            featureSet.sex
         )
         agent.carAccess = carOwnership.determine(agent, stratum, rng)
         return agent

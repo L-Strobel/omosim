@@ -6,7 +6,7 @@ import de.uniwuerzburg.omosim.core.LocationChoiceDCWeightFun
 import de.uniwuerzburg.omosim.core.ModeUtility
 import de.uniwuerzburg.omosim.core.Omosim
 import de.uniwuerzburg.omosim.core.models.ActivityType
-import de.uniwuerzburg.omosim.core.models.PopStratum
+import de.uniwuerzburg.omosim.core.models.PopulationConfig
 import de.uniwuerzburg.omosim.io.json.ActivityGroup
 import de.uniwuerzburg.omosim.io.json.readJson
 import de.uniwuerzburg.omosim.io.json.readJsonFromResource
@@ -81,7 +81,7 @@ class ParameterReader(
         return getParameterJson("tripModeUtilitiesCalibration.json", tripModeUtilityForCalibrationFile)
     }
 
-    fun getPopulationDistribution() : List<PopStratum> {
+    fun getPopulationDistribution() : PopulationConfig {
         return getParameterJson("Population.json", populationFile)
     }
 

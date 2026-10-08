@@ -1,29 +1,41 @@
-[
-  {
-    "stratumName": "NationalAverage",
-    "stratumShare": 1.0,
-    "carOwnership": 0.60,
-    "age": {
-      "limits": [10, 50],
-      "shares": [0.5, 0.3],
-      "UNDEFINED": 0.2
-    },
-    "homogenousGroup": {
-      "WORKING":  0.0,
-      "NON_WORKING": 0.0,
-      "PUPIL_STUDENT": 0.0,
-      "UNDEFINED": 1.0
-    },
-    "mobilityGroup": {
-      "CAR_USER": 0.0,
-      "CAR_MIXED": 0.0,
-      "NOT_CAR": 0.0,
-      "UNDEFINED": 1.0
-    },
-    "sex": {
-      "MALE": 0.0,
-      "FEMALE": 0.0,
-      "UNDEFINED": 1.0
+{
+  "populationWideValues": {
+    "minIncomeAge": 16,
+    "minDrivingAge": 17
+  },
+  "strata":
+  [
+    {
+      "stratumName": "NationalAverage",
+      "stratumShare": 1.0,
+      "carOwnership": 0.60,
+      "age": {
+        "limits": [10, 50],
+        "shares": [0.5, 0.3],
+        "UNDEFINED": 0.2
+      },
+      "monthlyIncome": {
+        "limits": [1000, 5000, 10000],
+        "shares": [0.5, 0.3, 0.2],
+        "UNDEFINED": 0.0
+      },
+      "homogenousGroup": {
+        "WORKING":  0.0,
+        "NON_WORKING": 0.0,
+        "PUPIL_STUDENT": 0.0,
+        "UNDEFINED": 1.0
+      },
+      "mobilityGroup": {
+        "CAR_USER": 0.0,
+        "CAR_MIXED": 0.0,
+        "NOT_CAR": 0.0,
+        "UNDEFINED": 1.0
+      },
+      "sex": {
+        "MALE": 0.0,
+        "FEMALE": 0.0,
+        "UNDEFINED": 1.0
+      }
     }
-  }
-]
+  ]
+}

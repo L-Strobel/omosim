@@ -29,9 +29,14 @@ class AgentFactoryDefaultTest {
         val routingCache = RoutingCache(RoutingMode.BEELINE, null, 0, Dispatchers.Default)
         val destinationFinder = DestinationFinderDefault(routingCache, locChoiceWeightFuns)
 
-        val popStrata: List<PopStratum> = readJsonFromResource("testPopulation.json")
-        val carOwnership = CarOwnershipFixedProbability(17)
-        val agentFactory = AgentFactoryDefault(destinationFinder, carOwnership, popStrata, Dispatchers.Default)
+        val popConfig: PopulationConfig = readJsonFromResource("testPopulation.json")
+        val carOwnership = CarOwnershipFixedProbability(popConfig.populationWideValues.minDrivingAge)
+        val agentFactory = AgentFactoryDefault(
+            destinationFinder,
+            carOwnership,
+            popConfig,
+            Dispatchers.Default
+        )
 
         // Get buildings
         val buildingFile = Paths.get(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.toURI())
@@ -66,6 +71,63 @@ class AgentFactoryDefaultTest {
     }
 
     @Test
+    fun incomeTest() {
+        // Setup
+        val mutLocChoiceFuns: MutableMap<ActivityType, LocationChoiceDCWeightFun> =
+            readJsonFromResource("parametrization/publication2023/LocChoiceWeightFuns.json")
+        mutLocChoiceFuns[ActivityType.HOME] = ByPopulation()
+        mutLocChoiceFuns[ActivityType.BUSINESS] = mutLocChoiceFuns[ActivityType.OTHER]!!
+        val locChoiceWeightFuns = mutLocChoiceFuns.toMutableMap()
+
+        val routingCache = RoutingCache(RoutingMode.BEELINE, null, 0, Dispatchers.Default)
+        val destinationFinder = DestinationFinderDefault(routingCache, locChoiceWeightFuns)
+
+        val popConfig: PopulationConfig = readJsonFromResource("testPopulation.json")
+        val carOwnership = CarOwnershipFixedProbability(popConfig.populationWideValues.minDrivingAge)
+        val agentFactory = AgentFactoryDefault(
+            destinationFinder,
+            carOwnership,
+            popConfig,
+            Dispatchers.Default)
+
+        // Get buildings
+        val buildingFile = Paths.get(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.toURI())
+        val collection: GeoJsonFeatureCollection<BuildingProperties> = readJson(buildingFile)
+        val buildings =  Building.fromGeoJson(
+            collection, GeometryFactory(), CRSTransformer( 11.630883577905143 ), locChoiceWeightFuns
+        )
+        val cell = Cell(
+            id = 0,
+            coord = Coordinate(0.0, 0.0),
+            latlonCoord = Coordinate(0.0, 0.0),
+            buildings = buildings,
+        )
+        for (building in buildings) {
+            building.cell = cell
+        }
+
+        val agents = agentFactory.createAgents(10_000, listOf(cell), false, Random())
+        val sumUNDEFINED = agents.filter {it.monthlyIncome == null}.size
+        val notNones = agents.filter {it.monthlyIncome != null}
+        val incomeAndAge = agents.filter {it.age != null}
+        val sumBelow1000 = notNones.map{if (it.monthlyIncome!! < 1000) 1 else 0}.sum()
+        val sumBetween1000a5000 = notNones.map{if ((it.monthlyIncome!! >= 1000) and (it.monthlyIncome < 5000)) 1 else 0}.sum()
+        val sumAbove5000 = notNones.map{if ((it.monthlyIncome!! >= 5000)) 1 else 0}.sum()
+        val incomeBelow16 = incomeAndAge.map{if ((it.monthlyIncome != null) && (it.age!! < 16)) 1 else 0}.sum()
+
+        // Check if shares are within generous bounds. Might fail very rarely by chance.
+        // The distribution from the input file is only valid for the population above age 16
+        assert(sumBelow1000 > notNones.size * 0.3)
+        assert(sumBelow1000 < notNones.size * 0.7)
+        assert(sumBetween1000a5000 > notNones.size * 0.1)
+        assert(sumBetween1000a5000 < notNones.size * 0.5)
+        assert(sumAbove5000 > notNones.size * 0.0)
+        assert(sumAbove5000 < notNones.size * 0.4)
+        assert(incomeBelow16 == 0)
+        assert(sumUNDEFINED + sumBelow1000 + sumBetween1000a5000 + sumAbove5000 == 10_000)
+    }
+
+    @Test
     fun popStrataTest() {
         // Setup
         val mutLocChoiceFuns: MutableMap<ActivityType, LocationChoiceDCWeightFun> =
@@ -77,9 +139,13 @@ class AgentFactoryDefaultTest {
         val routingCache = RoutingCache(RoutingMode.BEELINE, null, 0, Dispatchers.Default)
         val destinationFinder = DestinationFinderDefault(routingCache, locChoiceWeightFuns)
 
-        val popStrata: List<PopStratum> = readJsonFromResource("testPopulation.json")
-        val carOwnership = CarOwnershipFixedProbability(17)
-        val agentFactory = AgentFactoryDefault(destinationFinder, carOwnership, popStrata, Dispatchers.Default)
+        val popConfig: PopulationConfig = readJsonFromResource("testPopulation.json")
+        val carOwnership = CarOwnershipFixedProbability(popConfig.populationWideValues.minDrivingAge)
+        val agentFactory = AgentFactoryDefault(
+            destinationFinder,
+            carOwnership,
+            popConfig,
+            Dispatchers.Default)
 
         // Get buildings
         val buildingFile = Paths.get(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.toURI())
@@ -112,12 +178,16 @@ class AgentFactoryDefaultTest {
         mutLocChoiceFuns[ActivityType.BUSINESS] = mutLocChoiceFuns[ActivityType.OTHER]!!
         val locChoiceWeightFuns = mutLocChoiceFuns.toMutableMap()
 
-        val carOwnership = CarOwnershipFixedProbability(17)
 
         val routingCache = RoutingCache(RoutingMode.BEELINE, null, 0, Dispatchers.Default)
         val destinationFinder = DestinationFinderDefault(routingCache, locChoiceWeightFuns)
-        val popStrata: List<PopStratum> = readJsonFromResource("testPopulation.json")
-        val agentFactory = AgentFactoryDefault(destinationFinder, carOwnership, popStrata, Dispatchers.Default)
+        val popConfig: PopulationConfig = readJsonFromResource("testPopulation.json")
+        val carOwnership = CarOwnershipFixedProbability(popConfig.populationWideValues.minDrivingAge)
+        val agentFactory = AgentFactoryDefault(
+            destinationFinder,
+            carOwnership,
+            popConfig,
+            Dispatchers.Default)
 
         // Get buildings
         val buildingFile = Paths.get(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.toURI())
