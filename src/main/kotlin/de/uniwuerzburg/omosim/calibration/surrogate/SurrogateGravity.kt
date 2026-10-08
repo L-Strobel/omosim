@@ -247,7 +247,7 @@ class SurrogateGravity (
 
         // Get all activity chains
         val allChains = mutableMapOf<List<ActivityType>, Double>()
-        for (stratum in omosim.popStrata) {
+        for (stratum in omosim.popConfig.strata) {
             if (stratum.stratumShare == 0.0) { continue }
 
             for ((socioFeatureSet, pSFSet) in stratum.iterateOptions()) {
@@ -337,7 +337,7 @@ class SurrogateGravity (
         val dummyCoord = Coordinate(0.0,0.0)
         val dummyLocation = DummyLocation(dummyCoord, dummyCoord, null, setOf())
 
-        for (stratum in omosim.popStrata) {
+        for (stratum in omosim.popConfig.strata) {
             if (stratum.stratumShare == 0.0) { continue }
 
             for ((socioFeatureSet, pSFSet) in stratum.iterateOptions()) {

@@ -29,13 +29,12 @@ class AgentFactoryDefaultTest {
         val routingCache = RoutingCache(RoutingMode.BEELINE, null, 0, Dispatchers.Default)
         val destinationFinder = DestinationFinderDefault(routingCache, locChoiceWeightFuns)
 
-        val popConfig: PopStratum.PopulationConfig = readJsonFromResource("testPopulation.json")
-        val carOwnership = CarOwnershipFixedProbability(popConfig.popAssumptions.minDrivingAge)
+        val popConfig: PopulationConfig = readJsonFromResource("testPopulation.json")
+        val carOwnership = CarOwnershipFixedProbability(popConfig.populationWideValues.minDrivingAge)
         val agentFactory = AgentFactoryDefault(
             destinationFinder,
             carOwnership,
-            popConfig.stratum,
-            popConfig.popAssumptions,
+            popConfig,
             Dispatchers.Default
         )
 
@@ -83,13 +82,12 @@ class AgentFactoryDefaultTest {
         val routingCache = RoutingCache(RoutingMode.BEELINE, null, 0, Dispatchers.Default)
         val destinationFinder = DestinationFinderDefault(routingCache, locChoiceWeightFuns)
 
-        val popConfig: PopStratum.PopulationConfig = readJsonFromResource("testPopulation.json")
-        val carOwnership = CarOwnershipFixedProbability(popConfig.popAssumptions.minDrivingAge)
+        val popConfig: PopulationConfig = readJsonFromResource("testPopulation.json")
+        val carOwnership = CarOwnershipFixedProbability(popConfig.populationWideValues.minDrivingAge)
         val agentFactory = AgentFactoryDefault(
             destinationFinder,
             carOwnership,
-            popConfig.stratum,
-            popConfig.popAssumptions,
+            popConfig,
             Dispatchers.Default)
 
         // Get buildings
@@ -113,23 +111,20 @@ class AgentFactoryDefaultTest {
         val notNones = agents.filter {it.monthlyIncome != null}
         val incomeAndAge = agents.filter {it.age != null}
         val sumBelow1000 = notNones.map{if (it.monthlyIncome!! < 1000) 1 else 0}.sum()
+        val sumBetween1000a5000 = notNones.map{if ((it.monthlyIncome!! >= 1000) and (it.monthlyIncome < 5000)) 1 else 0}.sum()
         val sumAbove5000 = notNones.map{if ((it.monthlyIncome!! >= 5000)) 1 else 0}.sum()
-        val sumAbove10000 = notNones.map{if ((it.monthlyIncome!! >= 10000)) 1 else 0}.sum()
-        val sumBetween1k5k = notNones.map{if ((it.monthlyIncome!! >= 1000) and (it.monthlyIncome < 5000)) 1 else 0}.sum()
         val incomeBelow16 = incomeAndAge.map{if ((it.monthlyIncome != null) && (it.age!! < 16)) 1 else 0}.sum()
 
         // Check if shares are within generous bounds. Might fail very rarely by chance.
         // The distribution from the input file is only valid for the population above age 16
-        assert(sumBelow1000 > notNones.size * 0.1)
-        assert(sumBelow1000 < notNones.size * 0.5)
-        assert(sumAbove5000 > notNones.size * 0.2)
-        assert(sumAbove5000 < notNones.size * 0.7)
-        assert(sumAbove10000 > notNones.size * 0.025)
-        assert(sumAbove10000 < notNones.size * 0.1)
-        assert(sumBetween1k5k > notNones.size * 0.2)
-        assert(sumBetween1k5k < notNones.size * 0.5)
-        assert(incomeBelow16 <= 10_000 * 0.0)
-        assert(sumUNDEFINED + sumBelow1000 + sumAbove5000 + sumBetween1k5k == 10_000)
+        assert(sumBelow1000 > notNones.size * 0.3)
+        assert(sumBelow1000 < notNones.size * 0.7)
+        assert(sumBetween1000a5000 > notNones.size * 0.1)
+        assert(sumBetween1000a5000 < notNones.size * 0.5)
+        assert(sumAbove5000 > notNones.size * 0.0)
+        assert(sumAbove5000 < notNones.size * 0.4)
+        assert(incomeBelow16 == 0)
+        assert(sumUNDEFINED + sumBelow1000 + sumBetween1000a5000 + sumAbove5000 == 10_000)
     }
 
     @Test
@@ -144,13 +139,12 @@ class AgentFactoryDefaultTest {
         val routingCache = RoutingCache(RoutingMode.BEELINE, null, 0, Dispatchers.Default)
         val destinationFinder = DestinationFinderDefault(routingCache, locChoiceWeightFuns)
 
-        val popConfig: PopStratum.PopulationConfig = readJsonFromResource("testPopulation.json")
-        val carOwnership = CarOwnershipFixedProbability(popConfig.popAssumptions.minDrivingAge)
+        val popConfig: PopulationConfig = readJsonFromResource("testPopulation.json")
+        val carOwnership = CarOwnershipFixedProbability(popConfig.populationWideValues.minDrivingAge)
         val agentFactory = AgentFactoryDefault(
             destinationFinder,
             carOwnership,
-            popConfig.stratum,
-            popConfig.popAssumptions,
+            popConfig,
             Dispatchers.Default)
 
         // Get buildings
@@ -187,13 +181,12 @@ class AgentFactoryDefaultTest {
 
         val routingCache = RoutingCache(RoutingMode.BEELINE, null, 0, Dispatchers.Default)
         val destinationFinder = DestinationFinderDefault(routingCache, locChoiceWeightFuns)
-        val popConfig: PopStratum.PopulationConfig = readJsonFromResource("testPopulation.json")
-        val carOwnership = CarOwnershipFixedProbability(popConfig.popAssumptions.minDrivingAge)
+        val popConfig: PopulationConfig = readJsonFromResource("testPopulation.json")
+        val carOwnership = CarOwnershipFixedProbability(popConfig.populationWideValues.minDrivingAge)
         val agentFactory = AgentFactoryDefault(
             destinationFinder,
             carOwnership,
-            popConfig.stratum,
-            popConfig.popAssumptions,
+            popConfig,
             Dispatchers.Default)
 
         // Get buildings

@@ -110,8 +110,7 @@ class Omosim (
     private var gtfsComponents: GTFSComponents? = null
     val focusArea: Geometry
     private val fullArea: Geometry
-    val popStrata: List<PopStratum>
-    val popAssumptions: PopStratum.PopAssumptions
+    val popConfig: PopulationConfig
     val carOwnership: CarOwnership
     var routeChoiceCalibration: RouteChoiceCalibrationStore? = null
     val parameterReader: ParameterReader
@@ -132,9 +131,7 @@ class Omosim (
             carOwnershipUtilityFile
         )
         // Deconstruct population file in strata and the population assumptions
-        val popConfig = parameterReader.getPopulationDistribution()
-        popStrata = popConfig.stratum
-        popAssumptions = popConfig.popAssumptions
+        popConfig = parameterReader.getPopulationDistribution()
 
         val activityGroups = parameterReader.getActivityGroups() // Activity chain and activity duration distributions
         val mutLocChoiceFuns = parameterReader.getLocationChoiceFuns() // Load distance distributions
@@ -216,16 +213,16 @@ class Omosim (
         // Car Ownership
         carOwnership = when (carOwnershipOption) {
             CarOwnershipOption.FIX -> {
-                CarOwnershipFixedProbability(17)
+                CarOwnershipFixedProbability(popConfig.populationWideValues.minDrivingAge)
             }
             CarOwnershipOption.MNL -> {
                 val carOwnershipUtility = parameterReader.getCarOwnershipUtility()
-                CarOwnershipMNL(carOwnershipUtility, 17)
+                CarOwnershipMNL(carOwnershipUtility, popConfig.populationWideValues.minDrivingAge)
             }
         }
 
         // Agent factory
-        agentFactory = AgentFactoryDefault(destinationFinder, carOwnership, popStrata, popAssumptions, dispatcher)
+        agentFactory = AgentFactoryDefault(destinationFinder, carOwnership, popConfig, dispatcher)
 
         logger.get()?.info("Initializing OMoSim took: ${timeSource.markNow() - timestampStartInit}")
     }

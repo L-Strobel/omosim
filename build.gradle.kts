@@ -18,7 +18,7 @@ allOpen {
 }
 
 group = "de.uniwuerzburg.omosim"
-version = "2.6.5"
+version = "2.7.0"
 
 repositories {
     mavenLocal()

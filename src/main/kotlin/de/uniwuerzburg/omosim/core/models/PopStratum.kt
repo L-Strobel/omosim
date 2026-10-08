@@ -24,8 +24,8 @@ class PopStratum (
     @Suppress("unused") val stratumName: String,
     val stratumShare: Double,
     val carOwnership: Double,
-    private val age: AgeDistribution,
-    private val monthlyIncome: IncomeDistribution,
+    private val age: ContinuousFeatureDistribution,
+    private val monthlyIncome: ContinuousFeatureDistribution,
     private val homogenousGroup: Map<HomogeneousGrp, Double>,
     private val mobilityGroup: Map<MobilityGrp, Double>,
     private val sex: Map<Sex, Double>,
@@ -42,14 +42,6 @@ class PopStratum (
     private val sexGroups = getGroupsFromMap(sex)
     @Transient
     private val sexDistr = getDistrFromMap(sex)
-    @Transient
-    private val ageDistr = getAgeDistr(age)
-    @Transient
-    private val ageGroups = getAgeGroups(age)
-    @Transient
-    private val incomeDistr = getIncomeDistr(monthlyIncome)
-    @Transient
-    private val incomeGroups = getIncomeGroups(monthlyIncome)
 
     private fun <T: Comparable<T>> getDistrFromMap(map: Map<T,Double>) : DoubleArray {
         return createCumDist(map.toList().sortedBy { it.first }.map { it.second }.toDoubleArray())
@@ -58,82 +50,7 @@ class PopStratum (
         return map.toList().sortedBy { it.first }.map { it.first }
     }
 
-    private fun checkAgeDistrErrors(age: AgeDistribution) {
-        if (age.limits.isEmpty()) {
-            if (age.UNDEFINED != 1.0) {
-                val msg = "population.json falsely specified! No limits supplied and share of UNDEFINED group IS NOT 100%."
-                logger.error(msg)
-                throw IllegalArgumentException(msg)
-            }
-        } else if (age.limits.size != age.shares.size) {
-            val msg = "population.json falsely specified! There must be the same number of limits and shares."
-            logger.error(msg)
-            throw IllegalArgumentException(msg)
-        } else if (age.limits[0] < 0 ) {
-            val msg = "population.json falsely specified! Age limits can't be negative!"
-            logger.error(msg)
-            throw IllegalArgumentException(msg)
-        } else if (age.limits[0] == 0) {
-            val msg = "population.json falsely specified! The first age limit can't be zero." +
-                      "The values of 'limits' represent the exclusive upper bounds each age group."
-            logger.error(msg)
-            throw IllegalArgumentException(msg)
-        }
-    }
-
-    private fun checkIncomeDistrErrors(monthlyIncome: IncomeDistribution) {
-        if (monthlyIncome.limits.isEmpty()) {
-            if (monthlyIncome.UNDEFINED != 1.0) {
-                val msg = "population.json falsely specified! No limits supplied and share of UNDEFINED group IS NOT 100%."
-                logger.error(msg)
-                throw IllegalArgumentException(msg)
-            }
-        } else if (monthlyIncome.limits.size != monthlyIncome.shares.size) {
-            val msg = "population.json falsely specified! There must be the same number of limits and shares."
-            logger.error(msg)
-            throw IllegalArgumentException(msg)
-        } else if (monthlyIncome.limits[0] < 0 ) {
-            val msg = "population.json falsely specified! Income limits can't be negative!"
-            logger.error(msg)
-            throw IllegalArgumentException(msg)
-        } else if (monthlyIncome.limits[0] == 0) {
-            val msg = "population.json falsely specified! The first income limit can't be zero." +
-                      "The values of 'limits' represent the exclusive bounds each income group."
-            logger.error(msg)
-            throw IllegalArgumentException(msg)
-        }
-    }
-
-    private fun getIncomeDistr(monthlyIncome: IncomeDistribution) : DoubleArray {
-        checkIncomeDistrErrors(monthlyIncome)
-        val zipped = monthlyIncome.limits.zip(monthlyIncome.shares)
-        val distr = createCumDist(zipped.sortedBy { it.first }.map { it.second }.toDoubleArray())
-        return distr
-    }
-
-    private fun getIncomeGroups(monthlyIncome: IncomeDistribution) : List<Int> {
-        checkIncomeDistrErrors(monthlyIncome)
-        val zipped = monthlyIncome.limits.zip(monthlyIncome.shares)
-        val groups = zipped.sortedBy { it.first }.map { it.first }
-        return groups
-    }
-
-    // Age is a special case because it is a continuous variable
-    private fun getAgeDistr(age: AgeDistribution) : DoubleArray {
-        checkAgeDistrErrors(age)
-        val zipped = age.limits.zip(age.shares)
-        val distr = createCumDist(zipped.sortedBy { it.first }.map { it.second }.toDoubleArray())
-        return distr
-    }
-
-    private fun getAgeGroups(age: AgeDistribution) : List<Int> {
-        checkAgeDistrErrors(age)
-        val zipped = age.limits.zip(age.shares)
-        val groups = zipped.sortedBy { it.first }.map { it.first }
-        return groups
-    }
-
-    fun sampleSocDemFeatures(rng: Random, minIncomeAge: Int) : SocioDemFeatureSet {
+    fun sampleSocDemFeatures(rng: Random, populationWideValues: PopulationWideValues) : SocioDemFeatureSet {
         val hom = homGroups[sampleCumDist(homDistr, rng)]
         val mob = mobGroups[sampleCumDist(mobDistr, rng)]
         val sex = sexGroups[sampleCumDist(sexDistr, rng)]
@@ -142,49 +59,30 @@ class PopStratum (
         val age = if (rng.nextDouble() <= age.UNDEFINED) {
             null
         } else {
-            val i = sampleCumDist(ageDistr, rng)
-            val ub = ageGroups[i]
-            val lb = if (i == 0) {
-                0
-            } else {
-                ageGroups[i-1]
-            }
-            rng.nextInt(lb, ub)
+            age.sample(rng)
         }
-        // Sample income between groups
-        val incomeVal = if (age != null && age < minIncomeAge) {
+
+        // Sample income
+        val monthlyIncome = if (age != null && age < populationWideValues.minIncomeAge) {
             null // skips an agent that is under defined minimum age when assigning income
         } else if (rng.nextDouble() <= monthlyIncome.UNDEFINED) {
             null
         }else {
-            val i = sampleCumDist(incomeDistr, rng)
-            val ub = incomeGroups[i]
-            val lb = if(i == 0) {
-                0
-            } else {
-                incomeGroups[i-1]
-            }
-            rng.nextInt(lb, ub)
+            monthlyIncome.sample(rng)
         }
 
-        return SocioDemFeatureSet(hom, mob, age, incomeVal, sex)
+        return SocioDemFeatureSet(hom, mob, age, monthlyIncome, sex)
     }
 
     fun iterateOptions() = iterator {
-        val aZipped = age.limits.zip(age.shares)
-        val ageGroup = aZipped.sortedBy { it.first }
-        val incomeGroup = monthlyIncome.limits.zip(monthlyIncome.shares).sortedBy { it.first }
-
-        val ageOptions: List<Pair<Int?, Double>> =
-            listOf(null to age.UNDEFINED) + bucketValues(ageGroup)
-        val incomeOptions: List<Pair<Int?, Double>> =
-            listOf(null to monthlyIncome.UNDEFINED) + bucketValues(incomeGroup)
+        val ageMeans = age.binMeansWithP()
+        val incomeMeans = monthlyIncome.binMeansWithP()
 
         for ((hom, pHom) in homogenousGroup) {
             for ((mob, pMob) in mobilityGroup) {
                 for ((s, pSex) in sex) {
-                    for ((a, pAge) in ageOptions) {
-                        for ((i, pIncome) in incomeOptions) {
+                    for ((a, pAge) in ageMeans) {
+                        for ((i, pIncome) in incomeMeans) {
                             yield(
                                 Pair(
                                     SocioDemFeatureSet(hom, mob, a, i, s),
@@ -198,58 +96,97 @@ class PopStratum (
         }
     }
 
-    // Converts sorted (upperBound, share) pairs into (value, share) pairs
-    private fun bucketValues(group: List<Pair<Int, Double>>): List<Pair<Int, Double>> {
-        var lowerBound = 0
-        return group.map { (upperBound, share) ->
-            val value = (upperBound - lowerBound) / 2
-            lowerBound = upperBound
-            value to share
-        }
-    }
-
-    @Serializable
-    data class PopAssumptions(
-        val minDrivingAge: Int,
-        val minIncomeAge: Int,
-    )
-
-    @Serializable
-    data class PopulationConfig(
-        val popAssumptions: PopAssumptions,
-        val stratum: List<PopStratum>
-    )
-
     /**
-     * Income distribution of group.
-     * The limits and shares define a histogram like with the income distribution
-     * shares[0] defines the share of agents in the income group 0 <= income < limits[0]
-     *
-     * Within each bin there is a uniform distributino
-     */
-    @Serializable
-    class IncomeDistribution(
-        val limits: List<Int>,
-        val shares: List<Double>,
-        @Suppress("PropertyName") val UNDEFINED: Double,
-    )
-
-    /**
-     * Demographics of group.
+     * Distribution of a continuous demographics of a group.
      * The limits and shares define a histogram.
+     *
+     * Example age:
      * shares[0] defines the share of agents in the age range 0 <= age < limits[0]
      * shares[1] defines the share of agents in the age range  limits[0] <= age < limits[1]
      * ...
      *
-     * The age distribution inside a bin is considered to be uniform.
+     * The distribution inside a bin is considered to be uniform.
      *
      * @param limits Bin limits
      * @param shares Bin sizes
      */
     @Serializable
-    class AgeDistribution (
+    class ContinuousFeatureDistribution  (
         val limits: List<Int>,
         val shares: List<Double>,
         @Suppress("PropertyName") val UNDEFINED: Double
-    )
+    ) {
+        @Transient
+        private val cDist = getCumDistr()
+        @Transient
+        private val groups = getGroups()
+
+        init {
+            checkErrors()
+        }
+
+        fun sample(rng: Random) : Int {
+            val i = sampleCumDist(cDist, rng)
+            val ub = groups[i]
+            val lb = if(i == 0) {
+                0
+            } else {
+                groups[i-1]
+            }
+            return rng.nextInt(lb, ub)
+        }
+
+        fun binMeansWithP() : List<Pair<Int?, Double>> {
+            val zipped = limits.zip(shares)
+            val sorted = zipped.sortedBy { it.first }
+
+            var lowerBound = 0
+            val means = sorted.map { (upperBound, share) ->
+                val value = (upperBound - lowerBound) / 2
+                lowerBound = upperBound
+                value to share
+            }
+
+            return listOf(null to UNDEFINED) + means
+        }
+
+        private fun getCumDistr() : DoubleArray {
+            val zipped = limits.zip(shares)
+            val cumDistr = createCumDist(zipped.sortedBy { it.first }.map { it.second }.toDoubleArray())
+            return cumDistr
+        }
+
+        private fun getGroups() : List<Int> {
+            val zipped = limits.zip(shares)
+            val groups = zipped.sortedBy { it.first }.map { it.first }
+            return groups
+        }
+
+        private fun checkErrors() {
+            if (limits.isEmpty()) {
+                if (UNDEFINED != 1.0) {
+                    val msg = "population.json falsely specified! " +
+                              "No limits supplied for continuous distribution and share of UNDEFINED group IS NOT 100%."
+                    logger.error(msg)
+                    throw IllegalArgumentException(msg)
+                }
+            } else if (limits.size != shares.size) {
+                val msg = "population.json falsely specified! " +
+                          "Continuous distribution does not have the same number of limits and shares."
+                logger.error(msg)
+                throw IllegalArgumentException(msg)
+            } else if (limits[0] < 0 ) {
+                val msg = "population.json falsely specified! Continuous distribution limits can't be negative!"
+                logger.error(msg)
+                throw IllegalArgumentException(msg)
+            } else if (limits[0] == 0) {
+                val msg = "population.json falsely specified! " +
+                          "The first limit of a continuous distribution can't be zero. " +
+                          "The values of 'limits' represent the exclusive upper bounds each group."
+                logger.error(msg)
+                throw IllegalArgumentException(msg)
+            }
+        }
+
+    }
 }
