@@ -150,7 +150,8 @@ fun createAppendAttr(value: Any?, name: String, doc: org.w3c.dom.Document, attri
     if (value != null) {
         val newAttrib = doc.createElement("attribute")
         newAttrib.setAttribute("name", name)
-        newAttrib.setAttribute("class", value.toString())
+        newAttrib.setAttribute("class", value.javaClass.name)
+        newAttrib.textContent = value.toString()
         attributes.appendChild(newAttrib)
     }
 }
