@@ -171,8 +171,10 @@ class AgentFactoryDefault (
     private fun createAgent(
         id: Int, home: LocationOption, homeZone: AggLocation, zones: List<AggLocation>, rng: Random
     ) : MobiAgent {
-        // Sociodemographic features
-        val stratum = popConfig.strata[sampleCumDist(strataDistr, rng)]
+        // sample population stratum from local strata, fallback to global distribution if not defined
+        val localDistr = (home as? Building)?.localStrata ?: strataDistr
+        val stratum = popConfig.strata[sampleCumDist(localDistr, rng)]
+
         val featureSet = stratum.sampleSocDemFeatures(rng, popConfig.populationWideValues)
 
         // Fixed locations

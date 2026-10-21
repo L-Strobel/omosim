@@ -1,10 +1,12 @@
 package de.uniwuerzburg.omosim.io
 
+import de.uniwuerzburg.omosim.core.models.PopulationConfig
 import de.uniwuerzburg.omosim.io.geojson.GeoJsonFeatureCollection
 import de.uniwuerzburg.omosim.io.geojson.property.CensusProperties
 import de.uniwuerzburg.omosim.io.json.readJsonStream
 import de.uniwuerzburg.omosim.io.osm.BuildingData
 import de.uniwuerzburg.omosim.utils.CRSTransformer
+import org.apache.commons.math3.genetics.Population
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.index.hprtree.HPRtree
 import java.nio.file.Path
@@ -23,7 +25,7 @@ import kotlin.math.min
  */
 fun readCensus(
     osmBuildings: List<BuildingData>, transformer: CRSTransformer,
-    geometryFactory: GeometryFactory, censusFile: Path,
+    geometryFactory: GeometryFactory, censusFile: Path, popConfig: PopulationConfig,
     rng: Random
 ) : List<BuildingData> {
 
@@ -40,6 +42,13 @@ fun readCensus(
         var population = censusEntree.properties.population
         if (population <= 0) { continue }
 
+        // Save the local strata as an array and pass it to the building
+        // TODO: change to map
+        val zoneShares: DoubleArray = popConfig.strata.map {
+            stratum -> censusEntree.properties.strata[stratum.stratumName]
+            ?: error("Census entry has no value for stratum '${stratum.stratumName}'")
+        }.toDoubleArray()
+
         val censusZone = transformer.toModelCRS(censusEntree.geometry.toJTS(geometryFactory) )
 
         val intersectingBuildings = buildingsTree.query(censusZone.envelopeInternal)
@@ -51,6 +60,7 @@ fun readCensus(
         for (building in intersectingBuildings) {
             val populationBuilding = min(population, populationPerBuilding)
             building.population = (building.population ?: 0.0) + populationBuilding
+            building.localStrata = zoneShares
             population -= populationBuilding
             if (population <= 0) {
                 break

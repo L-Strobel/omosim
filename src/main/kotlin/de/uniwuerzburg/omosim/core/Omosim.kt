@@ -295,7 +295,7 @@ class Omosim (
 
             // Add census data if available
             if (censusFile != null) {
-                buildings = readCensus(buildings, transformer, geometryFactory, censusFile, mainRng)
+                buildings = readCensus(buildings, transformer, geometryFactory, censusFile, popConfig, mainRng)
             }
 
             // Convert to GeoJSON

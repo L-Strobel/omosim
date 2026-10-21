@@ -1,0 +1,73 @@
+{
+  "popAssumptions": {
+    "minIncomeAge": 16,
+    "minDrivingAge": 17
+  },
+  "strata":
+  [
+    {
+      "stratumName": "youngGeneration",
+      "stratumShare": 0.4,
+      "carOwnership": 0.3,
+      "age": {
+        "limits": [10, 20, 30],
+        "shares": [0.3, 0.4, 0.3],
+        "UNDEFINED": 0.0
+      },
+      "monthlyIncome": {
+        "limits": [1000, 3000, 5000],
+        "shares": [0.4, 0.4, 0.2],
+        "UNDEFINED": 0.0
+      },
+      "homogenousGroup": {
+        "WORKING":  0.3,
+        "NON_WORKING": 0.1,
+        "PUPIL_STUDENT": 0.6,
+        "UNDEFINED": 0.0
+      },
+      "mobilityGroup": {
+        "CAR_USER": 0.0,
+        "CAR_MIXED": 0.0,
+        "NOT_CAR": 0.0,
+        "UNDEFINED": 1.0
+      },
+      "sex": {
+        "MALE": 0.0,
+        "FEMALE": 0.0,
+        "UNDEFINED": 1.0
+      }
+    },
+    {
+      "stratumName": "oldGeneration",
+      "stratumShare": 0.6,
+      "carOwnership": 0.60,
+      "age": {
+        "limits": [40, 60, 80],
+        "shares": [0.3, 0.4, 0.3],
+        "UNDEFINED": 0.0
+      },
+      "monthlyIncome": {
+        "limits": [2000, 5000, 10000],
+        "shares": [0.2, 0.6, 0.2],
+        "UNDEFINED": 0.0
+      },
+      "homogenousGroup": {
+        "WORKING":  0.8,
+        "NON_WORKING": 0.2,
+        "PUPIL_STUDENT": 0.0,
+        "UNDEFINED": 0.0
+      },
+      "mobilityGroup": {
+        "CAR_USER": 0.0,
+        "CAR_MIXED": 0.0,
+        "NOT_CAR": 0.0,
+        "UNDEFINED": 1.0
+      },
+      "sex": {
+        "MALE": 0.0,
+        "FEMALE": 0.0,
+        "UNDEFINED": 1.0
+      }
+    }
+  ]
+}
