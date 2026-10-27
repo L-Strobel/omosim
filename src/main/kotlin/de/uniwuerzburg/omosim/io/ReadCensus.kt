@@ -42,12 +42,13 @@ fun readCensus(
         var population = censusEntree.properties.population
         if (population <= 0) { continue }
 
-        // Save the local strata as an array and pass it to the building
-        // TODO: change to map
-        val zoneShares: DoubleArray = popConfig.strata.map {
-            stratum -> censusEntree.properties.strata[stratum.stratumName]
-            ?: error("Census entry has no value for stratum '${stratum.stratumName}'")
-        }.toDoubleArray()
+        // Save the local strata as a Map (Id -> share) and store it in the building
+        val zoneShares: Map<Int, Double> = popConfig.strata.associate {
+            // The stratum id is an Integer but in the census file it needs to be passed as a string
+                stratum -> val share = censusEntree.properties.strata[stratum.id.toString()]
+            ?: error("Census entry has no value for stratum '${stratum.id}'")
+            stratum.id to share
+        }
 
         val censusZone = transformer.toModelCRS(censusEntree.geometry.toJTS(geometryFactory) )
 

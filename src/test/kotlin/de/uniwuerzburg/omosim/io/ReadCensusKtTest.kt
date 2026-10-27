@@ -86,7 +86,7 @@ class ReadCensusKtTest {
             val shares = building.localStrata
             assert(shares != null) { "Building ${building.osm_id} has no strata shares" }
             assert(shares!!.size == 1)
-            assert(shares!![0] == 1.0) {
+            assert(shares[1] == 1.0) {
                 "Building ${building.osm_id} has no 1.0 stratum"
             }
         }
@@ -108,13 +108,13 @@ class ReadCensusKtTest {
             val shares = building.localStrata
             assert(shares != null) { "Building ${building.osm_id} has no strata shares" }
             assert(shares!!.size == 2)
-            assert(shares[0] == 0.4) {
+            assert(shares[1] == 0.4) {
                 "Building ${building.osm_id} has no 0.4 stratum"
             }
-            assert(shares[1] == 0.6) {
+            assert(shares[2] == 0.6) {
                 "Building ${building.osm_id} has no 0.6 stratum"
             }
-            assert(shares.sum() == 1.0)
+            assert(shares.values.sum() == 1.0)
         }
     }
 

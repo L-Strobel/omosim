@@ -28,7 +28,7 @@ data class BuildingData (
     var nTourism: Double = 0.0
     var inFocusArea: Boolean = false
     var population: Double? = null
-    var localStrata: DoubleArray? = null
+    var localStrata: Map<Int, Double>? = null
 
     fun addInformation(infos: List<MapObject>) {
         for (info in infos) {

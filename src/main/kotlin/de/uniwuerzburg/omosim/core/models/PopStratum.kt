@@ -21,6 +21,7 @@ import java.util.Random
  */
 @Serializable
 class PopStratum (
+    val id: Int,
     @Suppress("unused") val stratumName: String,
     val stratumShare: Double,
     val carOwnership: Double,

@@ -6,6 +6,7 @@
   "strata":
   [
     {
+      "id": 1,
       "stratumName": "NationalAverage",
       "stratumShare": 1.0,
       "carOwnership": 0.60,

@@ -6,6 +6,7 @@
   "strata":
   [
     {
+      "id": 1,
       "stratumName": "youngGeneration",
       "stratumShare": 0.4,
       "carOwnership": 0.3,
@@ -38,6 +39,7 @@
       }
     },
     {
+      "id": 2,
       "stratumName": "oldGeneration",
       "stratumShare": 0.6,
       "carOwnership": 0.60,
