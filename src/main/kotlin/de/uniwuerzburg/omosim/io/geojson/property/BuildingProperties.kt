@@ -1,6 +1,7 @@
 package de.uniwuerzburg.omosim.io.geojson.property
 
 import de.uniwuerzburg.omosim.core.models.Landuse
+import de.uniwuerzburg.omosim.core.models.LocalDemographics
 import de.uniwuerzburg.omosim.io.geojson.GeoJsonProperties
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -35,5 +36,6 @@ data class BuildingProperties (
     val number_fast_food: Double,
     val number_kindergarten: Double,
     val number_tourism: Double,
-    val levels: Int
+    val levels: Int,
+    val demographics: LocalDemographics?
 ) : GeoJsonProperties()

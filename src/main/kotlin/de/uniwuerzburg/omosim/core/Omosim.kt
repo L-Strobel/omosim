@@ -320,7 +320,8 @@ class Omosim (
                         number_fast_food = it.nFastFood,
                         number_kindergarten = it.nKinderGarten,
                         number_tourism = it.nTourism,
-                        levels = it.levels
+                        levels = it.levels,
+                        demographics = it.demographics
                     )
                     GeoJsonFeature(geometry = geometry, properties = properties)
                 }
@@ -333,7 +334,7 @@ class Omosim (
             }
             collection
         }
-        return Building.fromGeoJson(collection, geometryFactory, transformer, locChoiceWeightFuns)
+        return Building.fromGeoJson(collection, geometryFactory, transformer, locChoiceWeightFuns, popConfig)
     }
 
     /**

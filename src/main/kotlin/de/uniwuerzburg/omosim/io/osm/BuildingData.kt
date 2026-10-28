@@ -1,7 +1,7 @@
 package de.uniwuerzburg.omosim.io.osm
 
 import de.uniwuerzburg.omosim.core.models.Landuse
-import de.uniwuerzburg.omosim.core.models.PopStratum
+import de.uniwuerzburg.omosim.core.models.LocalDemographics
 import org.locationtech.jts.geom.Geometry
 
 /**
@@ -29,7 +29,7 @@ data class BuildingData (
     var nTourism: Double = 0.0
     var inFocusArea: Boolean = false
     var population: Double? = null
-    var localStrata: Map<PopStratum, Double>? = null
+    var demographics: LocalDemographics? = null
 
     fun addInformation(infos: List<MapObject>) {
         for (info in infos) {

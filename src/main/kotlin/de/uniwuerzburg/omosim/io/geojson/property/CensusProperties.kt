@@ -13,5 +13,5 @@ import kotlinx.serialization.Serializable
 @SerialName("CensusEntry")
 data class CensusProperties (
     val population: Double,
-    val strata: Map<String, Double>
+    val strata: Map<String, Double>? = null
 ) : GeoJsonProperties()

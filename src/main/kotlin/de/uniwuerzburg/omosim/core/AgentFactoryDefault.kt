@@ -18,28 +18,6 @@ class AgentFactoryDefault (
 ) : AgentFactory {
     private val strataDistr: DoubleArray = createCumDist(popConfig.strata.map{it.stratumShare}.toDoubleArray())
 
-    // Cache to prevent recalculating the DoubleArray for every single agent in parallel
-    private val localCumDistCache = ConcurrentHashMap<Map<PopStratum, Double>, DoubleArray>()
-
-    /**
-     * Converts the Map<PopStratum, Double> to a cumulative DoubleArray, caching the result.
-     * Falls back to the global strataDistr if the map is null or empty.
-     *
-     * @param localStrata the local strata saved in the building
-     */
-    private fun getCumulativeLocalDist(localStrata: Map<PopStratum, Double>?): DoubleArray {
-        if (localStrata.isNullOrEmpty()) return strataDistr
-
-        return localCumDistCache.getOrPut(localStrata) {
-            // Convert Map to a raw DoubleArray aligned with popConfig.strata
-            val rawProbs = DoubleArray(popConfig.strata.size) { index ->
-                val stratum = popConfig.strata[index]
-                localStrata[stratum] ?: 0.0
-            }
-            createCumDist(rawProbs)
-        }
-    }
-
     /**
      * Initialize population based on a share of the existing population.
      * Assigns socio-demographic features, and home, work, and school locations.
@@ -194,9 +172,14 @@ class AgentFactoryDefault (
     private fun createAgent(
         id: Int, home: LocationOption, homeZone: AggLocation, zones: List<AggLocation>, rng: Random
     ) : MobiAgent {
-        // sample population stratum from local strata
-        val localCumDist = getCumulativeLocalDist((home as? Building)?.localStrata)
-        val stratum = popConfig.strata[sampleCumDist(localCumDist, rng)]
+        // sample population stratum
+        val stratum = if (home.demographics != null) {
+            // Use local data
+            popConfig.strata[sampleCumDist(home.demographics!!.strataDistribution, rng)]
+        } else {
+            // Fall back to global
+            popConfig.strata[sampleCumDist(strataDistr, rng)]
+        }
 
         val featureSet = stratum.sampleSocDemFeatures(rng, popConfig.populationWideValues)
 

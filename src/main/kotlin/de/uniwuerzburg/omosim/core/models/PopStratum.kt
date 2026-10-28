@@ -96,22 +96,35 @@ class PopStratum (
         }
     }
 
-    @Override
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-
-        if (this.javaClass != other?.javaClass) return false
+        if (javaClass != other?.javaClass) return false
 
         other as PopStratum
 
-        return stratumName == other.stratumName
+        if (stratumShare != other.stratumShare) return false
+        if (carOwnership != other.carOwnership) return false
+        if (stratumName != other.stratumName) return false
+        if (age != other.age) return false
+        if (monthlyIncome != other.monthlyIncome) return false
+        if (homogenousGroup != other.homogenousGroup) return false
+        if (mobilityGroup != other.mobilityGroup) return false
+        if (sex != other.sex) return false
+
+        return true
     }
 
-    @Override
     override fun hashCode(): Int {
-        return stratumName.hashCode()
+        var result = stratumShare.hashCode()
+        result = 31 * result + carOwnership.hashCode()
+        result = 31 * result + stratumName.hashCode()
+        result = 31 * result + age.hashCode()
+        result = 31 * result + monthlyIncome.hashCode()
+        result = 31 * result + homogenousGroup.hashCode()
+        result = 31 * result + mobilityGroup.hashCode()
+        result = 31 * result + sex.hashCode()
+        return result
     }
-
 
     /**
      * Distribution of a continuous demographics of a group.
