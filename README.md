@@ -23,7 +23,8 @@ which is more complete in certain parts of the world (e.g., South Korea).
 
 Publications:
 - The methodology behind the demand generation process is explained in the publication [OMOD: An open-source tool for creating disaggregated mobility demand based on OpenStreetMap](https://doi.org/10.1016/j.compenvurbsys.2023.102029)
-- The methodology behind the mode choice model is explained in the publication [Transport Mode Choice for Disaggregated Mobility Demand Generation](https://ieeexplore.ieee.org/abstract/document/11003939)
+- The methodology behind the mode choice model is explained in the publication [Transport Mode Choice for Disaggregated Mobility Demand Generation](https://doi.org/10.1109/ACCESS.2025.3570126)
+- The methodology behind the experimental calibration module is explained in the publication [Calibrating agent-based transportation demand simulations with differentiable surrogate models – The case of OMoSim](https://doi.org/10.1016/j.simpat.2026.103359) 
 
 ## Contents
 - [Get Started](#get-started)
@@ -278,6 +279,10 @@ See [here](src/main/resources/parametrization/publication2023) for examples of t
 
 It is possible to calibrate Omosim with local data. Currently, only traffic count data is supported.
 The entire calibration pipeline is experimental at this point.
+
+See also this [publication](https://doi.org/10.1016/j.simpat.2026.103359)
+for an explanation of the calibration methodology.
+
 
 ### Calibration Input Format
 
