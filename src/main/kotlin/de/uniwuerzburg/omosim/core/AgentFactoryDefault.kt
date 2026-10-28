@@ -19,21 +19,22 @@ class AgentFactoryDefault (
     private val strataDistr: DoubleArray = createCumDist(popConfig.strata.map{it.stratumShare}.toDoubleArray())
 
     // Cache to prevent recalculating the DoubleArray for every single agent in parallel
-    private val localCumDistCache = ConcurrentHashMap<Map<Int, Double>, DoubleArray>()
+    private val localCumDistCache = ConcurrentHashMap<Map<PopStratum, Double>, DoubleArray>()
 
     /**
-     * Converts the Map<Int, Double> to a cumulative DoubleArray, caching the result.
+     * Converts the Map<PopStratum, Double> to a cumulative DoubleArray, caching the result.
      * Falls back to the global strataDistr if the map is null or empty.
      *
      * @param localStrata the local strata saved in the building
      */
-    private fun getCumulativeLocalDist(localStrata: Map<Int, Double>?): DoubleArray {
+    private fun getCumulativeLocalDist(localStrata: Map<PopStratum, Double>?): DoubleArray {
         if (localStrata.isNullOrEmpty()) return strataDistr
 
         return localCumDistCache.getOrPut(localStrata) {
             // Convert Map to a raw DoubleArray aligned with popConfig.strata
             val rawProbs = DoubleArray(popConfig.strata.size) { index ->
-                localStrata[index] ?: 0.0
+                val stratum = popConfig.strata[index]
+                localStrata[stratum] ?: 0.0
             }
             createCumDist(rawProbs)
         }

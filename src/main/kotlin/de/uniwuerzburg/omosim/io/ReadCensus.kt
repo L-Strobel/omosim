@@ -1,5 +1,6 @@
 package de.uniwuerzburg.omosim.io
 
+import de.uniwuerzburg.omosim.core.models.PopStratum
 import de.uniwuerzburg.omosim.core.models.PopulationConfig
 import de.uniwuerzburg.omosim.io.geojson.GeoJsonFeatureCollection
 import de.uniwuerzburg.omosim.io.geojson.property.CensusProperties
@@ -42,12 +43,11 @@ fun readCensus(
         var population = censusEntree.properties.population
         if (population <= 0) { continue }
 
-        // Save the local strata as a Map (Id -> share) and store it in the building
-        val zoneShares: Map<Int, Double> = popConfig.strata.associate {
-            // The stratum id is an Integer but in the census file it needs to be passed as a string
-                stratum -> val share = censusEntree.properties.strata[stratum.id.toString()]
-            ?: error("Census entry has no value for stratum '${stratum.id}'")
-            stratum.id to share
+        // Save the local strata as a Map (PopStratum -> share) and store it in the building
+        val zoneShares: Map<PopStratum, Double> = popConfig.strata.associateWith { stratum ->
+            val share = censusEntree.properties.strata[stratum.stratumName]
+                ?: error("Census entry has no value for stratum '${stratum.stratumName}'")
+            share
         }
 
         val censusZone = transformer.toModelCRS(censusEntree.geometry.toJTS(geometryFactory) )

@@ -33,7 +33,7 @@ class Building  (
     var cell: Cell? = null,
     val osmProperties: BuildingProperties
 ) : RealLocation, Clusterable {
-    val localStrata: Map<Int, Double>? = null
+    val localStrata: Map<PopStratum, Double>? = null
     override val avgDistanceToSelf = 0.0
     val attractionScaler: MutableMap<Int, Double> = mutableMapOf() // For calibration
 

@@ -21,7 +21,6 @@ import java.util.Random
  */
 @Serializable
 class PopStratum (
-    val id: Int,
     @Suppress("unused") val stratumName: String,
     val stratumShare: Double,
     val carOwnership: Double,
@@ -96,6 +95,23 @@ class PopStratum (
             }
         }
     }
+
+    @Override
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+
+        if (this.javaClass != other?.javaClass) return false
+
+        other as PopStratum
+
+        return stratumName == other.stratumName
+    }
+
+    @Override
+    override fun hashCode(): Int {
+        return stratumName.hashCode()
+    }
+
 
     /**
      * Distribution of a continuous demographics of a group.

@@ -6,7 +6,7 @@
       "properties": {
         "population": 5.0,
         "strata": {
-           "1": 1.0
+           "NationalAverage": 1.0
         },
         "type": "CensusEntry"
       },
