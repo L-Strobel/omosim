@@ -60,18 +60,15 @@ fun writeSingleDay(
 
             // Attributes
             val attributes = doc.createElement("attributes")
-            // Sex
-            createAppendAttr(entry.sex.matSimName(), "sex", doc, attributes)
-            // Age
-            createAppendAttr(entry.age, "age", doc, attributes)
-            // Income
-            createAppendAttr(entry.monthlyIncome, "monthlyIncome", doc, attributes)
+            addAttribute(entry.sex.matSimName(), "sex", doc, attributes) // Sex
+            addAttribute(entry.age, "age", doc, attributes) // Age
+            addAttribute(entry.monthlyIncome, "monthlyIncome", doc, attributes) // Income
             // Car availability
             val carAvailability = if (entry.carAccess) { "always" } else { "never" }
-            createAppendAttr(carAvailability, "car_avail", doc, attributes)
+            addAttribute(carAvailability, "car_avail", doc, attributes)
             // Employment
             val employed = entry.homogenousGroup.matSimName()
-            createAppendAttr(employed, "employed", doc, attributes)
+            addAttribute(employed, "employed", doc, attributes)
             person.appendChild(attributes)
 
             // Plan
@@ -146,7 +143,7 @@ fun writeSingleDay(
 /**
  * Creates a new child attribute and appends it to the attributes parameter (skips null values)
  */
-fun createAppendAttr(value: Any?, name: String, doc: org.w3c.dom.Document, attributes: org.w3c.dom.Element) {
+fun addAttribute(value: Any?, name: String, doc: org.w3c.dom.Document, attributes: org.w3c.dom.Element) {
     if (value != null) {
         val newAttrib = doc.createElement("attribute")
         newAttrib.setAttribute("name", name)

@@ -8,12 +8,12 @@ enum class ActivityType {
 
     fun matSimName() : String {
         return when(this) {
-            HOME -> "h"     // (h)ome
-            WORK -> "w"     // (w)ork
-            BUSINESS -> "w" // (w)ork
-            SCHOOL -> "e"   // (e)ducation
-            SHOPPING -> "s" // (s)hopping
-            OTHER -> "l"    // (l)eisure
+            HOME -> "home"
+            WORK -> "work"
+            BUSINESS -> "work"
+            SCHOOL -> "education"
+            SHOPPING -> "shopping"
+            OTHER -> "other"
         }
     }
 }
