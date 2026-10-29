@@ -15,6 +15,7 @@ class GetBuildingsTest {
     val geometryFactory = GeometryFactory()
     val areaFile: Path = Paths.get(Omosim::class.java.classLoader.getResource("tinyTown/test_area.geojson")!!.toURI())
     val osmFile: Path  = Paths.get(Omosim::class.java.classLoader.getResource("tinyTown/test.osm.pbf")!!.toURI())
+    val censusFile: Path  = Paths.get(Omosim::class.java.classLoader.getResource("tinyTown/testCensusPerfectFit.geojson")!!.toURI())
     lateinit var omosim: Omosim
     lateinit var fs: FileSystem
     lateinit var memCacheDir: Path
@@ -50,6 +51,27 @@ class GetBuildingsTest {
 
         assert(buildings.sumOf { it.osmProperties.number_place_of_worship }.toInt() == 1)
         assert(buildings.size == 5)
+    }
+
+
+    @Test
+    fun getBuildingsWithCensusStrata() {
+        val buildings = omosim.getBuildings(
+            omosim.focusArea,
+            omosim.focusArea,
+            osmFile,
+            0.0,
+            omosim.transformer,
+            geometryFactory,
+            censusFile,
+            memCacheDir,
+            false,
+            mapOf(),
+            MapDataSource.OSM,
+            nWorker = 1
+        )
+
+        assert(buildings.all { it.demographics?.strata?.first()?.stratumName == "NationalAverage"} )
     }
 
     @Test

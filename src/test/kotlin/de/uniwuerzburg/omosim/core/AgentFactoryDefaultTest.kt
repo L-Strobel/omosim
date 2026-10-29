@@ -42,7 +42,11 @@ class AgentFactoryDefaultTest {
         val buildingFile = Paths.get(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.toURI())
         val collection: GeoJsonFeatureCollection<BuildingProperties> = readJson(buildingFile)
         val buildings =  Building.fromGeoJson(
-            collection, GeometryFactory(), CRSTransformer( 11.630883577905143 ), locChoiceWeightFuns
+            collection,
+            GeometryFactory(),
+            CRSTransformer(11.630883577905143),
+            locChoiceWeightFuns,
+            popConfig
         )
         val cell = Cell(
             id = 0,
@@ -94,7 +98,11 @@ class AgentFactoryDefaultTest {
         val buildingFile = Paths.get(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.toURI())
         val collection: GeoJsonFeatureCollection<BuildingProperties> = readJson(buildingFile)
         val buildings =  Building.fromGeoJson(
-            collection, GeometryFactory(), CRSTransformer( 11.630883577905143 ), locChoiceWeightFuns
+            collection,
+            GeometryFactory(),
+            CRSTransformer(11.630883577905143),
+            locChoiceWeightFuns,
+            popConfig
         )
         val cell = Cell(
             id = 0,
@@ -145,13 +153,18 @@ class AgentFactoryDefaultTest {
             destinationFinder,
             carOwnership,
             popConfig,
-            Dispatchers.Default)
+            Dispatchers.Default
+        )
 
         // Get buildings
         val buildingFile = Paths.get(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.toURI())
         val collection: GeoJsonFeatureCollection<BuildingProperties> = readJson(buildingFile)
         val buildings =  Building.fromGeoJson(
-            collection, GeometryFactory(), CRSTransformer( 11.630883577905143 ), locChoiceWeightFuns
+            collection,
+            GeometryFactory(),
+            CRSTransformer(11.630883577905143),
+            locChoiceWeightFuns,
+            popConfig
         )
         val cell = Cell(
             id = 0,
@@ -167,6 +180,69 @@ class AgentFactoryDefaultTest {
         assert(agents.all { it.homogenousGroup == HomogeneousGrp.UNDEFINED })
         assert(agents.all { it.mobilityGroup == MobilityGrp.UNDEFINED })
         assert(agents.all { it.sex == Sex.UNDEFINED })
+    }
+
+    @Test
+    fun popLocalStrataTest() {
+        // Setup
+        val mutLocChoiceFuns: MutableMap<ActivityType, LocationChoiceDCWeightFun> =
+            readJsonFromResource("parametrization/publication2023/LocChoiceWeightFuns.json")
+        mutLocChoiceFuns[ActivityType.HOME] = ByPopulation()
+        mutLocChoiceFuns[ActivityType.BUSINESS] = mutLocChoiceFuns[ActivityType.OTHER]!!
+        val locChoiceWeightFuns = mutLocChoiceFuns.toMutableMap()
+
+        val routingCache = RoutingCache(RoutingMode.BEELINE, null, 0, Dispatchers.Default)
+        val destinationFinder = DestinationFinderDefault(routingCache, locChoiceWeightFuns)
+
+        val popConfig: PopulationConfig = readJsonFromResource("testCensusStrataPopulation.json")
+        val carOwnership = CarOwnershipFixedProbability(popConfig.populationWideValues.minDrivingAge)
+        val agentFactory = AgentFactoryDefault(
+            destinationFinder,
+            carOwnership,
+            popConfig,
+            Dispatchers.Default
+        )
+
+        // Prepare demographics
+        val demographics = LocalDemographics(
+            listOf("oldGeneration", "youngGeneration"),
+            listOf(0.3, 0.7)
+        )
+        demographics.prepare(popConfig)
+
+        // Get buildings
+        val buildingFile = Paths.get(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.toURI())
+        val collection: GeoJsonFeatureCollection<BuildingProperties> = readJson(buildingFile)
+        val tmpBuildings =  Building.fromGeoJson(
+            collection,
+            GeometryFactory(),
+            CRSTransformer(11.630883577905143),
+            locChoiceWeightFuns,
+            popConfig
+        )
+
+        val buildings = mutableListOf<Building>()
+        for (building in buildings) {
+            buildings.add(
+                copyBuildingAddDemographics(building, demographics)
+            )
+        }
+
+        val cell = Cell(
+            id = 0,
+            coord = Coordinate(0.0, 0.0),
+            latlonCoord = Coordinate(0.0, 0.0),
+            buildings = buildings,
+        )
+        for (building in buildings) {
+            building.cell = cell
+        }
+
+        val agents = agentFactory.createAgents(100, listOf(cell), false, Random())
+        val youngCount = agents.count { it.age!! < 30 }
+        val oldCount = agents.count { it.age!! >= 30 }
+        assert((10 <= youngCount) and (youngCount <= 50)) // Around 30 with some margin for randomness
+        assert((50 <= oldCount) and (oldCount <= 90)) // Around 70 with some margin for randomness
     }
 
     @Test
@@ -193,7 +269,11 @@ class AgentFactoryDefaultTest {
         val buildingFile = Paths.get(Omosim::class.java.classLoader.getResource("testBuildings.geojson")!!.toURI())
         val collection: GeoJsonFeatureCollection<BuildingProperties> = readJson(buildingFile)
         val buildings =  Building.fromGeoJson(
-            collection, GeometryFactory(), CRSTransformer( 11.630883577905143 ), locChoiceWeightFuns
+            collection,
+            GeometryFactory(),
+            CRSTransformer(11.630883577905143),
+            locChoiceWeightFuns,
+            popConfig
         )
         val cell = Cell(
             id = 0,
@@ -208,5 +288,22 @@ class AgentFactoryDefaultTest {
         // Run
         val agents = agentFactory.createAgents(1.0, listOf(cell), false, Random())
         assert(agents.filter { (it.home as? Building)?.osmID == 454202426.toLong() }.size == 2)
+    }
+
+    private fun copyBuildingAddDemographics(building: Building, demographics: LocalDemographics) : Building {
+        val new = Building(
+            building.osmID,
+            building.coord,
+            building.latlonCoord,
+            building.odZone,
+            building.inFocusArea,
+            building.attractions,
+            building.population,
+            building.point,
+            building.cell,
+            building.osmProperties,
+            demographics
+        )
+        return new
     }
 }
