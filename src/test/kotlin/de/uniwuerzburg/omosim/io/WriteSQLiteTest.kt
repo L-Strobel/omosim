@@ -51,7 +51,6 @@ class WriteSQLiteTest {
         mobilityDemand = mobilityDemand
     )
 
-
     @Test
     fun `person with undefined age and income is stored as NULL`() {
         val file = tmp.resolve("test.db")

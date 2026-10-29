@@ -24,8 +24,10 @@ import kotlin.math.min
  * @return List of buildings with all necessary features
  */
 fun readCensus(
-    osmBuildings: List<BuildingData>, transformer: CRSTransformer,
-    geometryFactory: GeometryFactory, censusFile: Path, popConfig: PopulationConfig,
+    osmBuildings: List<BuildingData>,
+    transformer: CRSTransformer,
+    geometryFactory: GeometryFactory,
+    censusFile: Path,
     rng: Random
 ) : List<BuildingData> {
 
