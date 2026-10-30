@@ -30,12 +30,13 @@
 | 1   | homogenousGroup | TEXT    | 1       |            | 0  |
 | 2   | mobilityGroup   | TEXT    | 1       |            | 0  |
 | 3   | age             | INTEGER | 0       |            | 0  |
-| 4   | sex             | TEXT    | 1       |            | 0  |
-| 5   | carAccess       | INT     | 1       |            | 0  |
-| 6   | homeLat         | REAL    | 1       |            | 0  |
-| 7   | homeLon         | REAL    | 1       |            | 0  |
-| 8   | homeDummyLoc    | INT     | 1       |            | 0  |
-| 9   | homeInFocus     | INT     | 1       |            | 0  |
+| 4   | monthlyIncome   | INTEGER | 0       |            | 0  |
+| 5   | sex             | TEXT    | 1       |            | 0  |
+| 6   | carAccess       | INT     | 1       |            | 0  |
+| 7   | homeLat         | REAL    | 1       |            | 0  |
+| 8   | homeLon         | REAL    | 1       |            | 0  |
+| 9   | homeDummyLoc    | INT     | 1       |            | 0  |
+| 10  | homeInFocus     | INT     | 1       |            | 0  |
 
 ## trip
 | cid | name              | type    | notnull | dflt_value | pk |
