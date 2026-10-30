@@ -222,7 +222,7 @@ class AgentFactoryDefaultTest {
         )
 
         val buildings = mutableListOf<Building>()
-        for (building in buildings) {
+        for (building in tmpBuildings) {
             buildings.add(
                 copyBuildingAddDemographics(building, demographics)
             )
@@ -238,11 +238,12 @@ class AgentFactoryDefaultTest {
             building.cell = cell
         }
 
-        val agents = agentFactory.createAgents(100, listOf(cell), false, Random())
+        val nAgents = 10_000
+        val agents = agentFactory.createAgents(nAgents, listOf(cell), false, Random())
         val youngCount = agents.count { it.age!! < 30 }
         val oldCount = agents.count { it.age!! >= 30 }
-        assert((10 <= youngCount) and (youngCount <= 50)) // Around 30 with some margin for randomness
-        assert((50 <= oldCount) and (oldCount <= 90)) // Around 70 with some margin for randomness
+        assert((0.1*nAgents <= youngCount) and (youngCount <= 0.5*nAgents)) // Around 30% with some margin for randomness
+        assert((0.5*nAgents <= oldCount) and (oldCount <= 0.9*nAgents)) // Around 70% with some margin for randomness
     }
 
     @Test

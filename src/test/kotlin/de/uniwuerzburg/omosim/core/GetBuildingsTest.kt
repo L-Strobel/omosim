@@ -71,7 +71,11 @@ class GetBuildingsTest {
             nWorker = 1
         )
 
-        assert(buildings.all { it.demographics?.strata?.first()?.stratumName == "NationalAverage"} )
+        // Only one building matches census
+        val testStratum = buildings
+            .firstOrNull { it.osmID == 387201621.toLong() }
+            ?.demographics?.strata?.first()
+        assert(testStratum?.stratumName == "NationalAverage")
     }
 
     @Test
