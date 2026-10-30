@@ -5,6 +5,9 @@
       "type": "Feature",
       "properties": {
         "population": 5.0,
+        "strata": {
+           "NationalAverage": 1.0
+        },
         "type": "CensusEntry"
       },
       "geometry": {

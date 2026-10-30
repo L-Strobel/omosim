@@ -5,6 +5,10 @@
       "type": "Feature",
       "properties": {
         "population": 5.0,
+        "strata": {
+        "youngGeneration" : 0.4,
+        "oldGeneration": 0.6
+        },
         "type": "CensusEntry"
       },
       "geometry": {

@@ -1,5 +1,6 @@
 package de.uniwuerzburg.omosim.core.models
 
+import com.google.common.collect.Interners
 import de.uniwuerzburg.omosim.core.*
 import de.uniwuerzburg.omosim.io.geojson.property.BuildingProperties
 import de.uniwuerzburg.omosim.io.geojson.GeoJsonFeatureCollection
@@ -31,7 +32,8 @@ class Building  (
     override val population: Double,
     val point: Point,
     var cell: Cell? = null,
-    val osmProperties: BuildingProperties
+    val osmProperties: BuildingProperties,
+    override val demographics: LocalDemographics? = null
 ) : RealLocation, Clusterable {
     override val avgDistanceToSelf = 0.0
     val attractionScaler: MutableMap<Int, Double> = mutableMapOf() // For calibration
@@ -47,15 +49,27 @@ class Building  (
          * only be one destination function per activity type right now.
          * @return buildings
          */
-        fun fromGeoJson(collection: GeoJsonFeatureCollection<BuildingProperties>, geometryFactory: GeometryFactory,
+        fun fromGeoJson(collection: GeoJsonFeatureCollection<BuildingProperties>,
+                        geometryFactory: GeometryFactory,
                         transformer: CRSTransformer,
-                        dcFunctions: Map<ActivityType, LocationChoiceDCWeightFun>): List<Building> {
+                        dcFunctions: Map<ActivityType,LocationChoiceDCWeightFun>,
+                        populationConfig: PopulationConfig
+        ): List<Building> {
+            val dInterner = Interners.newWeakInterner<LocalDemographics>() // We expect there to only be <1000 unique demographic distributions
+
             return collection.features.map {
                 val properties = it.properties
                 val point = transformer.toModelCRS( it.geometry.toJTS(geometryFactory) ).centroid
 
                 val attractions = dcFunctions.map { (_, v) -> v.id to v.calcAttraction(properties)}
                     .toMap().toMutableMap()
+
+                // Prepare demographic distribution for sampling and dedup
+                var demographics = properties.demographics
+                demographics?.prepare(populationConfig)
+                if (demographics != null) {
+                    demographics = dInterner.intern(demographics)
+                }
 
                 Building(
                     osmID = properties.osm_id,
@@ -66,7 +80,8 @@ class Building  (
                     population = properties.population ?: 0.0,
                     odZone = null,
                     point = point,
-                    osmProperties = properties
+                    osmProperties = properties,
+                    demographics = demographics
                 )
             }
         }

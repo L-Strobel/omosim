@@ -20,6 +20,7 @@ data class DummyLocation (
 ) : LocationOption, AggLocation {
     override val inFocusArea = false
     override val avgDistanceToSelf = 1.0
+    override val demographics: LocalDemographics? = null
 
     override fun getAggLoc() : AggLocation {
         return this

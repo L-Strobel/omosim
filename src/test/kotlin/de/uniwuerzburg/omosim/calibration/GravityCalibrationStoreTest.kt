@@ -25,7 +25,7 @@ class GravityCalibrationStoreTest {
     val dcFunctions = ActivityType.entries.associateWith { ByPopulation() }
 
     // Same properties for all buildings
-    val properties =  BuildingProperties(
+    val properties = BuildingProperties(
         osm_id = -1,
         in_focus_area = true,
         area = 1.0,

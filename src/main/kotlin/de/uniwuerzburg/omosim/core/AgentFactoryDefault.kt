@@ -4,6 +4,7 @@ import de.uniwuerzburg.omosim.core.models.*
 import de.uniwuerzburg.omosim.utils.*
 import kotlinx.coroutines.*
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.toList
 
 /**
@@ -171,8 +172,15 @@ class AgentFactoryDefault (
     private fun createAgent(
         id: Int, home: LocationOption, homeZone: AggLocation, zones: List<AggLocation>, rng: Random
     ) : MobiAgent {
-        // Sociodemographic features
-        val stratum = popConfig.strata[sampleCumDist(strataDistr, rng)]
+        // sample population stratum
+        val stratum = if (home.demographics != null) {
+            // Use local data
+            popConfig.strata[sampleCumDist(home.demographics!!.strataDistribution, rng)]
+        } else {
+            // Fall back to global
+            popConfig.strata[sampleCumDist(strataDistr, rng)]
+        }
+
         val featureSet = stratum.sampleSocDemFeatures(rng, popConfig.populationWideValues)
 
         // Fixed locations
