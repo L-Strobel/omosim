@@ -3,6 +3,7 @@ package de.uniwuerzburg.omosim.core.models
 import de.uniwuerzburg.omosim.core.logger
 import de.uniwuerzburg.omosim.utils.createCumDist
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 class LocalDemographics(
