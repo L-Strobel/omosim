@@ -12,6 +12,7 @@ sealed interface LocationOption {
     var odZone: ODZone?
     val avgDistanceToSelf: Double
     val inFocusArea: Boolean
+    val demographics: LocalDemographics?
 
     /**
      * Get the aggregate location this location is inside in.

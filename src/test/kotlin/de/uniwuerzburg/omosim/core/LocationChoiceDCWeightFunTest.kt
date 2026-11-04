@@ -67,7 +67,8 @@ class LocationChoiceDCWeightFunTest {
                     number_fast_food = 0.0,
                     number_kindergarten = 0.0,
                     number_tourism = 0.0,
-                    levels = 1
+                    levels = 1,
+                    demographics = null
                 )
             )
         )

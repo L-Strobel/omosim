@@ -17,6 +17,8 @@ data class Cell (
     override val latlonCoord: Coordinate,
     val buildings: List<Building>,
 ) : RealLocation, AggLocation {
+    override val demographics: LocalDemographics? = null
+
     override val avgDistanceToSelf = buildings.map { a ->
         buildings.map { b ->
             a.coord.distance(b.coord)

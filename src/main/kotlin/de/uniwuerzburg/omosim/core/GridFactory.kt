@@ -155,6 +155,8 @@ fun makeClusterGrid(
     dispatcher: CoroutineDispatcher,
     minClusterPerGroup: Int = 4
 ) : List<Cell> {
+    logger.get()?.info("Clustering buildings...")
+
     // Get cluster in focus area
     val focusAreaBuildings = buildings.filter { it.inFocusArea }
     val cells = cluster(
@@ -204,5 +206,6 @@ fun makeClusterGrid(
         )
     }
 
+    logger.get()?.info("Clustering done!")
     return cells.toList()
 }

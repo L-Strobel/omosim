@@ -56,6 +56,7 @@ fun writeSQLite(
             "	homogenousGroup text NOT NULL," +
             "	mobilityGroup text NOT NULL," +
             "	age INTEGER," +
+            "   monthlyIncome INTEGER," +
             "	sex text NOT NULL," +
             "	carAccess INT NOT NULL," +
             "	homeLat REAL NOT NULL," +
@@ -145,8 +146,8 @@ fun writeSQLite(
         // Prepare statements
         val personPStmt = conn.prepareStatement(
         "INSERT INTO person" +
-            "(id, homogenousGroup, mobilityGroup, age, sex, carAccess, homeLat, homeLon, homeDummyLoc, homeInFocus)" +
-            " VALUES(?,?,?,?,?,?,?,?,?,?)"
+            "(id, homogenousGroup, mobilityGroup, age, monthlyIncome, sex, carAccess, homeLat, homeLon, homeDummyLoc, homeInFocus)" +
+            " VALUES(?,?,?,?,?,?,?,?,?,?,?)"
         )
         val dayPStmt = conn.prepareStatement(
         "INSERT INTO day" +
@@ -196,12 +197,17 @@ fun writeSQLite(
             } else {
                 personPStmt.setInt(4, entry.age)
             }
-            personPStmt.setString(5, entry.sex.toString())
-            personPStmt.setBoolean(6, entry.carAccess)
-            personPStmt.setDouble(7, entry.homeLat)
-            personPStmt.setDouble(8, entry.homeLon)
-            personPStmt.setBoolean(9, entry.homeDummyLoc)
-            personPStmt.setBoolean(10, entry.homeInFocus)
+            if (entry.monthlyIncome == null) {
+                personPStmt.setNull(5, INTEGER)
+            } else {
+                personPStmt.setInt(5, entry.monthlyIncome)
+            }
+            personPStmt.setString(6, entry.sex.toString())
+            personPStmt.setBoolean(7, entry.carAccess)
+            personPStmt.setDouble(8, entry.homeLat)
+            personPStmt.setDouble(9, entry.homeLon)
+            personPStmt.setBoolean(10, entry.homeDummyLoc)
+            personPStmt.setBoolean(11, entry.homeInFocus)
             personPStmt.executeUpdate()
 
             for (day in entry.mobilityDemand) {

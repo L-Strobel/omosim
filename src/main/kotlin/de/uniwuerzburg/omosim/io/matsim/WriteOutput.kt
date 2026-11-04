@@ -60,36 +60,15 @@ fun writeSingleDay(
 
             // Attributes
             val attributes = doc.createElement("attributes")
-            // Sex
-            val matSimSex = entry.sex.matSimName()
-            if (matSimSex != null) {
-                val sexAttrib = doc.createElement("attribute")
-                sexAttrib.setAttribute("name", "sex")
-                sexAttrib.setAttribute("class", matSimSex)
-                attributes.appendChild(sexAttrib)
-            }
-            // Age
-            if (entry.age != null) {
-                val ageAttrib = doc.createElement("attribute")
-                ageAttrib.setAttribute("name", "age")
-                ageAttrib.setAttribute("class", entry.age.toString())
-                attributes.appendChild(ageAttrib)
-            }
+            addAttribute(entry.sex.matSimName(), "sex", doc, attributes) // Sex
+            addAttribute(entry.age, "age", doc, attributes) // Age
+            addAttribute(entry.monthlyIncome, "monthlyIncome", doc, attributes) // Income
             // Car availability
             val carAvailability = if (entry.carAccess) { "always" } else { "never" }
-            val carAttrib = doc.createElement("attribute")
-            carAttrib.setAttribute("name", "car_avail")
-            carAttrib.setAttribute("class", carAvailability)
-            attributes.appendChild(carAttrib)
+            addAttribute(carAvailability, "car_avail", doc, attributes)
             // Employment
             val employed = entry.homogenousGroup.matSimName()
-            if (employed != null) {
-                val employAttrib = doc.createElement("attribute")
-                employAttrib.setAttribute("name", "employed")
-                employAttrib.setAttribute("class", employed)
-                attributes.appendChild(employAttrib)
-            }
-
+            addAttribute(employed, "employed", doc, attributes)
             person.appendChild(attributes)
 
             // Plan
@@ -159,6 +138,19 @@ fun writeSingleDay(
         return false
     }
     return true
+}
+
+/**
+ * Creates a new child attribute and appends it to the attributes parameter (skips null values)
+ */
+fun addAttribute(value: Any?, name: String, doc: org.w3c.dom.Document, attributes: org.w3c.dom.Element) {
+    if (value != null) {
+        val newAttrib = doc.createElement("attribute")
+        newAttrib.setAttribute("name", name)
+        newAttrib.setAttribute("class", value.javaClass.name)
+        newAttrib.textContent = value.toString()
+        attributes.appendChild(newAttrib)
+    }
 }
 
 fun writeMatSim(

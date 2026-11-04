@@ -1,5 +1,7 @@
 package de.uniwuerzburg.omosim.io
 
+import de.uniwuerzburg.omosim.core.models.LocalDemographics
+import de.uniwuerzburg.omosim.core.models.PopulationConfig
 import de.uniwuerzburg.omosim.io.geojson.GeoJsonFeatureCollection
 import de.uniwuerzburg.omosim.io.geojson.property.CensusProperties
 import de.uniwuerzburg.omosim.io.json.readJsonStream
@@ -22,8 +24,10 @@ import kotlin.math.min
  * @return List of buildings with all necessary features
  */
 fun readCensus(
-    osmBuildings: List<BuildingData>, transformer: CRSTransformer,
-    geometryFactory: GeometryFactory, censusFile: Path,
+    osmBuildings: List<BuildingData>,
+    transformer: CRSTransformer,
+    geometryFactory: GeometryFactory,
+    censusFile: Path,
     rng: Random
 ) : List<BuildingData> {
 
@@ -36,9 +40,27 @@ fun readCensus(
 
     val censusData: GeoJsonFeatureCollection<CensusProperties> = readJsonStream(censusFile)
 
-    for (censusEntree in censusData.features) {
+    for ((i, censusEntree) in censusData.features.withIndex()) {
         var population = censusEntree.properties.population
         if (population <= 0) { continue }
+
+        // Store local stratum in the building
+        var localDemographics: LocalDemographics? = null
+        if(censusEntree.properties.strata != null) {
+            val names = censusEntree.properties.strata.keys.toList()
+            val shares = censusEntree.properties.strata.values.toList()
+            if (names.size != shares.size) {
+                logger.warn("Census entry $i contains invalid demographic distribution." +
+                        "Strata names and strata shares are not the same size!" +
+                        "Falling back to global demographics in this region.")
+            } else if (names.isEmpty()) {
+                logger.warn("Census entry $i contains invalid demographic distribution." +
+                        "No strata is supplied." +
+                        "Falling back to global demographics in this region.")
+            } else {
+                localDemographics = LocalDemographics(names, shares)
+            }
+        }
 
         val censusZone = transformer.toModelCRS(censusEntree.geometry.toJTS(geometryFactory) )
 
@@ -51,6 +73,7 @@ fun readCensus(
         for (building in intersectingBuildings) {
             val populationBuilding = min(population, populationPerBuilding)
             building.population = (building.population ?: 0.0) + populationBuilding
+            building.demographics = localDemographics
             population -= populationBuilding
             if (population <= 0) {
                 break

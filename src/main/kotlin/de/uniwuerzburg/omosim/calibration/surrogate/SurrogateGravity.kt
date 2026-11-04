@@ -51,6 +51,9 @@ class SurrogateGravity (
                         omosim.activityGenerator.javaClass.simpleName
             )
         }
+        if (omosim.buildings.any{ it.demographics != null }) {
+            logger.warn("Surrogate currently ignores local demographic differences!")
+        }
     }
 
     /**
