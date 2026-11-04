@@ -171,7 +171,7 @@ Change the routing mode with the CLI flag *\--routing_mode* to either *GRAPHHOPP
 
 It is possible to separate the population into different strata/groups and assign each individual properties (--population_file=*path\to\file*).
 
-Example:
+Example population file:
 
 ```
 {
@@ -248,6 +248,62 @@ Example:
     ]
 }
 
+```
+
+### Local Demographics
+
+To define different local demographics (for example for each city district)
+you can add the local strata distribution to the input census file (see also [here](python_tools/format_zensus2022.py)).
+The census file is a GeoJson with the properties "population" and "strata".
+"Strata" is a dictionary that gives the share of the population that is part of a given stratum.
+The strata are identified by name and must occur in the population file.
+
+Example census file:
+
+```
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "population": 5.0,              // Population in census zone
+        "strata": {                     // Demographics in census zone
+           "Young Generation": 0.8,     // - 80% are young in this zone
+           "Old Generation": 0.2        // - 20% are old
+        },
+        "type": "CensusEntry"
+      },
+      "geometry": {                     // Zone definition
+        "coordinates": [
+          [
+            [
+              11.6244900,
+              48.7639342
+            ],
+            [
+              11.6246060,
+              48.7639933
+            ],
+            [
+              11.6247572,
+              48.7638644
+            ],
+            [
+              11.6246412,
+              48.7638053
+            ],
+            [
+              11.6244900,
+              48.7639342
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      }
+    }
+  ]
+}
 ```
 
 ## Parametrization
