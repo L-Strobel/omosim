@@ -242,8 +242,8 @@ class AgentFactoryDefaultTest {
         val agents = agentFactory.createAgents(nAgents, listOf(cell), false, Random())
         val youngCount = agents.count { it.age!! < 30 }
         val oldCount = agents.count { it.age!! >= 30 }
-        assert((0.1*nAgents <= youngCount) and (youngCount <= 0.5*nAgents)) // Around 30% with some margin for randomness
-        assert((0.5*nAgents <= oldCount) and (oldCount <= 0.9*nAgents)) // Around 70% with some margin for randomness
+        assert((0.6*nAgents <= youngCount) and (youngCount <= 0.8*nAgents)) // Around 30% with some margin for randomness
+        assert((0.2*nAgents <= oldCount) and (oldCount <= 0.4*nAgents)) // Around 70% with some margin for randomness
     }
 
     @Test

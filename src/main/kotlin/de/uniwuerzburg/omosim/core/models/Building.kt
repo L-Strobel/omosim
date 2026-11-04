@@ -66,9 +66,9 @@ class Building  (
 
                 // Prepare demographic distribution for sampling and dedup
                 var demographics = properties.demographics
-                demographics?.prepare(populationConfig)
                 if (demographics != null) {
                     demographics = dInterner.intern(demographics)
+                    demographics.prepare(populationConfig)
                 }
 
                 Building(

@@ -175,7 +175,7 @@ class AgentFactoryDefault (
         // sample population stratum
         val stratum = if (home.demographics != null) {
             // Use local data
-            popConfig.strata[sampleCumDist(home.demographics!!.strataDistribution, rng)]
+            home.demographics!!.strata[sampleCumDist(home.demographics!!.strataDistribution, rng)]
         } else {
             // Fall back to global
             popConfig.strata[sampleCumDist(strataDistr, rng)]

@@ -42,8 +42,8 @@
       "stratumShare": 0.6,
       "carOwnership": 0.60,
       "age": {
-        "limits": [40, 60, 80],
-        "shares": [0.3, 0.4, 0.3],
+        "limits": [30, 40, 60, 80],
+        "shares": [0.0, 0.3, 0.4, 0.3],
         "UNDEFINED": 0.0
       },
       "monthlyIncome": {
