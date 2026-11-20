@@ -3,6 +3,8 @@ package de.uniwuerzburg.omosim.io.matsim
 import de.uniwuerzburg.omosim.io.json.OutputActivity
 import de.uniwuerzburg.omosim.io.json.OutputEntry
 import de.uniwuerzburg.omosim.io.json.OutputTrip
+import de.uniwuerzburg.omosim.utils.getUTMZoneName
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
 import org.locationtech.jts.geom.Coordinate
@@ -21,12 +23,22 @@ import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.outputStream
 
 fun writeSingleDay(
-    output: List<OutputEntry>, file: Path, day: Int, outputCRS: String = "EPSG:4326",
+    output: List<OutputEntry>, file: Path, day: Int, outputCRS: String?,
     runParams: Map<String, String>
 ) : Boolean {
+
     // CRS transformer
     val latlonCRS = CRS.decode("EPSG:4326")
-    val targetCRS = CRS.decode(outputCRS)
+    var targetCRS: CoordinateReferenceSystem
+
+    if(outputCRS.isNullOrBlank()) {
+        val lon: Double = output[0].homeLon
+        val lat: Double = output[0].homeLat
+        targetCRS = CRS.decode(getUTMZoneName(lon, lat))
+    } else {
+        targetCRS = CRS.decode(outputCRS)
+    }
+
     val crsTransformer = CRS.findMathTransform(latlonCRS, targetCRS)
     val geometryFactory = GeometryFactory()
 
