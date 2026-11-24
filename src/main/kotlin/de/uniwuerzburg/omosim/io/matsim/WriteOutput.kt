@@ -26,17 +26,14 @@ fun writeSingleDay(
     output: List<OutputEntry>, file: Path, day: Int, outputCRS: String?,
     runParams: Map<String, String>
 ) : Boolean {
-
     // CRS transformer
     val latlonCRS = CRS.decode("EPSG:4326")
-    var targetCRS: CoordinateReferenceSystem
-
-    if(outputCRS.isNullOrBlank()) {
-        val lon: Double = output[0].homeLon
+    val targetCRS = if(outputCRS.isNullOrBlank()) {
         val lat: Double = output[0].homeLat
-        targetCRS = CRS.decode(getUTMZoneEpsgCode(lat, lon))
+        val lon: Double = output[0].homeLon
+        CRS.decode(getUTMZoneEpsgCode(lat, lon))
     } else {
-        targetCRS = CRS.decode(outputCRS)
+        CRS.decode(outputCRS)
     }
 
     val crsTransformer = CRS.findMathTransform(latlonCRS, targetCRS)
@@ -166,7 +163,7 @@ fun addAttribute(value: Any?, name: String, doc: org.w3c.dom.Document, attribute
 }
 
 fun writeMatSim(
-    output: List<OutputEntry>, file: Path, nDays: Int, outputCRS: String, runParams: Map<String, String>
+    output: List<OutputEntry>, file: Path, nDays: Int, outputCRS: String?, runParams: Map<String, String>
 ) : Boolean {
     var success = true
     if (nDays == 1) {
