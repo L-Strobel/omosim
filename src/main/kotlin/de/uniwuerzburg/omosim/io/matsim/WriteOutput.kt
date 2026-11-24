@@ -4,7 +4,6 @@ import de.uniwuerzburg.omosim.io.json.OutputActivity
 import de.uniwuerzburg.omosim.io.json.OutputEntry
 import de.uniwuerzburg.omosim.io.json.OutputTrip
 import de.uniwuerzburg.omosim.utils.getUTMZoneEpsgCode
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
 import org.locationtech.jts.geom.Coordinate
