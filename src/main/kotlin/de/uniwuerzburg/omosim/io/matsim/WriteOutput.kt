@@ -3,7 +3,7 @@ package de.uniwuerzburg.omosim.io.matsim
 import de.uniwuerzburg.omosim.io.json.OutputActivity
 import de.uniwuerzburg.omosim.io.json.OutputEntry
 import de.uniwuerzburg.omosim.io.json.OutputTrip
-import de.uniwuerzburg.omosim.utils.getUTMZoneName
+import de.uniwuerzburg.omosim.utils.getUTMZoneEpsgCode
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
@@ -34,7 +34,7 @@ fun writeSingleDay(
     if(outputCRS.isNullOrBlank()) {
         val lon: Double = output[0].homeLon
         val lat: Double = output[0].homeLat
-        targetCRS = CRS.decode(getUTMZoneName(lon, lat))
+        targetCRS = CRS.decode(getUTMZoneEpsgCode(lat, lon))
     } else {
         targetCRS = CRS.decode(outputCRS)
     }
