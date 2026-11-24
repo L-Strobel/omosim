@@ -202,7 +202,8 @@ class Run : CliktCommand() {
                "For an introduction to Overture Maps see https://overturemaps.org/"
     )
     private val matsim_output_crs by option(
-        help = "CRS of MatSIM output. Must be a code understood by org.geotools.referencing.CRS.decode()."
+        help = "CRS of MatSIM output. Must be a code understood by org.geotools.referencing.CRS.decode(). " +
+               "Default: UTM Zone of the focus area's center."
     )
     private val mode_speed_up by option(
         help = "Value: MODE=FACTOR. Multiply the travel time of each trip of the mode by the factor." +
