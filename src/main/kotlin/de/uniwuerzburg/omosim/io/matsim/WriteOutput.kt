@@ -3,6 +3,7 @@ package de.uniwuerzburg.omosim.io.matsim
 import de.uniwuerzburg.omosim.io.json.OutputActivity
 import de.uniwuerzburg.omosim.io.json.OutputEntry
 import de.uniwuerzburg.omosim.io.json.OutputTrip
+import de.uniwuerzburg.omosim.utils.getUTMZoneEpsgCode
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
 import org.locationtech.jts.geom.Coordinate
@@ -21,12 +22,19 @@ import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.outputStream
 
 fun writeSingleDay(
-    output: List<OutputEntry>, file: Path, day: Int, outputCRS: String = "EPSG:4326",
+    output: List<OutputEntry>, file: Path, day: Int, outputCRS: String?,
     runParams: Map<String, String>
 ) : Boolean {
     // CRS transformer
     val latlonCRS = CRS.decode("EPSG:4326")
-    val targetCRS = CRS.decode(outputCRS)
+    val targetCRS = if(outputCRS.isNullOrBlank()) {
+        val lat: Double = output[0].homeLat
+        val lon: Double = output[0].homeLon
+        CRS.decode(getUTMZoneEpsgCode(lat, lon))
+    } else {
+        CRS.decode(outputCRS)
+    }
+
     val crsTransformer = CRS.findMathTransform(latlonCRS, targetCRS)
     val geometryFactory = GeometryFactory()
 
@@ -154,7 +162,7 @@ fun addAttribute(value: Any?, name: String, doc: org.w3c.dom.Document, attribute
 }
 
 fun writeMatSim(
-    output: List<OutputEntry>, file: Path, nDays: Int, outputCRS: String, runParams: Map<String, String>
+    output: List<OutputEntry>, file: Path, nDays: Int, outputCRS: String?, runParams: Map<String, String>
 ) : Boolean {
     var success = true
     if (nDays == 1) {
